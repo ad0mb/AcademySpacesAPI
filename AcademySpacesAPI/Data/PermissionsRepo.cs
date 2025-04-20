@@ -73,6 +73,7 @@ public class PermissionsRepo
         } 
         catch (Exception ex)
         {
+            //TODO: Recheck if you should even throw an exception here and instead handle it in the FirebaseAuthService 
             throw new Exception("Error retrieving user permissions from db: " + ex.Message);
         }
     }
