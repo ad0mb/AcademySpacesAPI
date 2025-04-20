@@ -68,7 +68,11 @@ builder.Services.AddSingleton(provider =>
 
 //Scoped
 builder.Services.AddScoped<FirebaseAuthService>();
-builder.Services.AddScoped<HandlerRepo>();
+builder.Services.AddScoped<PermissionsRepo>();
+builder.Services.AddScoped<RoleRepo>();
+builder.Services.AddScoped<UserRepo>();
+builder.Services.AddScoped<PermissionsRepo>();
+builder.Services.AddScoped<SchoolRepo>();
 //Scoped
 
 //Transient
