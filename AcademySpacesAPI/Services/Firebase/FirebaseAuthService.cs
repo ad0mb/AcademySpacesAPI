@@ -8,12 +8,12 @@ namespace AcademySpacesAPI.Services.Firebase.Auth;
 public class FirebaseAuthService
 {
     private readonly FirebaseAuth _firebaseAuth;
-    private readonly HandlerRepo _handlerRepo;
+    private readonly PermissionsRepo _permissionsRepo;
 
-    public FirebaseAuthService(FirebaseAuth firebaseAuth, HandlerRepo handlerRepo)
+    public FirebaseAuthService(FirebaseAuth firebaseAuth, PermissionsRepo permissionsRepo)
     {
         _firebaseAuth = firebaseAuth;
-        _handlerRepo = handlerRepo;
+        _permissionsRepo = permissionsRepo;
     }
     
     public async Task<ClaimsPrincipal> ProcessIdTokenAsync(string idToken)
