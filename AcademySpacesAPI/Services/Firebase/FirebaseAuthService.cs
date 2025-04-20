@@ -19,10 +19,8 @@ public class FirebaseAuthService
     public async Task<ClaimsPrincipal> ProcessIdTokenAsync(string idToken)
     {
         ClaimsIdentity identity;
-        FirebaseToken decodedToken;
         
-        
-        decodedToken = await _firebaseAuth.VerifyIdTokenAsync(idToken); //Throws FirebaseAuthException if token is invalid
+        var decodedToken = await _firebaseAuth.VerifyIdTokenAsync(idToken); //Throws FirebaseAuthException if token is invalid
         
         // Console.WriteLine(decodedToken.Uid);
 
@@ -42,9 +40,9 @@ public class FirebaseAuthService
         }
         
         //TODO: Remove permission duplicates from array, make sure only one instance of each permission is present even if they duplicate
-        var permissions = await _handlerRepo.GetUserPermissionsAsync(decodedToken.Uid, userTypeObject.ToString());
+        var permissions = await _permissionsRepo.GetUserPermissionsAsync(decodedToken.Uid, userTypeObject.ToString());
         
-        if (permissions.Count < 0)
+        if (permissions == null)
         {
             identity = new ClaimsIdentity(claims, "Firebase");
             return new ClaimsPrincipal(identity);
