@@ -4,12 +4,12 @@ using MySqlConnector;
 
 namespace AcademySpacesAPI.Data.Auth;
 
-public class HandlerRepo
+public class PermissionsRepo
 {
 
     private readonly string _connectionString;
     
-    public HandlerRepo(IConfiguration configuration)
+    public PermissionsRepo(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("StagingConnection") ??
                             throw new InvalidOperationException("Connection string 'StagingConnection' not found.");
@@ -38,7 +38,7 @@ public class HandlerRepo
                           "WHERE ut.identity_id = @identityId ";
         }
         
-        try
+        try //using try-catch becasue AuthenticationHandler cannot afford exception break (untested result if it does)
         {
             await using var
                 connection =
@@ -77,7 +77,62 @@ public class HandlerRepo
         }
     }
     
-    
+    public async Task<List<RolePermissions>?> GetRolePermissionsAsync(int roleId)
+    {
+        var permissions = new List<RolePermissions>();
+
+        await using var connection = new MySqlConnection(_connectionString);
+        connection.Open();
+        
+        string queryString = "SELECT * FROM role_permissions WHERE role_id = @roleId";
+
+        await using var command = new MySqlCommand(queryString, connection);
+        command.Parameters.AddWithValue("@roleId", roleId);
+        await using var reader = await command.ExecuteReaderAsync();
+        
+        while (await reader.ReadAsync())
+        {
+            var rolePermission = new RolePermissions
+            {
+                Id = reader.GetInt32("id"),
+                RoleId = reader.GetInt32("role_id"),
+                PermissionName = reader.GetString("permission_name"),
+                Create = reader.GetBoolean("create"),
+                Update = reader.GetBoolean("update"),
+                Delete = reader.GetBoolean("delete"),
+                CreatedAt = reader.GetDateTime("date_created"),
+                UpdatedAt = reader.GetDateTime("date_modified")
+            };
+            permissions.Add(rolePermission);
+        }
+
+        if (permissions.Count > 0)
+        {
+            return permissions;
+        }
+
+        return null;
+    }
+
+    public async Task CreateRolePermissionAsync(string permissionString, int roleId)
+    {
+        var permissionName = permissionString.Split(":")[0];
+        var permissions = permissionString.Split(":")[1].ToCharArray();
+        
+        await using var connection = new MySqlConnection(_connectionString);
+        connection.Open();
+        
+        const string queryString =
+            "INSERT INTO role_permissions (role_id, permission_name, `create`, `delete`, `update`) VALUES (@roleId, @permissionName, @create, @delete, @update)"; // create delete and update have ` on them because create delete and update are reserved keywords and ` is an escape character
+        await using var command = new MySqlCommand(queryString, connection);
+        command.Parameters.AddWithValue("@roleId", roleId);
+        command.Parameters.AddWithValue("@permissionName", permissionName);
+        command.Parameters.AddWithValue("@create", permissions[0] == '1');
+        command.Parameters.AddWithValue("@delete", permissions[1] == '1');
+        command.Parameters.AddWithValue("@update", permissions[2] == '1');
+        
+        await command.ExecuteNonQueryAsync();
+    }
 }
 
 

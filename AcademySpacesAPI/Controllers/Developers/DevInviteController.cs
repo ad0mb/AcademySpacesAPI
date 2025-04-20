@@ -15,6 +15,7 @@ public class DevInviteController : ControllerBase
     private readonly IConfiguration _configuration;
     private readonly EmailService _emailService;
 
+    //TODO: Add special auth scheme for dev collection of endpoints
     public DevInviteController(IConfiguration configuration, EmailService emailService)
     {
         _configuration = configuration;
