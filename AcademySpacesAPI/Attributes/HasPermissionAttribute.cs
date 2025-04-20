@@ -20,12 +20,19 @@ public class HasPermissionAttribute : AuthorizeAttribute, IAuthorizationFilter
     public void OnAuthorization(AuthorizationFilterContext context)
     {
         var foundPermission = false; //counts as view permission since view is based off permission existence
+        var isAdmin = false; 
         
         foreach (var claim in context.HttpContext.User.Claims)
         {
             if (claim.Type == "permission")
             {
                 var permissionJson = JsonSerializer.Deserialize<JsonElement>(claim.Value);
+
+                if (permissionJson.GetProperty("PermissionName").GetString() == "Administrator" ||
+                    permissionJson.GetProperty("PermissionName").GetString() == "ChiefAdministrator")
+                {
+                    isAdmin = true;
+                }
 
                 if (_permissionName == permissionJson.GetProperty("PermissionName").GetString())
                 {
@@ -60,7 +67,7 @@ public class HasPermissionAttribute : AuthorizeAttribute, IAuthorizationFilter
             }
         }
         
-        if (!foundPermission)
+        if (!foundPermission && !isAdmin)
         {
             context.Result = new JsonResult(new
                 {
