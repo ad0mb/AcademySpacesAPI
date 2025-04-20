@@ -5,10 +5,12 @@ namespace AcademySpacesAPI.Models;
 
 public class RolePermissions
 {
-    [Required] [JsonIgnore] public int Id { get; set; }
-    [Required] public int RoleId { get; set; }
+    [JsonIgnore] public int Id { get; set; }
+    [Required] public required int RoleId { get; set; }
     [Required] public required string PermissionName { get; set; }
-    [Required] public bool Create { get; set; }
-    [Required] public bool Delete { get; set; }
-    [Required] public bool Update { get; set; }
+    [Required] public required bool Create { get; set; }
+    [Required] public required bool Delete { get; set; }
+    [Required] public required bool Update { get; set; }
+    [JsonIgnore] public DateTime? CreatedAt { get; set; }
+    [JsonIgnore] public DateTime? UpdatedAt { get; set; }
 }
