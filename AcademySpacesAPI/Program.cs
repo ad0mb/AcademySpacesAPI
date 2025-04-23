@@ -1,15 +1,15 @@
 using System.Text;
-using AcademySpacesAPI.Authentication;
-using AcademySpacesAPI.Data.Auth;
-using AcademySpacesAPI.Middleware;
-using AcademySpacesAPI.Models.Configs;
-using AcademySpacesAPI.Services.Config.Firebase.Admin;
-using AcademySpacesAPI.Services.Email;
-using AcademySpacesAPI.Services.Firebase.Auth;
+using AcademySpacesAPI.Core.Interfaces.UseCases;
+using AcademySpacesAPI.Data;
+using AcademySpacesAPI.Infrastructure.Email;
+using AcademySpacesAPI.Infrastructure.Firebase;
+using AcademySpacesAPI.Models.JsonModels;
+using AcademySpacesAPI.Webapi.Authentication;
 using FirebaseAdmin;
 using FirebaseAdmin.Auth;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 
@@ -73,12 +73,15 @@ builder.Services.AddScoped<RoleRepo>();
 builder.Services.AddScoped<UserRepo>();
 builder.Services.AddScoped<PermissionsRepo>();
 builder.Services.AddScoped<SchoolRepo>();
+
+builder.Services.AddScoped<IRegisterSchoolAndAdminUseCase, IRegisterSchoolAndAdminUseCase>();
 //Scoped
 
 //Transient
 builder.Services.AddTransient<EmailService>();
 //Transient
 
+//TODO: Check bearers and create separate registration key for each one
 builder.Services.AddAuthentication(options =>
     {
         // options.DefaultScheme = "FirebaseAuthScheme";
@@ -103,6 +106,28 @@ builder.Services.AddAuthentication(options =>
             ValidateIssuerSigningKey = true,
             ValidateLifetime = true,
         };
+    })
+    .AddJwtBearer("UserRegistrationToken", options =>
+    {
+        options.RequireHttpsMetadata = builder.Environment.IsProduction();
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidIssuer = builder.Configuration["JwtBearer:Issuer"],
+            ValidateIssuer = true,
+            ValidAudience = builder.Configuration["JwtBearer:Audience"],
+            ValidateAudience = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtBearer:UserRegistration:Key"])),
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
+        };
+        // options.Events = new JwtBearerEvents
+        // {
+        //     OnTokenValidated = new JwtBearerEvents
+        //     {
+        //         
+        //     }
+        // };
     });
 
 var app = builder.Build();
@@ -118,7 +143,6 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
-// app.UseMiddleware<Middleware>();
 app.MapControllers();
 
 app.Run();

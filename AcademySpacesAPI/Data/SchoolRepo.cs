@@ -1,9 +1,9 @@
 ﻿using AcademySpacesAPI.Exceptions;
+using AcademySpacesAPI.Infrastructure.Persistence.Models;
 using AcademySpacesAPI.Models;
-using AcademySpacesAPI.Models.DatabaseModels;
 using MySqlConnector;
 
-namespace AcademySpacesAPI.Data.Auth;
+namespace AcademySpacesAPI.Data;
 
 public class SchoolRepo
 {

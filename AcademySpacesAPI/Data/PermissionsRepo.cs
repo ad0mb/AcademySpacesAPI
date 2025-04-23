@@ -1,8 +1,8 @@
 ﻿using System.Text.Json;
-using AcademySpacesAPI.Models;
+using AcademySpacesAPI.Infrastructure.Persistence.Models;
 using MySqlConnector;
 
-namespace AcademySpacesAPI.Data.Auth;
+namespace AcademySpacesAPI.Data;
 
 public class PermissionsRepo
 {
