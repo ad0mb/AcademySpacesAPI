@@ -1,4 +1,4 @@
-﻿namespace AcademySpacesAPI.Models.Configs;
+﻿namespace AcademySpacesAPI.Models.JsonModels;
 
 //Unconventional naming methods because this is converted to a JSON format (case sensitive names)
 public class FirebaseAdminConfig

@@ -1,8 +1,8 @@
 ﻿using AcademySpacesAPI.Exceptions;
-using AcademySpacesAPI.Models.DatabaseModels;
+using AcademySpacesAPI.Infrastructure.Persistence.Models;
 using MySqlConnector;
 
-namespace AcademySpacesAPI.Data.Auth;
+namespace AcademySpacesAPI.Data;
 
 public class RoleRepo
 {

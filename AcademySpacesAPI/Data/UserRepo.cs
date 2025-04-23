@@ -1,8 +1,8 @@
 ﻿using AcademySpacesAPI.Exceptions;
-using AcademySpacesAPI.Models.DatabaseModels.Users;
+using AcademySpacesAPI.Infrastructure.Persistence.Models;
 using MySqlConnector;
 
-namespace AcademySpacesAPI.Data.Auth;
+namespace AcademySpacesAPI.Data;
 
 public class UserRepo
 {
@@ -15,23 +15,6 @@ public class UserRepo
         _connectionString = configuration.GetConnectionString("StagingConnection") ??
                             throw new InvalidOperationException("Connection string 'StagingConnection' not found.");
         _roleRepo = roleRepo;
-    }
-
-    public async Task CreateFacultyAsync(Faculty data)
-    {
-        await using var connection = new MySqlConnection(_connectionString);
-        connection.Open();
-
-        const string queryString = "INSERT INTO faculty (school_id, identity_id, first_name, last_name, phone_number, email) VALUES (@schoolId, @identityId, @firstName, @lastName, @phoneNumber, @email)";
-        await using var command = new MySqlCommand(queryString, connection);
-        command.Parameters.AddWithValue("@schoolId", data.SchoolId);
-        command.Parameters.AddWithValue("@identityId", data.IdentityId);
-        command.Parameters.AddWithValue("@firstName", data.FirstName);
-        command.Parameters.AddWithValue("@lastName", data.LastName);
-        command.Parameters.AddWithValue("@phoneNumber", data.PhoneNumber);
-        command.Parameters.AddWithValue("@email", data.Email);
-
-        await command.ExecuteNonQueryAsync();
     }
 
     public async Task<int> CreateFacultyAsync(Faculty data, int[] roleIds)
@@ -94,12 +77,12 @@ public class UserRepo
         {
             return new Faculty
             {
-                FacultyId = reader.GetInt32("id"),
+                FacultyId = reader.GetInt32("faculty_id"),
                 SchoolId = reader.GetInt32("school_id"),
                 IdentityId = reader.GetString("identity_id"),
                 FirstName = reader.GetString("first_name"),
                 LastName = reader.GetString("last_name"),
-                PhoneNumber = reader.GetString("phone_number"),
+                PhoneNumber = reader.IsDBNull(reader.GetOrdinal("phone_number")) ? null : reader.GetString("phone_number"),
                 Email = reader.GetString("email"),
                 CreatedAt = reader.GetDateTime("date_created"),
                 UpdatedAt = reader.GetDateTime("date_modified")
