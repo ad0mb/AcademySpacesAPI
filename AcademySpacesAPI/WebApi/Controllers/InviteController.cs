@@ -1,12 +1,13 @@
-﻿using AcademySpacesAPI.Data;
+﻿using AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
+using AcademySpacesAPI.Data;
 using AcademySpacesAPI.Exceptions;
-using AcademySpacesAPI.Infrastructure.Persistence.Models;
-using AcademySpacesAPI.Models.RequestModels;
+using AcademySpacesAPI.Infrastructure.Persistence.Models.OldModels;
+using AcademySpacesAPI.WebApi.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 
-namespace AcademySpacesAPI.Webapi.Controllers;
+namespace AcademySpacesAPI.WebApi.Controllers;
 
 [ApiController]
 [Route("api/onboarding/invite")]
@@ -16,12 +17,14 @@ public class InviteController : ControllerBase
     private readonly SchoolRepo _schoolRepo;
     private readonly UserRepo _userRepo;
     private readonly RoleRepo _roleRepo;
+    private readonly IRegisterSchoolAndAdminUseCase _registerSchoolAndAdminUseCase;
 
-    public InviteController(SchoolRepo schoolRepo, UserRepo userRepo, RoleRepo roleRepo)
+    public InviteController(SchoolRepo schoolRepo, UserRepo userRepo, RoleRepo roleRepo, IRegisterSchoolAndAdminUseCase registerSchoolAndAdminUseCase)
     {
         _schoolRepo = schoolRepo;
         _userRepo = userRepo;
         _roleRepo = roleRepo;
+        _registerSchoolAndAdminUseCase = registerSchoolAndAdminUseCase;
     }
 
     //TODO: Implement email 6 digit code verification feature (after endpoint request is sent or before)
@@ -32,63 +35,14 @@ public class InviteController : ControllerBase
     [HttpPost("register-school")]
     public async Task<IActionResult> RegisterSchoolAndAdmin(RegisterSchoolRequest request)
     {
-        try
-        {
-            var ids = await _schoolRepo.CreateSchoolAsync(new Schools
-            {
-                Name = request.SchoolName,
-                CountryOfOrigin = request.SchoolCountry
-            });
-            
-            await _userRepo.CreateFacultyAsync(new Faculty
-            {
-                SchoolId = ids[0],
-                IdentityId = request.IdentityId,
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                Email = request.SigninEmail,
-            }, [ids[1]]);
+        await _registerSchoolAndAdminUseCase.CreateSchoolAndAdminAsync(request);
 
-            return Ok(new
-            {
-                Status = true,
-                Message = "School and Admin succesfully registered.",
-                Data = (object[])null,
-                Errors = (string[])null
-            });
-        }
-        catch (MySqlException ex)
+        return Ok(new
         {
-            Console.WriteLine(ex);
-            return StatusCode(500, new
-            {
-                Status = false,
-                Message = "Database error occured.",
-                Data = (object[])null,
-                Errors = new[] { "Wrong input data or database/query error." }
-            });
-        }
-        catch (NoRowsAffectedException ex)
-        {
-            Console.WriteLine(ex);
-            return StatusCode(500, new
-            {
-                Status = false,
-                Message = "No rows affected.",
-                Data = (object[])null,
-                Errors = new[] { ex.Message }
-            });
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            return StatusCode(500, new
-            {
-                Status = false,
-                Message = "An unplanned error occured.",
-                Data = (object[])null,
-                Errors = new[] { ex.Message }
-            });
-        }
+            Status = true,
+            Message = "School and Admin succesfully registered.",
+            Data = (object[])null,
+            Errors = (string[])null
+        });
     }
 }
