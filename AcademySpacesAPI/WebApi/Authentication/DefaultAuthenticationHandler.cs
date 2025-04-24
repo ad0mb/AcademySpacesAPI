@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 using System.Text.Encodings.Web;
-using AcademySpacesAPI.Infrastructure.Firebase;
+using AcademySpacesAPI.ApplicationCore.Interfaces.Adapters;
 using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
@@ -9,13 +9,13 @@ namespace AcademySpacesAPI.WebApi.Authentication;
 
 public class DefaultAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
-    private readonly FirebaseAuthService _firebaseAuthService;
+    private readonly IAuthService _authService;
 
-    public DefaultAuthenticationHandler(FirebaseAuthService firebaseAuthService,
+    public DefaultAuthenticationHandler(IAuthService authService,
         IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder,
         ISystemClock clock) : base (options, logger, encoder, clock) //Base is the way to access the implemented classes constructor
     {
-        _firebaseAuthService = firebaseAuthService;
+        _authService = authService;
     }
     
     //Check AuthenticationHandler.cs for more information on overriding other elements of the AuthenticationHandler interface.
@@ -36,7 +36,7 @@ public class DefaultAuthenticationHandler : AuthenticationHandler<Authentication
         //Fix issue where AuthenticateResult.Fail does not actually return error message
         try
         {
-            principal = await _firebaseAuthService.ProcessIdTokenAsync(idToken);
+            principal = await _authService.ProcessIdTokenAsync(idToken);
         }
         catch (FirebaseAuthException ex)
         {
