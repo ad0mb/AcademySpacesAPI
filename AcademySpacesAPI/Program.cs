@@ -1,16 +1,21 @@
 using System.Text;
-using AcademySpacesAPI.Core.Interfaces.UseCases;
+using AcademySpacesAPI.ApplicationCore.Interfaces.Adapters;
+using AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
+using AcademySpacesAPI.ApplicationCore.UseCases;
+using AcademySpacesAPI.Context;
 using AcademySpacesAPI.Data;
 using AcademySpacesAPI.Infrastructure.Email;
 using AcademySpacesAPI.Infrastructure.Firebase;
+using AcademySpacesAPI.Infrastructure.Persistence.Repositories;
 using AcademySpacesAPI.Models.JsonModels;
-using AcademySpacesAPI.Webapi.Authentication;
+using AcademySpacesAPI.WebApi.Authentication;
 using FirebaseAdmin;
 using FirebaseAdmin.Auth;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -74,12 +79,21 @@ builder.Services.AddScoped<UserRepo>();
 builder.Services.AddScoped<PermissionsRepo>();
 builder.Services.AddScoped<SchoolRepo>();
 
-builder.Services.AddScoped<IRegisterSchoolAndAdminUseCase, IRegisterSchoolAndAdminUseCase>();
+builder.Services.AddScoped<IFacultyRepository, FacultyRepository>();
+builder.Services.AddScoped<ISchoolRepository, SchoolRepository>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IPermissionsRepository, PermissionsRepository>();
+builder.Services.AddScoped<IRegisterSchoolAndAdminUseCase, RegisterSchoolAndAdminUseCase>();
 //Scoped
 
 //Transient
 builder.Services.AddTransient<EmailService>();
 //Transient
+
+//Add DbContext
+var connectonString = builder.Configuration.GetConnectionString("StagingConnection");
+builder.Services.AddDbContext<MyDbContext>(options =>
+    options.UseMySql(ServerVersion.AutoDetect(connectonString)));
 
 //TODO: Check bearers and create separate registration key for each one
 builder.Services.AddAuthentication(options =>

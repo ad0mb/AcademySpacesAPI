@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace AcademySpacesAPI.Models.RequestModels;
+namespace AcademySpacesAPI.WebApi.DTOs;
 
 public class RegisterSchoolRequest
 {
