@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
-namespace AcademySpacesAPI.Infrastructure.Persistence.Models;
+namespace AcademySpacesAPI.Infrastructure.Persistence.Models.OldModels;
     
     //DO NOT USE THIS CLASS EXCEPT AS A REFERENCE
     public class ReferenceModel
