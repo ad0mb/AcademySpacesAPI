@@ -1,7 +1,6 @@
 ﻿using AcademySpacesAPI.ApplicationCore.DomainEntities;
 using AcademySpacesAPI.ApplicationCore.Interfaces.Adapters;
 using AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
-using AcademySpacesAPI.Entities;
 using AcademySpacesAPI.WebApi.DTOs;
 
 namespace AcademySpacesAPI.ApplicationCore.UseCases;
