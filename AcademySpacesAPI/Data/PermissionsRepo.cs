@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using AcademySpacesAPI.Infrastructure.Persistence.Models;
+using AcademySpacesAPI.Infrastructure.Persistence.Models.OldModels;
 using MySqlConnector;
 
 namespace AcademySpacesAPI.Data;

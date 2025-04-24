@@ -1,5 +1,6 @@
 ﻿using AcademySpacesAPI.Exceptions;
 using AcademySpacesAPI.Infrastructure.Persistence.Models;
+using AcademySpacesAPI.Infrastructure.Persistence.Models.OldModels;
 using MySqlConnector;
 
 namespace AcademySpacesAPI.Data;
