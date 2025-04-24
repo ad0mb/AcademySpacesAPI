@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace AcademySpacesAPI.Webapi.Attributes;
+namespace AcademySpacesAPI.WebApi.Attributes;
 
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = true)]
 public class HasPermissionAttribute : AuthorizeAttribute, IAuthorizationFilter

@@ -5,7 +5,7 @@ using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 
-namespace AcademySpacesAPI.Webapi.Authentication;
+namespace AcademySpacesAPI.WebApi.Authentication;
 
 public class DefaultAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
