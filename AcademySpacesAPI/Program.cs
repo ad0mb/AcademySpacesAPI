@@ -1,13 +1,12 @@
 using System.Text;
+using AcademySpacesAPI;
 using AcademySpacesAPI.ApplicationCore.Interfaces.Adapters;
 using AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
 using AcademySpacesAPI.ApplicationCore.UseCases;
-using AcademySpacesAPI.Context;
-using AcademySpacesAPI.Data;
+using AcademySpacesAPI.Infrastructure.Auth;
 using AcademySpacesAPI.Infrastructure.Email;
-using AcademySpacesAPI.Infrastructure.Firebase;
+using AcademySpacesAPI.Infrastructure.Persistence.Context;
 using AcademySpacesAPI.Infrastructure.Persistence.Repositories;
-using AcademySpacesAPI.Models.JsonModels;
 using AcademySpacesAPI.WebApi.Authentication;
 using FirebaseAdmin;
 using FirebaseAdmin.Auth;
@@ -72,13 +71,7 @@ builder.Services.AddSingleton(provider =>
 //Singletons for Firebase Admin SDK
 
 //Scoped
-builder.Services.AddScoped<FirebaseAuthService>();
-builder.Services.AddScoped<PermissionsRepo>();
-builder.Services.AddScoped<RoleRepo>();
-builder.Services.AddScoped<UserRepo>();
-builder.Services.AddScoped<PermissionsRepo>();
-builder.Services.AddScoped<SchoolRepo>();
-
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IFacultyRepository, FacultyRepository>();
 builder.Services.AddScoped<ISchoolRepository, SchoolRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();

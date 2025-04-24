@@ -1,24 +1,26 @@
 ﻿using AcademySpacesAPI.ApplicationCore.Interfaces.Adapters;
-using AcademySpacesAPI.Infrastructure.Firebase;
+using AcademySpacesAPI.Infrastructure.Auth;
+using AcademySpacesAPI.WebApi.Attributes;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AcademySpacesAPI.WebApi.Controllers
 {
     [ApiController]
-    // [Authorize(AuthenticationSchemes = "FirebaseAuthScheme")]
+    [Authorize(AuthenticationSchemes = "FirebaseAuthScheme")]
     [Route("api/user")]
     public class UserController : ControllerBase
     {
-        private readonly FirebaseAuthService _firebaseAuthService;
+        private readonly AuthService _authService;
         private readonly IFacultyRepository _facultyRepository;
 
-        public UserController(FirebaseAuthService firebaseAuthService, IFacultyRepository facultyRepository)
+        public UserController(AuthService authService, IFacultyRepository facultyRepository)
         {
-            _firebaseAuthService = firebaseAuthService;
+            _authService = authService;
             _facultyRepository = facultyRepository;
         }
 
+        [HasPermission("User:read")]
         [HttpGet("test")]
         public IActionResult Test()
         {

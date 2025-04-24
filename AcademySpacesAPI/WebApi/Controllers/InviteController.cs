@@ -1,7 +1,5 @@
 ﻿using AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
-using AcademySpacesAPI.Data;
 using AcademySpacesAPI.Exceptions;
-using AcademySpacesAPI.Infrastructure.Persistence.Models.OldModels;
 using AcademySpacesAPI.WebApi.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,16 +12,10 @@ namespace AcademySpacesAPI.WebApi.Controllers;
 public class InviteController : ControllerBase
 {
     
-    private readonly SchoolRepo _schoolRepo;
-    private readonly UserRepo _userRepo;
-    private readonly RoleRepo _roleRepo;
     private readonly IRegisterSchoolAndAdminUseCase _registerSchoolAndAdminUseCase;
 
-    public InviteController(SchoolRepo schoolRepo, UserRepo userRepo, RoleRepo roleRepo, IRegisterSchoolAndAdminUseCase registerSchoolAndAdminUseCase)
+    public InviteController(IRegisterSchoolAndAdminUseCase registerSchoolAndAdminUseCase)
     {
-        _schoolRepo = schoolRepo;
-        _userRepo = userRepo;
-        _roleRepo = roleRepo;
         _registerSchoolAndAdminUseCase = registerSchoolAndAdminUseCase;
     }
 

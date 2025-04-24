@@ -1,8 +1,9 @@
 ﻿using AcademySpacesAPI.ApplicationCore.DomainEntities;
 using AcademySpacesAPI.ApplicationCore.Interfaces.Adapters;
-using AcademySpacesAPI.Context;
-using AcademySpacesAPI.Entities;
 using AcademySpacesAPI.Exceptions;
+using AcademySpacesAPI.Infrastructure.Persistence.Context;
+using AcademySpacesAPI.Infrastructure.Persistence.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace AcademySpacesAPI.Infrastructure.Persistence.Repositories;
 
@@ -33,5 +34,38 @@ public class PermissionsRepository : IPermissionsRepository
         {
             throw new NoRowsAffectedException("Role permission not created");
         }
+    }
+
+    public async Task<List<RolePermissionEntry>?> GetUserPermissionsAsync(string identityId, string userType)
+    {
+        var permissions = new List<RolePermissionEntry>();
+        var rolePermissionsResult = new List<RolePermission>();
+
+        if (userType == "faculty")
+        {
+            rolePermissionsResult = await (from f in _context.Faculties
+                join fr in _context.FacultyRoles on f.FacultyId equals fr.FacultyId into facultyRoles
+                from fr in facultyRoles.DefaultIfEmpty()
+                join rp in _context.RolePermissions on fr.RoleId equals rp.RoleId into rolePermissions
+                from rp in rolePermissions.DefaultIfEmpty()
+                where f.IdentityId == identityId
+                select rp).ToListAsync();
+        }
+
+        foreach (var permission in rolePermissionsResult)
+        {
+            var rolePermissionEntry = new RolePermissionEntry
+            {
+                Id = permission.Id,
+                RoleId = permission.RoleId,
+                PermissionName = permission.PermissionName,
+                Create = permission.Create,
+                Delete = permission.Delete,
+                Update = permission.Update
+            };
+            permissions.Add(rolePermissionEntry);
+        }
+        
+        return permissions;
     }
 }
