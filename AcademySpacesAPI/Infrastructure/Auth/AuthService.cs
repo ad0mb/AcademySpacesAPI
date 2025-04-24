@@ -1,16 +1,16 @@
 ﻿using System.Security.Claims;
 using System.Text.Json;
-using AcademySpacesAPI.Data;
+using AcademySpacesAPI.ApplicationCore.Interfaces.Adapters;
 using FirebaseAdmin.Auth;
 
-namespace AcademySpacesAPI.Infrastructure.Firebase;
+namespace AcademySpacesAPI.Infrastructure.Auth;
 
-public class FirebaseAuthService
+public class AuthService : IAuthService
 {
     private readonly FirebaseAuth _firebaseAuth;
-    private readonly PermissionsRepo _permissionsRepo;
+    private readonly IPermissionsRepository _permissionsRepo;
 
-    public FirebaseAuthService(FirebaseAuth firebaseAuth, PermissionsRepo permissionsRepo)
+    public AuthService(FirebaseAuth firebaseAuth, IPermissionsRepository permissionsRepo)
     {
         _firebaseAuth = firebaseAuth;
         _permissionsRepo = permissionsRepo;
@@ -21,8 +21,6 @@ public class FirebaseAuthService
         ClaimsIdentity identity;
         
         var decodedToken = await _firebaseAuth.VerifyIdTokenAsync(idToken); //Throws FirebaseAuthException if token is invalid
-        
-        // Console.WriteLine(decodedToken.Uid);
 
         var claims = new List<Claim>
         { 

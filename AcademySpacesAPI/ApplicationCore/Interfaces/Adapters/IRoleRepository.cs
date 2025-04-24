@@ -1,5 +1,4 @@
 ﻿using AcademySpacesAPI.ApplicationCore.DomainEntities;
-using AcademySpacesAPI.Entities;
 
 namespace AcademySpacesAPI.ApplicationCore.Interfaces.Adapters;
 

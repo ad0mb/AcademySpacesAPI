@@ -1,8 +1,8 @@
 ﻿using AcademySpacesAPI.ApplicationCore.DomainEntities;
 using AcademySpacesAPI.ApplicationCore.Interfaces.Adapters;
-using AcademySpacesAPI.Context;
-using AcademySpacesAPI.Entities;
 using AcademySpacesAPI.Exceptions;
+using AcademySpacesAPI.Infrastructure.Persistence.Context;
+using AcademySpacesAPI.Infrastructure.Persistence.Entities;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AcademySpacesAPI.Infrastructure.Persistence.Repositories;

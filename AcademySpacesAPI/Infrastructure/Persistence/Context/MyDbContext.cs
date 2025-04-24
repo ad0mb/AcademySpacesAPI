@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using AcademySpacesAPI.Entities;
+using AcademySpacesAPI.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
-namespace AcademySpacesAPI.Context;
+namespace AcademySpacesAPI.Infrastructure.Persistence.Context;
 
 public partial class MyDbContext : DbContext
 {
