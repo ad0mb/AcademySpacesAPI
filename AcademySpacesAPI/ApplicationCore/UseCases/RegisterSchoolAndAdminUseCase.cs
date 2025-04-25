@@ -17,7 +17,8 @@ public class RegisterSchoolAndAdminUseCase : IRegisterSchoolAndAdminUseCase
         _facultyRepository = facultyRepository;
     }
 
-    //TODO: Handle exception and return exception meant for api controllers
+    
+    //TODO: Handle exception and delete faculty user from firebase if school creation fails or faculty creation fails
     public async Task CreateSchoolAndAdminAsync(RegisterSchoolRequest request)
     {
         var ids = await _schoolRepository.CreateSchoolAsync(new CreateSchoolEntry

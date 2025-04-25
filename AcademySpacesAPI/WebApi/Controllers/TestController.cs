@@ -9,12 +9,12 @@ namespace AcademySpacesAPI.WebApi.Controllers
     [ApiController]
     [Authorize(AuthenticationSchemes = "FirebaseAuthScheme")]
     [Route("api/user")]
-    public class UserController : ControllerBase
+    public class TestController : ControllerBase
     {
         private readonly AuthService _authService;
         private readonly IFacultyRepository _facultyRepository;
 
-        public UserController(AuthService authService, IFacultyRepository facultyRepository)
+        public TestController(AuthService authService, IFacultyRepository facultyRepository)
         {
             _authService = authService;
             _facultyRepository = facultyRepository;

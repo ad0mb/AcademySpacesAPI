@@ -5,7 +5,7 @@ using FirebaseAdmin.Auth;
 
 namespace AcademySpacesAPI.Infrastructure.Auth;
 
-public class AuthService : IAuthService
+public class AuthService
 {
     private readonly FirebaseAuth _firebaseAuth;
     private readonly IPermissionsRepository _permissionsRepo;
