@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using System.Text.Encodings.Web;
 using AcademySpacesAPI.ApplicationCore.Interfaces.Adapters;
+using AcademySpacesAPI.Infrastructure.Auth;
 using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
@@ -9,9 +10,9 @@ namespace AcademySpacesAPI.WebApi.Authentication;
 
 public class DefaultAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
-    private readonly IAuthService _authService;
+    private readonly AuthService _authService;
 
-    public DefaultAuthenticationHandler(IAuthService authService,
+    public DefaultAuthenticationHandler(AuthService authService,
         IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder,
         ISystemClock clock) : base (options, logger, encoder, clock) //Base is the way to access the implemented classes constructor
     {

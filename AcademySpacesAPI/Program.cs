@@ -72,7 +72,6 @@ builder.Services.AddSingleton(provider =>
 //Singletons for Firebase Admin SDK
 
 //Scoped
-builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IFacultyRepository, FacultyRepository>();
 builder.Services.AddScoped<ISchoolRepository, SchoolRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();

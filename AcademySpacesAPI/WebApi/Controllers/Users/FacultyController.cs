@@ -1,6 +1,8 @@
 ﻿using System.Security.Claims;
+using AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
 using AcademySpacesAPI.Infrastructure.Auth;
 using AcademySpacesAPI.WebApi.Attributes;
+using AcademySpacesAPI.WebApi.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,16 +15,18 @@ public class FacultyController : ControllerBase
 {
 
     private readonly AuthService _authService;
+    private readonly IRegisterFacultyUseCase _registerFacultyUseCase;
 
-    public FacultyController(AuthService authService)
+    public FacultyController(IRegisterFacultyUseCase registerFacultyUseCase)
     {
-        _authService = authService;
+        _registerFacultyUseCase = registerFacultyUseCase;
     }
 
     [HasPermission("Faculty:create")]
     [HttpPost("invite-faculty")]
-    public async Task<IActionResult> InviteFaculty(string request)
+    public async Task<IActionResult> InviteFaculty(InviteFacultyRequest request)
     {
+        throw new NotImplementedException();
         
         return Ok(new
         {
