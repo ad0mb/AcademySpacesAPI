@@ -8,6 +8,7 @@ using AcademySpacesAPI.Infrastructure.Email;
 using AcademySpacesAPI.Infrastructure.Persistence.Context;
 using AcademySpacesAPI.Infrastructure.Persistence.Repositories;
 using AcademySpacesAPI.WebApi.Authentication;
+using EntityFramework.Exceptions.MySQL.Pomelo;
 using FirebaseAdmin;
 using FirebaseAdmin.Auth;
 using Google.Apis.Auth.OAuth2;
@@ -80,13 +81,14 @@ builder.Services.AddScoped<IRegisterSchoolAndAdminUseCase, RegisterSchoolAndAdmi
 //Scoped
 
 //Transient
-builder.Services.AddTransient<EmailService>();
+builder.Services.AddTransient<IEmailService, EmailService>();
 //Transient
 
 //Add DbContext
 var connectonString = builder.Configuration.GetConnectionString("StagingConnection");
 builder.Services.AddDbContext<MyDbContext>(options =>
-    options.UseMySql(ServerVersion.AutoDetect(connectonString)));
+    options.UseMySql(ServerVersion.AutoDetect(connectonString)).UseExceptionProcessor()
+);
 
 //TODO: Check bearers and create separate registration key for each one
 builder.Services.AddAuthentication(options =>

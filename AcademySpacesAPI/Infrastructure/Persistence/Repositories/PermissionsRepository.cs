@@ -19,53 +19,67 @@ public class PermissionsRepository : IPermissionsRepository
 
     public async Task CreateRolePermissionAsync(CreateRolePermissionEntry request)
     {
-        var rolePermissions = new RolePermission
+        try
         {
-            RoleId = request.RoleId,
-            PermissionName = request.PermissionName,
-            Create = request.Create,
-            Delete = request.Delete,
-            Update = request.Update,
-        };
-        
-        await _context.RolePermissions.AddAsync(rolePermissions);
-        var result = await _context.SaveChangesAsync();
-        if (result == 0)
+            var rolePermissions = new RolePermission
+            {
+                RoleId = request.RoleId,
+                PermissionName = request.PermissionName,
+                Create = request.Create,
+                Delete = request.Delete,
+                Update = request.Update,
+            };
+
+            await _context.RolePermissions.AddAsync(rolePermissions);
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                throw new NoRowsAffectedException("Role permission not created");
+            }
+        } 
+        catch (DbUpdateException ex)
         {
-            throw new NoRowsAffectedException("Role permission not created");
+            throw new DbException("Issue adding role permission to the database", ex);
         }
     }
 
     public async Task<List<RolePermissionEntry>?> GetUserPermissionsAsync(string identityId, string userType)
     {
-        var permissions = new List<RolePermissionEntry>();
-        var rolePermissionsResult = new List<RolePermission>();
-
-        if (userType == "faculty")
+        try
         {
-            rolePermissionsResult = await (from f in _context.Faculties
-                join fr in _context.FacultyRoles on f.FacultyId equals fr.FacultyId into facultyRoles
-                from fr in facultyRoles.DefaultIfEmpty()
-                join rp in _context.RolePermissions on fr.RoleId equals rp.RoleId into rolePermissions
-                from rp in rolePermissions.DefaultIfEmpty()
-                where f.IdentityId == identityId
-                select rp).ToListAsync();
-        }
+            var permissions = new List<RolePermissionEntry>();
+            var rolePermissionsResult = new List<RolePermission>();
 
-        foreach (var permission in rolePermissionsResult)
-        {
-            var rolePermissionEntry = new RolePermissionEntry
+            if (userType == "faculty")
             {
-                Id = permission.Id,
-                RoleId = permission.RoleId,
-                PermissionName = permission.PermissionName,
-                Create = permission.Create,
-                Delete = permission.Delete,
-                Update = permission.Update
-            };
-            permissions.Add(rolePermissionEntry);
+                rolePermissionsResult = await (from f in _context.Faculties
+                    join fr in _context.FacultyRoles on f.FacultyId equals fr.FacultyId into facultyRoles
+                    from fr in facultyRoles.DefaultIfEmpty()
+                    join rp in _context.RolePermissions on fr.RoleId equals rp.RoleId into rolePermissions
+                    from rp in rolePermissions.DefaultIfEmpty()
+                    where f.IdentityId == identityId
+                    select rp).ToListAsync();
+            }
+
+            foreach (var permission in rolePermissionsResult)
+            {
+                var rolePermissionEntry = new RolePermissionEntry
+                {
+                    Id = permission.Id,
+                    RoleId = permission.RoleId,
+                    PermissionName = permission.PermissionName,
+                    Create = permission.Create,
+                    Delete = permission.Delete,
+                    Update = permission.Update
+                };
+                permissions.Add(rolePermissionEntry);
+            }
+
+            return permissions;
+        } 
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue retrieving role permissions from the database", ex);
         }
-        
-        return permissions;
     }
 }
