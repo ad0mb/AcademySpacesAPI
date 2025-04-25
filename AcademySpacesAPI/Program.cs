@@ -78,6 +78,10 @@ builder.Services.AddScoped<ISchoolRepository, SchoolRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IPermissionsRepository, PermissionsRepository>();
 builder.Services.AddScoped<IRegisterSchoolAndAdminUseCase, RegisterSchoolAndAdminUseCase>();
+builder.Services.AddScoped<ICreateParentUseCase, CreateParentUseCase>();
+builder.Services.AddScoped<ICreateStudentUseCase, CreateStudentUseCase>();
+builder.Services.AddScoped<IRegisterFacultyUseCase, RegisterFacultyUseCase>();
+builder.Services.AddScoped<IRegisterClassroomUseCase, RegisterClassroomUseCase>();
 //Scoped
 
 //Transient
