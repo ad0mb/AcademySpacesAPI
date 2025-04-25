@@ -3,6 +3,8 @@ using AcademySpacesAPI.ApplicationCore.Interfaces.Adapters;
 using AcademySpacesAPI.Exceptions;
 using AcademySpacesAPI.Infrastructure.Persistence.Context;
 using AcademySpacesAPI.Infrastructure.Persistence.Entities;
+using EntityFramework.Exceptions.Common;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AcademySpacesAPI.Infrastructure.Persistence.Repositories;
@@ -20,72 +22,94 @@ public class FacultyRepository : IFacultyRepository
     //TODO: Exception Handling (use result), return exception meant for core
     public async Task<int> CreateFacultyAsync(CreateFacultyEntry request)
     {
-        var faculty = new Faculty
+        try
         {
-            SchoolId = request.SchoolId,
-            IdentityId = request.IdentityId,
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            PhoneNumber = request.PhoneNumber,
-            Email = request.Email,
-        };
-        
-        await _context.Faculties.AddAsync(faculty);
-        var result = await _context.SaveChangesAsync();
-        if (result == 0)
-        {
-            throw new NoRowsAffectedException("Faculty not created");
+            var faculty = new Faculty
+            {
+                SchoolId = request.SchoolId,
+                IdentityId = request.IdentityId,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                PhoneNumber = request.PhoneNumber,
+                Email = request.Email,
+            };
+
+            await _context.Faculties.AddAsync(faculty);
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                throw new NoRowsAffectedException("Faculty not created");
+            }
+
+            return faculty.FacultyId;
         }
-        return faculty.FacultyId;
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue adding faculty to the database", ex);
+        }
     }
 
     public async Task<int> CreateFacultyAsync(CreateFacultyEntry request, int[] roleIds)
     {
-        var faculty = new Faculty
+        try
         {
-            SchoolId = request.SchoolId,
-            IdentityId = request.IdentityId,
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            PhoneNumber = request.PhoneNumber,
-            Email = request.Email,
-        };
-        
-        await _context.Faculties.AddAsync(faculty);
-        var result = await _context.SaveChangesAsync();
-        if (result == 0)
-        {
-            throw new NoRowsAffectedException("Faculty not created");
-        }
-
-        if (!roleIds.IsNullOrEmpty())
-        {
-            foreach (var roleId in roleIds)
+            var faculty = new Faculty
             {
-                await AddRoleToFacultyAsync(new CreateFacultyRoleEntry
-                {
-                    FacultyId = faculty.FacultyId,
-                    RoleId = roleId
-                });
-            }
-        }
+                SchoolId = request.SchoolId,
+                IdentityId = request.IdentityId,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                PhoneNumber = request.PhoneNumber,
+                Email = request.Email,
+            };
 
-        return faculty.FacultyId;
+            await _context.Faculties.AddAsync(faculty);
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                throw new NoRowsAffectedException("Faculty not created");
+            }
+
+            if (!roleIds.IsNullOrEmpty())
+            {
+                foreach (var roleId in roleIds)
+                {
+                    await AddRoleToFacultyAsync(new CreateFacultyRoleEntry
+                    {
+                        FacultyId = faculty.FacultyId,
+                        RoleId = roleId
+                    });
+                }
+            }
+
+            return faculty.FacultyId;
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue adding faculty to the database", ex);
+        }
     }
 
     public async Task AddRoleToFacultyAsync(CreateFacultyRoleEntry request)
     {
-        var facultyRole = new FacultyRole
+        try
         {
-            FacultyId = request.FacultyId,
-            RoleId = request.RoleId
-        };
-        
-        await _context.FacultyRoles.AddAsync(facultyRole);
-        var result = await _context.SaveChangesAsync();
-        if (result == 0)
+            var facultyRole = new FacultyRole
+            {
+                FacultyId = request.FacultyId,
+                RoleId = request.RoleId
+            };
+
+            await _context.FacultyRoles.AddAsync(facultyRole);
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                throw new NoRowsAffectedException("Faculty role not created");
+            }
+        }
+        catch (DbUpdateException ex)
         {
-            throw new NoRowsAffectedException("Faculty role not created");
+            throw new DbException("Issue adding faculty role to the database", ex);
         }
     }
 }
