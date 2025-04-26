@@ -3,9 +3,9 @@ using AcademySpacesAPI.WebApi.DTOs;
 
 namespace AcademySpacesAPI.ApplicationCore.UseCases;
 
-public class RegisterClassroomUseCase : IRegisterClassroomUseCase
+public class CreateClassroomUseCase : ICreateClassroomUseCase
 {
-    public RegisterClassroomUseCase()
+    public CreateClassroomUseCase()
     {
 
     }

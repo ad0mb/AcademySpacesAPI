@@ -112,4 +112,38 @@ public class FacultyRepository : IFacultyRepository
             throw new DbException("Issue adding faculty role to the database", ex);
         }
     }
+
+    public async Task<FacultyEntry?> GetFacultyByIdentityIdAsync(string identityId)
+    {
+        try
+        {
+            var faculty = await (from f in _context.Faculties
+                where f.IdentityId == identityId
+                select f).FirstOrDefaultAsync();
+
+            if (faculty == null)
+            {
+                return null;
+            }
+            
+            var facultyEntry = new FacultyEntry
+            {
+                FacultyId = faculty.FacultyId,
+                SchoolId = faculty.SchoolId,
+                IdentityId = faculty.IdentityId,
+                FirstName = faculty.FirstName,
+                LastName = faculty.LastName,
+                PhoneNumber = faculty.PhoneNumber,
+                Email = faculty.Email,
+                DateCreated = faculty.DateCreated,
+                DateUpdated = faculty.DateModified
+            };
+
+            return facultyEntry;
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue retrieving faculty from the database", ex);
+        }
+    }
 }

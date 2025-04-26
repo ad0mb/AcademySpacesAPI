@@ -2,7 +2,7 @@
 
 namespace AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
 
-public interface IRegisterClassroomUseCase
+public interface ICreateClassroomUseCase
 {
     Task CreateClassroomAsync(CreateClassroomRequest request);
 }
