@@ -80,7 +80,7 @@ builder.Services.AddScoped<IRegisterSchoolAndAdminUseCase, RegisterSchoolAndAdmi
 builder.Services.AddScoped<ICreateParentUseCase, CreateParentUseCase>();
 builder.Services.AddScoped<ICreateStudentUseCase, CreateStudentUseCase>();
 builder.Services.AddScoped<IRegisterFacultyUseCase, RegisterFacultyUseCase>();
-builder.Services.AddScoped<IRegisterClassroomUseCase, RegisterClassroomUseCase>();
+builder.Services.AddScoped<ICreateClassroomUseCase, CreateClassroomUseCase>();
 //Scoped
 
 //Transient
@@ -142,6 +142,7 @@ builder.Services.AddAuthentication(options =>
         // };
     });
 
+builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
