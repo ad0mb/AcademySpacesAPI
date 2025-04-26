@@ -4,6 +4,7 @@ using AcademySpacesAPI.Exceptions;
 using AcademySpacesAPI.Infrastructure.Persistence.Context;
 using AcademySpacesAPI.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace AcademySpacesAPI.Infrastructure.Persistence.Repositories;
 
@@ -43,7 +44,7 @@ public class PermissionsRepository : IPermissionsRepository
         }
     }
 
-    public async Task<List<RolePermissionEntry>?> GetUserPermissionsAsync(string identityId, string userType)
+    public async Task<List<RolePermissionEntry>?> GetUserPermissionsByIdentityIdAsync(string identityId, string userType)
     {
         try
         {
@@ -59,6 +60,11 @@ public class PermissionsRepository : IPermissionsRepository
                     from rp in rolePermissions.DefaultIfEmpty()
                     where f.IdentityId == identityId
                     select rp).ToListAsync();
+            }
+            
+            if (permissions == null || permissions.Count < 1)
+            {
+                return null;
             }
 
             foreach (var permission in rolePermissionsResult)

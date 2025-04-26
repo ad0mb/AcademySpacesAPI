@@ -60,20 +60,17 @@ public class RoleRepository : IRoleRepository
             {
                 throw new NoRowsAffectedException("No rows were affected when creating the role.");
             }
-
-            if (!permissions.IsNullOrEmpty())
+            
+            foreach (var permission in permissions)
             {
-                foreach (var permission in permissions)
+                await _permissionsRepository.CreateRolePermissionAsync(new CreateRolePermissionEntry
                 {
-                    await _permissionsRepository.CreateRolePermissionAsync(new CreateRolePermissionEntry
-                    {
-                        RoleId = role.RoleId,
-                        PermissionName = permission.Split(":")[0],
-                        Create = permission.Split(":")[1].ToCharArray()[0] == '1',
-                        Delete = permission.Split(":")[1].ToCharArray()[1] == '1',
-                        Update = permission.Split(":")[1].ToCharArray()[2] == '1',
-                    });
-                }
+                    RoleId = role.RoleId,
+                    PermissionName = permission.Split(":")[0],
+                    Create = permission.Split(":")[1].ToCharArray()[0] == '1',
+                    Delete = permission.Split(":")[1].ToCharArray()[1] == '1',
+                    Update = permission.Split(":")[1].ToCharArray()[2] == '1',
+                });
             }
 
             return role.RoleId;
