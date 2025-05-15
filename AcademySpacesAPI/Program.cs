@@ -1,16 +1,21 @@
 using System.Text;
-using AcademySpacesAPI.Authentication;
-using AcademySpacesAPI.Data.Auth;
-using AcademySpacesAPI.Middleware;
-using AcademySpacesAPI.Models.Configs;
-using AcademySpacesAPI.Services.Config.Firebase.Admin;
-using AcademySpacesAPI.Services.Email;
-using AcademySpacesAPI.Services.Firebase.Auth;
+using AcademySpacesAPI;
+using AcademySpacesAPI.ApplicationCore.Interfaces.Adapters;
+using AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
+using AcademySpacesAPI.ApplicationCore.UseCases;
+using AcademySpacesAPI.Infrastructure.Auth;
+using AcademySpacesAPI.Infrastructure.Email;
+using AcademySpacesAPI.Infrastructure.Persistence.Context;
+using AcademySpacesAPI.Infrastructure.Persistence.Repositories;
+using AcademySpacesAPI.WebApi.Authentication;
+using EntityFramework.Exceptions.MySQL.Pomelo;
 using FirebaseAdmin;
 using FirebaseAdmin.Auth;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -67,14 +72,28 @@ builder.Services.AddSingleton(provider =>
 //Singletons for Firebase Admin SDK
 
 //Scoped
-builder.Services.AddScoped<FirebaseAuthService>();
-builder.Services.AddScoped<HandlerRepo>();
+builder.Services.AddScoped<IFacultyRepository, FacultyRepository>();
+builder.Services.AddScoped<ISchoolRepository, SchoolRepository>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IPermissionsRepository, PermissionsRepository>();
+builder.Services.AddScoped<IRegisterSchoolAndAdminUseCase, RegisterSchoolAndAdminUseCase>();
+builder.Services.AddScoped<ICreateParentUseCase, CreateParentUseCase>();
+builder.Services.AddScoped<ICreateStudentUseCase, CreateStudentUseCase>();
+builder.Services.AddScoped<IRegisterFacultyUseCase, RegisterFacultyUseCase>();
+builder.Services.AddScoped<ICreateClassroomUseCase, CreateClassroomUseCase>();
 //Scoped
 
 //Transient
-builder.Services.AddTransient<EmailService>();
+builder.Services.AddTransient<IEmailService, EmailService>();
 //Transient
 
+//Add DbContext
+var connectonString = builder.Configuration.GetConnectionString("StagingConnection");
+builder.Services.AddDbContext<MyDbContext>(options =>
+    options.UseMySql(ServerVersion.AutoDetect(connectonString)).UseExceptionProcessor()
+);
+
+//TODO: Check bearers and create separate registration key for each one
 builder.Services.AddAuthentication(options =>
     {
         // options.DefaultScheme = "FirebaseAuthScheme";
@@ -99,8 +118,31 @@ builder.Services.AddAuthentication(options =>
             ValidateIssuerSigningKey = true,
             ValidateLifetime = true,
         };
+    })
+    .AddJwtBearer("UserRegistrationToken", options =>
+    {
+        options.RequireHttpsMetadata = builder.Environment.IsProduction();
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidIssuer = builder.Configuration["JwtBearer:Issuer"],
+            ValidateIssuer = true,
+            ValidAudience = builder.Configuration["JwtBearer:Audience"],
+            ValidateAudience = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtBearer:UserRegistration:Key"])),
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
+        };
+        // options.Events = new JwtBearerEvents
+        // {
+        //     OnTokenValidated = new JwtBearerEvents
+        //     {
+        //         
+        //     }
+        // };
     });
 
+builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -114,7 +156,6 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
-// app.UseMiddleware<Middleware>();
 app.MapControllers();
 
 app.Run();
