@@ -1,5 +1,5 @@
 ﻿using AcademySpacesAPI.WebApi.Attributes;
-using AcademySpacesAPI.WebApi.DTOs;
+using AcademySpacesAPI.WebApi.DTOs.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

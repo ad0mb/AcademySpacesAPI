@@ -1,5 +1,6 @@
 ﻿using AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
 using AcademySpacesAPI.WebApi.DTOs;
+using AcademySpacesAPI.WebApi.DTOs.Requests;
 
 namespace AcademySpacesAPI.ApplicationCore.UseCases;
 

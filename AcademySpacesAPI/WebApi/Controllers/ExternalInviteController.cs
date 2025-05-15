@@ -1,6 +1,6 @@
 ﻿using AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
 using AcademySpacesAPI.Exceptions;
-using AcademySpacesAPI.WebApi.DTOs;
+using AcademySpacesAPI.WebApi.DTOs.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;

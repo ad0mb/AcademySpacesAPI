@@ -1,4 +1,4 @@
-﻿using AcademySpacesAPI.WebApi.DTOs;
+﻿using AcademySpacesAPI.WebApi.DTOs.Requests;
 
 namespace AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
 
