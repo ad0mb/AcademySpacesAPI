@@ -20,6 +20,17 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+});
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddControllers();
@@ -72,15 +83,21 @@ builder.Services.AddSingleton(provider =>
 //Singletons for Firebase Admin SDK
 
 //Scoped
+builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<IFacultyRepository, FacultyRepository>();
+builder.Services.AddScoped<IParentRepository, ParentRepository>();
 builder.Services.AddScoped<ISchoolRepository, SchoolRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IPermissionsRepository, PermissionsRepository>();
+builder.Services.AddScoped<IWebPreferencesRepository, WebPreferencesRepository>();
+
 builder.Services.AddScoped<IRegisterSchoolAndAdminUseCase, RegisterSchoolAndAdminUseCase>();
 builder.Services.AddScoped<ICreateParentUseCase, CreateParentUseCase>();
 builder.Services.AddScoped<ICreateStudentUseCase, CreateStudentUseCase>();
 builder.Services.AddScoped<IRegisterFacultyUseCase, RegisterFacultyUseCase>();
 builder.Services.AddScoped<ICreateClassroomUseCase, CreateClassroomUseCase>();
+builder.Services.AddScoped<IGetUserPreferencesUseCase, GetUserPreferencesUseCase>();
+builder.Services.AddScoped<IPostUserPreferencesUseCase, PostUserPreferencesUseCase>();
 //Scoped
 
 //Transient
@@ -138,12 +155,14 @@ builder.Services.AddAuthentication(options =>
         //     OnTokenValidated = new JwtBearerEvents
         //     {
         //         
-        //     }
+        //     } 
         // };
     });
 
 builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
+
+// app.UseCors("AllowAllOrigins");
 
 if (app.Environment.IsDevelopment())
 {

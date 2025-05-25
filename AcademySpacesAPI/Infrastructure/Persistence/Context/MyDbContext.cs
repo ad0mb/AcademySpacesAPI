@@ -17,6 +17,8 @@ public partial class MyDbContext : DbContext
     {
     }
 
+    public virtual DbSet<Announcment> Announcments { get; set; }
+
     public virtual DbSet<Classroom> Classrooms { get; set; }
 
     public virtual DbSet<Faculty> Faculties { get; set; }
@@ -35,6 +37,8 @@ public partial class MyDbContext : DbContext
 
     public virtual DbSet<Student> Students { get; set; }
 
+    public virtual DbSet<UserAppPeference> UserAppPeferences { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseMySql("server=mysql6008.site4now.net;database=db_ab66bb_staging;uid=ab66bb_staging;pwd=PO6!^DDF67y", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.35-mysql"));
@@ -44,6 +48,20 @@ public partial class MyDbContext : DbContext
         modelBuilder
             .UseCollation("utf8mb4_0900_ai_ci")
             .HasCharSet("utf8mb4");
+
+        modelBuilder.Entity<Announcment>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("announcments");
+
+            entity.Property(e => e.CreatedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("created_At");
+            entity.Property(e => e.Message).HasColumnType("text");
+            entity.Property(e => e.RecieverId).HasColumnName("reciever_id");
+            entity.Property(e => e.SenderId).HasColumnName("sender_Id");
+        });
 
         modelBuilder.Entity<Classroom>(entity =>
         {
@@ -370,6 +388,32 @@ public partial class MyDbContext : DbContext
                 .HasForeignKey(d => d.SchoolId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("students_schools_school_id_fk");
+        });
+
+        modelBuilder.Entity<UserAppPeference>(entity =>
+        {
+            entity.HasKey(e => e.IdentityId).HasName("PRIMARY");
+
+            entity.ToTable("user_app_peferences");
+
+            entity.Property(e => e.IdentityId).HasColumnName("identity_id");
+            entity.Property(e => e.DateCreated)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("date_created");
+            entity.Property(e => e.DateModified)
+                .ValueGeneratedOnAddOrUpdate()
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("date_modified");
+            entity.Property(e => e.Locale)
+                .HasMaxLength(50)
+                .HasDefaultValueSql("'en'")
+                .HasColumnName("locale");
+            entity.Property(e => e.PageBrightness)
+                .HasMaxLength(50)
+                .HasDefaultValueSql("'system'")
+                .HasColumnName("page_brightness");
         });
 
         OnModelCreatingPartial(modelBuilder);

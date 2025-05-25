@@ -9,12 +9,12 @@ namespace AcademySpacesAPI.WebApi.Controllers;
 
 [ApiController]
 [Route("api/onboarding/invite")]
-public class InviteController : ControllerBase
+public class ExternalInviteController : ControllerBase
 {
     
     private readonly IRegisterSchoolAndAdminUseCase _registerSchoolAndAdminUseCase;
 
-    public InviteController(IRegisterSchoolAndAdminUseCase registerSchoolAndAdminUseCase)
+    public ExternalInviteController(IRegisterSchoolAndAdminUseCase registerSchoolAndAdminUseCase)
     {
         _registerSchoolAndAdminUseCase = registerSchoolAndAdminUseCase;
     }
@@ -27,7 +27,20 @@ public class InviteController : ControllerBase
     [HttpPost("register-school")]
     public async Task<IActionResult> RegisterSchoolAndAdmin(RegisterSchoolRequest request)
     {
-        await _registerSchoolAndAdminUseCase.CreateSchoolAndAdminAsync(request);
+        try
+        {
+            await _registerSchoolAndAdminUseCase.CreateSchoolAndAdminAsync(request);
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
 
         return Ok(new
         {
