@@ -16,7 +16,7 @@ public class ClassroomController : ControllerBase
     }
     
     [HasPermission("Classroom:create")]
-    [HttpGet("create-classroom")]
+    [HttpPost("create-classroom")]
     public IActionResult CreateClassroom(CreateClassroomRequest request)
     {
         throw new NotImplementedException();

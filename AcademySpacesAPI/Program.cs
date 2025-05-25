@@ -20,6 +20,17 @@ using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+});
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddControllers();
@@ -144,12 +155,14 @@ builder.Services.AddAuthentication(options =>
         //     OnTokenValidated = new JwtBearerEvents
         //     {
         //         
-        //     }
+        //     } 
         // };
     });
 
 builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
+
+// app.UseCors("AllowAllOrigins");
 
 if (app.Environment.IsDevelopment())
 {
