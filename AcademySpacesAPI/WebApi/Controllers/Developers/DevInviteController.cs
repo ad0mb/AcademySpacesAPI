@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using AcademySpacesAPI.ApplicationCore.Interfaces.Adapters;
 using AcademySpacesAPI.Infrastructure.Email;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -13,10 +14,10 @@ public class DevInviteController : ControllerBase
 {
     
     private readonly IConfiguration _configuration;
-    private readonly EmailService _emailService;
+    private readonly IEmailService _emailService;
 
     //TODO: Add special auth scheme for dev collection of endpoints
-    public DevInviteController(IConfiguration configuration, EmailService emailService)
+    public DevInviteController(IConfiguration configuration, IEmailService emailService)
     {
         _configuration = configuration;
         _emailService = emailService;
@@ -40,7 +41,7 @@ public class DevInviteController : ControllerBase
 
         var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
         
-        _emailService.SendAdminSchoolRegistration(email, tokenString);
+        _emailService.SendSchoolRegistrationEmailAsync(email, tokenString);
         
         return Ok(new
         {

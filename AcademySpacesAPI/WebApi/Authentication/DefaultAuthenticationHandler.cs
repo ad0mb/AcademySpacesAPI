@@ -5,12 +5,15 @@ using AcademySpacesAPI.Infrastructure.Auth;
 using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
 
 namespace AcademySpacesAPI.WebApi.Authentication;
 
 public class DefaultAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     private readonly AuthService _authService;
+    private string errorType = "";
 
     public DefaultAuthenticationHandler(AuthService authService,
         IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder,
@@ -29,6 +32,7 @@ public class DefaultAuthenticationHandler : AuthenticationHandler<Authentication
         
         if (idToken == null)
         {
+            errorType = "id_token_invalid";
             return AuthenticateResult.Fail("Id token is missing");
         }
 
@@ -41,15 +45,20 @@ public class DefaultAuthenticationHandler : AuthenticationHandler<Authentication
         }
         catch (FirebaseAuthException ex)
         {
+            errorType = "id_token_invalid";
             return AuthenticateResult.Fail(ex.Message);
         }
         catch (InvalidOperationException ex)
         {
+            //TODO: LOG IT
+            errorType = "claims_invalid";
             return AuthenticateResult.Fail(ex.Message);
         }
         catch (Exception ex)
         {
+            //TODO: LOG IT
             //TODO: Handle AuthAccess exception
+            errorType = "unplanned_error";
             return AuthenticateResult.Fail("Unplanned error occured: " + ex.Message);
         }
 
@@ -61,7 +70,9 @@ public class DefaultAuthenticationHandler : AuthenticationHandler<Authentication
     protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
     {
         Context.Response.StatusCode = 401;
-        await Context.Response.WriteAsync("Unauthenticated");
+        Context.Response.Headers.Add("Unauthorized-type", (StringValues) errorType);
+        // Context.Response.Headers.Add("Access-Control-Expose-Headers", (StringValues) "Unauthorized-type");
+        await Context.Response.WriteAsync("Unauthorized");
         await Task.CompletedTask;
     }
 
