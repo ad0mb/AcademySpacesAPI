@@ -74,6 +74,7 @@ builder.Services.AddSingleton(provider =>
 //Scoped
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<IFacultyRepository, FacultyRepository>();
+builder.Services.AddScoped<IParentRepository, ParentRepository>();
 builder.Services.AddScoped<ISchoolRepository, SchoolRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IPermissionsRepository, PermissionsRepository>();
