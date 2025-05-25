@@ -5,5 +5,5 @@ namespace AcademySpacesAPI.ApplicationCore.Interfaces.Adapters;
 public interface IPermissionsRepository
 {
     Task CreateRolePermissionAsync(CreateRolePermissionEntry rolePermissions);
-    Task<List<RolePermissionEntry>?> GetUserPermissionsAsync(string identityId, string userType);
+    Task<List<RolePermissionEntry>?> GetUserPermissionsByIdentityIdAsync(string identityId, string userType);
 }
