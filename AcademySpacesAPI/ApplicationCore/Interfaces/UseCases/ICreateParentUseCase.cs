@@ -5,5 +5,5 @@ namespace AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
 
 public interface ICreateParentUseCase
 {
-    Task CreateParentAsync(ParentEntry request);
+    Task CreateParentAsync(ParentEntry request, int schoolId);
 }

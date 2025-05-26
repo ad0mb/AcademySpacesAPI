@@ -11,18 +11,15 @@ namespace AcademySpacesAPI.ApplicationCore.UseCases;
 public class PostUserPreferencesUseCase : IPostUserPreferencesUseCase
 {
     
-    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IWebPreferencesRepository _webPreferencesRepository;
     
-    public PostUserPreferencesUseCase(IHttpContextAccessor httpContextAccessor, IWebPreferencesRepository webPreferencesRepository)
+    public PostUserPreferencesUseCase(IWebPreferencesRepository webPreferencesRepository)
     {
-        _httpContextAccessor = httpContextAccessor;
         _webPreferencesRepository = webPreferencesRepository;
     }
 
-    public async Task<WebPreferencesEntry> PostUserPreferencesAsync(WebPreferencesEntry request)
+    public async Task<WebPreferencesEntry> PostUserPreferencesAsync(WebPreferencesEntry request, string identityId)
     {
-        var identityId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
         WebPreferencesEntry userPreferences;
         
         request.IdentityId = identityId;
