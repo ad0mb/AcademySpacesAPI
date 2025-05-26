@@ -1,5 +1,8 @@
-﻿using Infrastructure.Infrastructure.Persistence.Entities;
+﻿using System;
+using System.Collections.Generic;
+using Infrastructure.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
+using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
 namespace Infrastructure.Infrastructure.Persistence.Context;
 

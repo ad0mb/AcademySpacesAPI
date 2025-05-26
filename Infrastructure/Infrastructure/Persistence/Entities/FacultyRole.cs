@@ -1,4 +1,7 @@
-﻿namespace Infrastructure.Infrastructure.Persistence.Entities;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Infrastructure.Infrastructure.Persistence.Entities;
 
 public partial class FacultyRole
 {
