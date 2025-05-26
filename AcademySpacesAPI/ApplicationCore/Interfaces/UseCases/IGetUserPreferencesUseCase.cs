@@ -6,5 +6,5 @@ namespace AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
 
 public interface IGetUserPreferencesUseCase
 {
-    Task<WebPreferencesEntry> GetUserPreferencesAsync();
+    Task<WebPreferencesEntry> GetUserPreferencesAsync(string identityId);
 }

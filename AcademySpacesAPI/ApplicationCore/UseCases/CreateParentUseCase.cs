@@ -11,19 +11,15 @@ public class CreateParentUseCase : ICreateParentUseCase
 {
     private readonly IParentRepository _parentRepository;
     private readonly IFacultyRepository _facultyRepository;
-    private readonly IHttpContextAccessor _httpContextAccessor;
     
-    public CreateParentUseCase(IParentRepository parentRepository, IFacultyRepository facultyRepository, IHttpContextAccessor httpContextAccessor)
+    public CreateParentUseCase(IParentRepository parentRepository, IFacultyRepository facultyRepository)
     {
         _parentRepository = parentRepository;
         _facultyRepository = facultyRepository;
-        _httpContextAccessor = httpContextAccessor;
     }
     
-    public async Task CreateParentAsync(ParentEntry request)
+    public async Task CreateParentAsync(ParentEntry request, int schoolId)
     {
-        var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
-
         request.SchoolId = schoolId;
         
         await _parentRepository.CreateParentAsync(request);
