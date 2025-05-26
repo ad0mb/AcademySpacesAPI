@@ -1,4 +1,5 @@
-﻿using AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
+﻿using AcademySpacesAPI.ApplicationCore.DomainEntities;
+using AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
 using AcademySpacesAPI.WebApi.Attributes;
 using AcademySpacesAPI.WebApi.DTOs.Requests;
 using Microsoft.AspNetCore.Authorization;
@@ -22,7 +23,13 @@ public class ParentController : ControllerBase
     [HttpPost("create-parent")]
     public async Task<IActionResult> CreateParent(CreateParentRequest request)
     {
-        await _createParentUseCase.CreateParentAsync(request);
+        await _createParentUseCase.CreateParentAsync(new ParentEntry
+        {
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            Phone = request.Phone,
+            Email = request.Email,
+        });
         
         return Ok(new
         {

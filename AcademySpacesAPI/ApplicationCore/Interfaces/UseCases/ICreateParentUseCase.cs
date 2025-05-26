@@ -1,8 +1,9 @@
-﻿using AcademySpacesAPI.WebApi.DTOs.Requests;
+﻿using AcademySpacesAPI.ApplicationCore.DomainEntities;
+using AcademySpacesAPI.WebApi.DTOs.Requests;
 
 namespace AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
 
 public interface ICreateParentUseCase
 {
-    Task CreateParentAsync(CreateParentRequest request);
+    Task CreateParentAsync(ParentEntry request);
 }

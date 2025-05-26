@@ -93,9 +93,6 @@ builder.Services.AddScoped<IWebPreferencesRepository, WebPreferencesRepository>(
 
 builder.Services.AddScoped<IRegisterSchoolAndAdminUseCase, RegisterSchoolAndAdminUseCase>();
 builder.Services.AddScoped<ICreateParentUseCase, CreateParentUseCase>();
-builder.Services.AddScoped<ICreateStudentUseCase, CreateStudentUseCase>();
-builder.Services.AddScoped<IRegisterFacultyUseCase, RegisterFacultyUseCase>();
-builder.Services.AddScoped<ICreateClassroomUseCase, CreateClassroomUseCase>();
 builder.Services.AddScoped<IGetUserPreferencesUseCase, GetUserPreferencesUseCase>();
 builder.Services.AddScoped<IPostUserPreferencesUseCase, PostUserPreferencesUseCase>();
 //Scoped

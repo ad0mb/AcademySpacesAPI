@@ -15,11 +15,9 @@ public class FacultyController : ControllerBase
 {
 
     private readonly AuthService _authService;
-    private readonly IRegisterFacultyUseCase _registerFacultyUseCase;
-
-    public FacultyController(IRegisterFacultyUseCase registerFacultyUseCase)
+    
+    public FacultyController()
     {
-        _registerFacultyUseCase = registerFacultyUseCase;
     }
 
     [HasPermission("Faculty:create")]
