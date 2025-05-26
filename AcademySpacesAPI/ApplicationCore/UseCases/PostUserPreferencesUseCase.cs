@@ -25,22 +25,14 @@ public class PostUserPreferencesUseCase : IPostUserPreferencesUseCase
         var identityId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
         WebPreferencesEntry userPreferences;
         
+        request.IdentityId = identityId;
+        
         try
         {
-            userPreferences = await _webPreferencesRepository.UpdateWebPreferencesAsync(new WebPreferencesEntry
-            {
-                IdentityId = identityId,
-                PageBrightness = request.PageBrightness,
-                Locale = request.Locale
-            });
+            userPreferences = await _webPreferencesRepository.UpdateWebPreferencesAsync(request);
         } catch (NotFoundException ex)
         {
-            userPreferences = await _webPreferencesRepository.AddWebPreferencesAsync(new WebPreferencesEntry
-            {
-                IdentityId = identityId,
-                PageBrightness = request.PageBrightness,
-                Locale = request.Locale
-            });
+            userPreferences = await _webPreferencesRepository.AddWebPreferencesAsync(request);
         }
         
         return new GetUserPreferencesResponse
