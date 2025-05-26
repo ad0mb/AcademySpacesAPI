@@ -21,13 +21,13 @@ public class RegisterSchoolAndAdminUseCase : IRegisterSchoolAndAdminUseCase
     //TODO: Handle exception and delete faculty user from firebase if school creation fails or faculty creation fails
     public async Task CreateSchoolAndAdminAsync(RegisterSchoolRequest request)
     {
-        var ids = await _schoolRepository.CreateSchoolAsync(new CreateSchoolEntry
+        var ids = await _schoolRepository.CreateSchoolAsync(new SchoolEntry
         {
             SchoolName = request.SchoolName,
             SchoolCountry = request.SchoolCountry
         });
         
-        var facultyId = await _facultyRepository.CreateFacultyAsync(new CreateFacultyEntry
+        var facultyId = await _facultyRepository.CreateFacultyAsync(new FacultyEntry
         {
             SchoolId = ids[0],
             IdentityId = request.IdentityId,

@@ -20,7 +20,7 @@ public class RoleRepository : IRoleRepository
         _permissionsRepository = permissionsRepository;
     }
 
-    public async Task<int> CreateRoleAsync(CreateRoleEntry request)
+    public async Task<int> CreateRoleAsync(RoleEntry request)
     {
         try
         {
@@ -44,7 +44,7 @@ public class RoleRepository : IRoleRepository
         }
     }
 
-    public async Task<int> CreateRoleAsync(CreateRoleEntry request, string[] permissions)
+    public async Task<int> CreateRoleAsync(RoleEntry request, string[] permissions)
     {
         try
         {
@@ -63,7 +63,7 @@ public class RoleRepository : IRoleRepository
             
             foreach (var permission in permissions)
             {
-                await _permissionsRepository.CreateRolePermissionAsync(new CreateRolePermissionEntry
+                await _permissionsRepository.CreateRolePermissionAsync(new RolePermissionEntry
                 {
                     RoleId = role.RoleId,
                     PermissionName = permission.Split(":")[0],

@@ -18,7 +18,7 @@ public class PermissionsRepository : IPermissionsRepository
         _context = context;
     }
 
-    public async Task CreateRolePermissionAsync(CreateRolePermissionEntry request)
+    public async Task CreateRolePermissionAsync(RolePermissionEntry request)
     {
         try
         {

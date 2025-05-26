@@ -20,7 +20,7 @@ public class FacultyRepository : IFacultyRepository
     }
 
     //TODO: Exception Handling (use result), return exception meant for core
-    public async Task<int> CreateFacultyAsync(CreateFacultyEntry request)
+    public async Task<int> CreateFacultyAsync(FacultyEntry request)
     {
         try
         {
@@ -49,7 +49,7 @@ public class FacultyRepository : IFacultyRepository
         }
     }
 
-    public async Task<int> CreateFacultyAsync(CreateFacultyEntry request, int[] roleIds)
+    public async Task<int> CreateFacultyAsync(FacultyEntry request, int[] roleIds)
     {
         try
         {
@@ -72,7 +72,7 @@ public class FacultyRepository : IFacultyRepository
             
             foreach (var roleId in roleIds)
             {
-                await AddRoleToFacultyAsync(new CreateFacultyRoleEntry
+                await AddRoleToFacultyAsync(new FacultyRoleEntry
                 {
                     FacultyId = faculty.FacultyId,
                     RoleId = roleId
@@ -87,7 +87,7 @@ public class FacultyRepository : IFacultyRepository
         }
     }
 
-    public async Task AddRoleToFacultyAsync(CreateFacultyRoleEntry request)
+    public async Task AddRoleToFacultyAsync(FacultyRoleEntry request)
     {
         try
         {

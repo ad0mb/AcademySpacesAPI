@@ -21,7 +21,7 @@ public class SchoolRepository : ISchoolRepository
     
     //TODO: Exception Handling (use result), return exception meant for core
     //Db update exception
-    public async Task<int[]> CreateSchoolAsync(CreateSchoolEntry request)
+    public async Task<int[]> CreateSchoolAsync(SchoolEntry request)
     {
         try
         {
@@ -40,16 +40,16 @@ public class SchoolRepository : ISchoolRepository
 
             //TODO: Add permissions to add with each role later
             var chiefAdminRoleId = await _roleRepository.CreateRoleAsync(
-                new CreateRoleEntry { SchoolId = school.SchoolId, RoleName = "ChiefAdministrator" },
+                new RoleEntry { SchoolId = school.SchoolId, RoleName = "ChiefAdministrator" },
                 ["ChiefAdministrator:000"]);
             await _roleRepository.CreateRoleAsync(
-                new CreateRoleEntry { SchoolId = school.SchoolId, RoleName = "Administrator" }, ["Administrator:000"]);
+                new RoleEntry { SchoolId = school.SchoolId, RoleName = "Administrator" }, ["Administrator:000"]);
             await _roleRepository.CreateRoleAsync(
-                new CreateRoleEntry { SchoolId = school.SchoolId, RoleName = "Teacher" }, []);
+                new RoleEntry { SchoolId = school.SchoolId, RoleName = "Teacher" }, []);
             await _roleRepository.CreateRoleAsync(
-                new CreateRoleEntry { SchoolId = school.SchoolId, RoleName = "Parent" }, []);
+                new RoleEntry { SchoolId = school.SchoolId, RoleName = "Parent" }, []);
             await _roleRepository.CreateRoleAsync(
-                new CreateRoleEntry { SchoolId = school.SchoolId, RoleName = "Student" }, []);
+                new RoleEntry { SchoolId = school.SchoolId, RoleName = "Student" }, []);
 
             return [school.SchoolId, chiefAdminRoleId];
         }
