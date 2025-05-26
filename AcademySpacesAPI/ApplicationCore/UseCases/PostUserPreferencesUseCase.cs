@@ -20,7 +20,7 @@ public class PostUserPreferencesUseCase : IPostUserPreferencesUseCase
         _webPreferencesRepository = webPreferencesRepository;
     }
 
-    public async Task<GetUserPreferencesResponse> PostUserPreferencesAsync(PostUserPreferencesRequest request)
+    public async Task<GetUserPreferencesResponse> PostUserPreferencesAsync(WebPreferencesEntry request)
     {
         var identityId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
         WebPreferencesEntry userPreferences;

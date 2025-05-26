@@ -20,7 +20,7 @@ public class CreateParentUseCase : ICreateParentUseCase
         _httpContextAccessor = httpContextAccessor;
     }
     
-    public async Task CreateParentAsync(CreateParentRequest request)
+    public async Task CreateParentAsync(ParentEntry request)
     {
         var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
 

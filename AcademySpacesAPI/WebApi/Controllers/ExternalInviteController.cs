@@ -29,7 +29,7 @@ public class ExternalInviteController : ControllerBase
     {
         try
         {
-            await _registerSchoolAndAdminUseCase.CreateSchoolAndAdminAsync(request);
+            await _registerSchoolAndAdminUseCase.CreateSchoolAndAdminAsync(request.SchoolName, request.SchoolCountry, request.FirstName, request.LastName, request.SigninEmail, request.IdentityId);
         }
         catch (DbException ex)
         {
