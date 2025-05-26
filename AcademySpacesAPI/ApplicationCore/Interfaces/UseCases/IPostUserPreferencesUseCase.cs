@@ -6,5 +6,5 @@ namespace AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
 
 public interface IPostUserPreferencesUseCase
 {
-    Task<GetUserPreferencesResponse> PostUserPreferencesAsync(WebPreferencesEntry request);
+    Task<WebPreferencesEntry> PostUserPreferencesAsync(WebPreferencesEntry request);
 }

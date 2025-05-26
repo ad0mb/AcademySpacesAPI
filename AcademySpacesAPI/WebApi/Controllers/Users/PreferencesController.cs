@@ -2,6 +2,7 @@
 using AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
 using AcademySpacesAPI.Exceptions;
 using AcademySpacesAPI.WebApi.DTOs.Requests;
+using AcademySpacesAPI.WebApi.DTOs.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,7 +28,13 @@ public class PreferencesController : ControllerBase
     {
         try
         {
-            var response = await _getUserPreferencesUseCase.GetUserPreferencesAsync();
+            var data = await _getUserPreferencesUseCase.GetUserPreferencesAsync();
+            
+            var response = new GetUserPreferencesResponse
+            {
+                PageBrightness = data.PageBrightness,
+                Locale = data.Locale
+            };
 
             return Ok(new
             {
@@ -54,11 +61,17 @@ public class PreferencesController : ControllerBase
     {
         try
         {
-            var response = await _postUserPreferencesUseCase.PostUserPreferencesAsync(new WebPreferencesEntry
+            var data = await _postUserPreferencesUseCase.PostUserPreferencesAsync(new WebPreferencesEntry
             {
                 PageBrightness = request.PageBrightness,
                 Locale = request.Locale
             });
+
+            var response = new GetUserPreferencesResponse
+            {
+                PageBrightness = data.PageBrightness,
+                Locale = data.Locale
+            };
 
             return Ok(new
             {

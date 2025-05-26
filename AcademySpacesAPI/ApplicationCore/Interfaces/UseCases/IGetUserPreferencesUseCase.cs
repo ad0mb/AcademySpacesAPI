@@ -1,9 +1,10 @@
-﻿using AcademySpacesAPI.WebApi.DTOs.Requests;
+﻿using AcademySpacesAPI.ApplicationCore.DomainEntities;
+using AcademySpacesAPI.WebApi.DTOs.Requests;
 using AcademySpacesAPI.WebApi.DTOs.Responses;
 
 namespace AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
 
 public interface IGetUserPreferencesUseCase
 {
-    Task<GetUserPreferencesResponse> GetUserPreferencesAsync();
+    Task<WebPreferencesEntry> GetUserPreferencesAsync();
 }
