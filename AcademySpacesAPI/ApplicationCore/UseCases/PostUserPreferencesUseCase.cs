@@ -20,7 +20,7 @@ public class PostUserPreferencesUseCase : IPostUserPreferencesUseCase
         _webPreferencesRepository = webPreferencesRepository;
     }
 
-    public async Task<GetUserPreferencesResponse> PostUserPreferencesAsync(WebPreferencesEntry request)
+    public async Task<WebPreferencesEntry> PostUserPreferencesAsync(WebPreferencesEntry request)
     {
         var identityId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
         WebPreferencesEntry userPreferences;
@@ -35,10 +35,6 @@ public class PostUserPreferencesUseCase : IPostUserPreferencesUseCase
             userPreferences = await _webPreferencesRepository.AddWebPreferencesAsync(request);
         }
         
-        return new GetUserPreferencesResponse
-        {
-            PageBrightness = userPreferences.PageBrightness,
-            Locale = userPreferences.Locale,
-        };
+        return userPreferences;
     }
 }

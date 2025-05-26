@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using AcademySpacesAPI.ApplicationCore.DomainEntities;
 using AcademySpacesAPI.ApplicationCore.Interfaces.Adapters;
 using AcademySpacesAPI.ApplicationCore.Interfaces.UseCases;
 using AcademySpacesAPI.WebApi.DTOs.Responses;
@@ -17,7 +18,7 @@ public class GetUserPreferencesUseCase : IGetUserPreferencesUseCase
         _webPreferencesRepository = webPreferencesRepository;
     }
     
-    public async Task<GetUserPreferencesResponse> GetUserPreferencesAsync()
+    public async Task<WebPreferencesEntry> GetUserPreferencesAsync()
     {
         var identityId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
@@ -25,13 +26,9 @@ public class GetUserPreferencesUseCase : IGetUserPreferencesUseCase
         
         if (preferences == null)
         {
-            return new GetUserPreferencesResponse();
+            return new WebPreferencesEntry();
         }
 
-        return new GetUserPreferencesResponse
-        {
-            PageBrightness = preferences.PageBrightness,
-            Locale = preferences.Locale,
-        };
+        return preferences;
     }
 }
