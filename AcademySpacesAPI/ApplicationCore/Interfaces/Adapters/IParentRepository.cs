@@ -4,5 +4,5 @@ namespace AcademySpacesAPI.ApplicationCore.Interfaces.Adapters;
 
 public interface IParentRepository
 {
-    Task CreateParentAsync(CreateParentEntry parent);
+    Task CreateParentAsync(ParentEntry parent);
 }

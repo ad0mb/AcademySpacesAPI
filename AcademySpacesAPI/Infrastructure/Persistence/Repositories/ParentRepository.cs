@@ -16,7 +16,7 @@ public class ParentRepository : IParentRepository
         _context = context;
     }
     
-    public async Task CreateParentAsync(CreateParentEntry parent)
+    public async Task CreateParentAsync(ParentEntry parent)
     {
         try
         {

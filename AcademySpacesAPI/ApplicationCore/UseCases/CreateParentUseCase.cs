@@ -24,7 +24,7 @@ public class CreateParentUseCase : ICreateParentUseCase
     {
         var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
 
-        await _parentRepository.CreateParentAsync(new CreateParentEntry
+        await _parentRepository.CreateParentAsync(new ParentEntry
         {
             SchoolId = schoolId,
             FirstName = request.FirstName,

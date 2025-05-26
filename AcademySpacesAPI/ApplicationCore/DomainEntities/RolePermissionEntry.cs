@@ -2,10 +2,12 @@
 
 public class RolePermissionEntry
 {
-    public required int Id { get; set; }
-    public required int RoleId { get; set; }
-    public required string PermissionName { get; set; }
-    public required bool Create { get; set; }
-    public required bool Delete { get; set; }
-    public required bool Update { get; set; }
+    public int Id { get; set; }
+    public int RoleId { get; set; }
+    public string PermissionName { get; set; }
+    public bool Create { get; set; }
+    public bool Delete { get; set; }
+    public bool Update { get; set; }
+    public DateTime? DateCreated { get; set; }
+    public DateTime? DateUpdated { get; set; }
 }
