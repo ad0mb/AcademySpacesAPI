@@ -4,6 +4,6 @@ namespace AcademySpacesAPI.WebApi.DTOs.Requests;
 
 public class PostUserPreferencesRequest
 {
-    public string PageBrightness { get; set; } = "system";
-    public string Locale { get; set; } = "en";
+    public string? PageBrightness { get; set; }
+    public string? Locale { get; set; }
 }

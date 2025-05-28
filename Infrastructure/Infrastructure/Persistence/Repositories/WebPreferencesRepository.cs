@@ -90,10 +90,10 @@ public class WebPreferencesRepository : IWebPreferencesRepository
                 throw new NotFoundException("User web preferences not found");
             }
             
-            if (webPreferences.Locale != webPreferencesEntry.Locale || webPreferences.PageBrightness != webPreferencesEntry.PageBrightness)
+            if ((webPreferences.Locale != webPreferencesEntry.Locale && webPreferencesEntry.Locale != null) || (webPreferences.PageBrightness != webPreferencesEntry.PageBrightness && webPreferencesEntry.PageBrightness != null))
             {
-                webPreferences.PageBrightness = webPreferencesEntry.PageBrightness;
-                webPreferences.Locale = webPreferencesEntry.Locale;
+                if (webPreferencesEntry.PageBrightness != null) {webPreferences.PageBrightness = webPreferencesEntry.PageBrightness;}
+                if (webPreferencesEntry.Locale != null) {webPreferences.Locale = webPreferencesEntry.Locale;}
                 
                 var result = await _context.SaveChangesAsync();
                 if (result == 0)
