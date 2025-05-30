@@ -40,7 +40,7 @@ public class SchoolRepository : ISchoolRepository
 
             //TODO: Add permissions to add with each role later
             var chiefAdminRoleId = await _roleRepository.CreateRoleAsync(
-                new RoleEntry { SchoolId = school.SchoolId, RoleName = "ChiefAdministrator" },
+                new RoleEntry { SchoolId = school.SchoolId, RoleName = "Chief Administrator" },
                 ["ChiefAdministrator:000"]);
             await _roleRepository.CreateRoleAsync(
                 new RoleEntry { SchoolId = school.SchoolId, RoleName = "Administrator" }, ["Administrator:000"]);
