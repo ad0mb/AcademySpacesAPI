@@ -79,4 +79,34 @@ public class RoleRepository : IRoleRepository
             throw new DbException("Issue adding role to the database", ex);
         }
     }
+    
+    public async Task<List<RoleEntry>> GetRolesBySchoolIdAsync(int schoolId)
+    {
+        
+        List<RoleEntry> roles = new List<RoleEntry>();
+        try
+        {
+            var dbRoles = await (from r in _context.Roles
+                where r.SchoolId == schoolId
+                select r).ToListAsync();
+
+            foreach (var role in dbRoles)
+            {
+                roles.Add(new RoleEntry
+                {
+                    RoleId = role.RoleId,
+                    SchoolId = role.SchoolId,
+                    RoleName = role.RoleName,
+                    DateCreated = role.DateCreated,
+                    DateUpdated = role.DateModified
+                });
+            }
+            
+            return roles;
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue retrieving roles from the database", ex);
+        }
+    }
 }
