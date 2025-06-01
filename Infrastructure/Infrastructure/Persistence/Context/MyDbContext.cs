@@ -51,16 +51,31 @@ public partial class MyDbContext : DbContext
 
         modelBuilder.Entity<Announcment>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("announcments");
+            entity.HasKey(e => e.AnnouncmentId).HasName("PRIMARY");
 
+            entity.ToTable("announcments");
+
+            entity.HasIndex(e => e.SenderId, "Announcments_faculty_faculty_id_fk");
+
+            entity.HasIndex(e => e.SchoolId, "Announcments_schools_school_id_fk");
+
+            entity.Property(e => e.AnnouncmentId).HasColumnName("announcment_ID");
             entity.Property(e => e.CreatedAt)
                 .HasColumnType("datetime")
-                .HasColumnName("created_At");
+                .HasColumnName("Created_at");
             entity.Property(e => e.Message).HasColumnType("text");
-            entity.Property(e => e.RecieverId).HasColumnName("reciever_id");
-            entity.Property(e => e.SenderId).HasColumnName("sender_Id");
+            entity.Property(e => e.SchoolId).HasColumnName("School_ID");
+            entity.Property(e => e.SenderId).HasColumnName("sender_ID");
+
+            entity.HasOne(d => d.School).WithMany(p => p.Announcments)
+                .HasForeignKey(d => d.SchoolId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Announcments_schools_school_id_fk");
+
+            entity.HasOne(d => d.Sender).WithMany(p => p.Announcments)
+                .HasForeignKey(d => d.SenderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Announcments_faculty_faculty_id_fk");
         });
 
         modelBuilder.Entity<Classroom>(entity =>
@@ -253,6 +268,9 @@ public partial class MyDbContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("datetime")
                 .HasColumnName("date_modified");
+            entity.Property(e => e.RoleDescription)
+                .HasMaxLength(255)
+                .HasColumnName("role_description");
             entity.Property(e => e.RoleName)
                 .HasMaxLength(255)
                 .HasColumnName("role_name");

@@ -97,6 +97,7 @@ public class RoleRepository : IRoleRepository
                     RoleId = role.RoleId,
                     SchoolId = role.SchoolId,
                     RoleName = role.RoleName,
+                    RoleDescription = role.RoleDescription,
                     DateCreated = role.DateCreated,
                     DateUpdated = role.DateModified
                 });

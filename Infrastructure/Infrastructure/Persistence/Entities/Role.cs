@@ -11,6 +11,8 @@ public partial class Role
 
     public string RoleName { get; set; } = null!;
 
+    public string? RoleDescription { get; set; }
+
     public DateTime? DateCreated { get; set; }
 
     public DateTime? DateModified { get; set; }
