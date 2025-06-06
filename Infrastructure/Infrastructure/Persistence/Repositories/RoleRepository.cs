@@ -47,10 +47,21 @@ public class RoleRepository : IRoleRepository
     {
         try
         {
+            var roleName =
+                await (from r in _context.Roles
+                    where r.SchoolId == request.SchoolId && r.RoleName == request.RoleName
+                    select r.RoleName).FirstOrDefaultAsync();
+
+            if (roleName == request.RoleName)
+            {
+                throw new DuplicateNameException("A role with this name already exists.");
+            }
+            
             var role = new Role
             {
                 SchoolId = request.SchoolId,
                 RoleName = request.RoleName,
+                RoleDescription = request.RoleDescription,
             };
 
             await _context.Roles.AddAsync(role);
