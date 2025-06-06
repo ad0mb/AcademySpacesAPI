@@ -28,13 +28,13 @@ public class HasPermissionAttribute : AuthorizeAttribute, IAuthorizationFilter
             {
                 var permissionJson = JsonSerializer.Deserialize<JsonElement>(claim.Value);
 
-                if (permissionJson.GetProperty("PermissionName").GetString() == "Administrator" ||
-                    permissionJson.GetProperty("PermissionName").GetString() == "ChiefAdministrator")
+                if (permissionJson.GetProperty("PermissionName").GetString() == "administrator" ||
+                    permissionJson.GetProperty("PermissionName").GetString() == "chiefadministrator")
                 {
                     isAdmin = true;
                 }
 
-                if (_permissionName == permissionJson.GetProperty("PermissionName").GetString())
+                if (_permissionName.ToLower() == permissionJson.GetProperty("PermissionName").GetString())
                 {
                     switch (_permission)
                     {
