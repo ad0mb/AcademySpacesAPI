@@ -21,8 +21,9 @@ public class PermissionsController : ControllerBase
     
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ICreatePermissionsJwtUseCase _createPermissionsJwtUseCase;
+    private readonly IConfiguration _configuration;
     
-    public PermissionsController(IHttpContextAccessor httpContextAccessor, ICreatePermissionsJwtUseCase createPermissionsJwtUseCase)
+    public PermissionsController(IHttpContextAccessor httpContextAccessor, ICreatePermissionsJwtUseCase createPermissionsJwtUseCase, IConfiguration configuration)
     {
         _httpContextAccessor = httpContextAccessor;
         _createPermissionsJwtUseCase = createPermissionsJwtUseCase;
@@ -39,8 +40,8 @@ public class PermissionsController : ControllerBase
             
             _httpContextAccessor.HttpContext.Response.Cookies.Append("perms", token, new CookieOptions
             {
-                HttpOnly = true,
-                Secure = true,
+                HttpOnly = _configuration["Environment"] == "Production",
+                Secure = _configuration["Environment"] == "Production",
                 SameSite = SameSiteMode.Strict,
                 Path = "/"
             });
