@@ -11,6 +11,12 @@ public class CreateRoleRequest
 
 public class RoleCategories
 {
+    public RoleCategories()
+    {
+        Roles = new CreatePermissionRequest();
+        Classrooms = new CreatePermissionRequest();
+    }
+
     [Required] public CreatePermissionRequest Roles { get; set; }
     [Required] public CreatePermissionRequest Classrooms { get; set; }
 }
