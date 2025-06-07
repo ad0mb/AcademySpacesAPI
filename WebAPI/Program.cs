@@ -98,6 +98,7 @@ builder.Services.AddScoped<IPostUserPreferencesUseCase, PostUserPreferencesUseCa
 builder.Services.AddScoped<ICreatePermissionsJwtUseCase, CreatePermissionsJwtUseCase>();
 builder.Services.AddScoped<IGetRolesUseCase, GetRolesUseCase>();
 builder.Services.AddScoped<ICreateRoleUseCase, CreateRoleUseCase>();
+builder.Services.AddScoped<IGetUserRolesPermissionsUseCase, GetUserRolesPermissionsUseCase>();
 //Scoped
 
 //Transient

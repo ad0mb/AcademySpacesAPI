@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Reflection;
+using System.Text.Json;
 using AcademySpacesAPI.WebApi.Attributes;
 using AcademySpacesAPI.WebApi.DTOs.Requests;
 using Core.ApplicationCore.DomainEntities;
@@ -19,29 +20,69 @@ public class RolesController : ControllerBase
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IGetRolesUseCase _getRolesUseCase;
     private readonly ICreateRoleUseCase _createRoleUseCase;
+    private readonly IGetUserRolesPermissionsUseCase _getUserRolesPermissionsUseCase;
 
-    public RolesController(IHttpContextAccessor accessor, IGetRolesUseCase getRolesUseCase, ICreateRoleUseCase createRoleUseCase)
+    public RolesController(IHttpContextAccessor accessor, IGetRolesUseCase getRolesUseCase, ICreateRoleUseCase createRoleUseCase, IGetUserRolesPermissionsUseCase getUserRolesPermissionsUseCase)
     {
         _httpContextAccessor = accessor;
         _getRolesUseCase = getRolesUseCase;
         _createRoleUseCase = createRoleUseCase;
+        _getUserRolesPermissionsUseCase = getUserRolesPermissionsUseCase;
     }
 
     [HasPermission("Roles:view")]
     [HttpGet("get-roles")]
     public async Task<IActionResult> GetRoles()
     {
+        var result = new List<CreateRoleRequest>();
+        
         var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
 
         try
         {
             var roles = await _getRolesUseCase.GetRolesAsync(schoolId);
+
+            foreach (var role in roles)
+            {
+                var permissions = await _getUserRolesPermissionsUseCase.GetUserPermissionsByRoleIdAsync(role.RoleId);
+
+                var roleCategories = new RoleCategories();
+                var createRoleRequest = new CreateRoleRequest
+                {
+                    RoleName = role.RoleName,
+                    RoleDescription = role.RoleDescription,
+                    Permissions = roleCategories
+                };
+
+                if (permissions != null && permissions.Count > 0)
+                {
+                    var type = roleCategories.GetType();
+
+                    foreach (var permission in permissions)
+                    {
+                        var property = type.GetProperty(permission.PermissionName,
+                            BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+                        
+                        if (property != null)
+                        {
+                            property.SetValue(createRoleRequest.Permissions, new CreatePermissionRequest
+                            {
+                                View = true,
+                                Create = permission.Create,
+                                Delete = permission.Delete,
+                                Update = permission.Update
+                            });
+                        }
+                    }
+                }
+                result.Add(createRoleRequest);
+            }
             
             return Ok( new
                 {
                     Status = true,
                     Message = "Retrieved roles successfully.",
-                    Data = roles,
+                    Data = result,
                     Errors = (string[])null
                 }
             );
