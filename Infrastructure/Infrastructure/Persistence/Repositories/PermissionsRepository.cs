@@ -87,4 +87,40 @@ public class PermissionsRepository : IPermissionsRepository
             throw new DbException("Issue retrieving role permissions from the database", ex);
         }
     }
+    
+    public async Task<List<RolePermissionEntry>?> GetUserPermissionsByRoleIdAsync(int RoleId)
+    {
+        try
+        {
+            var permissions = new List<RolePermissionEntry>();
+            var rolePermissionsResult = await (from rp in _context.RolePermissions
+                where rp.RoleId == RoleId
+                select rp).ToListAsync();
+            
+            if (rolePermissionsResult == null || rolePermissionsResult.Count < 1)
+            {
+                return null;
+            }
+
+            foreach (var permission in rolePermissionsResult)
+            {
+                var rolePermissionEntry = new RolePermissionEntry
+                {
+                    Id = permission.Id,
+                    RoleId = permission.RoleId,
+                    PermissionName = permission.PermissionName,
+                    Create = permission.Create,
+                    Delete = permission.Delete,
+                    Update = permission.Update
+                };
+                permissions.Add(rolePermissionEntry);
+            }
+
+            return permissions;
+        } 
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue retrieving role permissions from the database", ex);
+        }
+    }
 }
