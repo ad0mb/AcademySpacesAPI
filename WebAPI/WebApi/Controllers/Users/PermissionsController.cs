@@ -27,6 +27,7 @@ public class PermissionsController : ControllerBase
     {
         _httpContextAccessor = httpContextAccessor;
         _createPermissionsJwtUseCase = createPermissionsJwtUseCase;
+        _configuration = configuration;
     }
     
     [HttpGet("permissions")]
