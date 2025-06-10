@@ -25,9 +25,9 @@ public class PermissionsRepository : IPermissionsRepository
             {
                 RoleId = request.RoleId,
                 PermissionName = request.PermissionName,
-                Create = request.Create,
-                Delete = request.Delete,
-                Update = request.Update,
+                CanCreate = request.Create,
+                CanDelete = request.Delete,
+                CanUpdate = request.Update,
             };
 
             await _context.RolePermissions.AddAsync(rolePermissions);
@@ -73,9 +73,9 @@ public class PermissionsRepository : IPermissionsRepository
                     Id = permission.Id,
                     RoleId = permission.RoleId,
                     PermissionName = permission.PermissionName,
-                    Create = permission.Create,
-                    Delete = permission.Delete,
-                    Update = permission.Update
+                    Create = permission.CanCreate,
+                    Delete = permission.CanDelete,
+                    Update = permission.CanUpdate
                 };
                 permissions.Add(rolePermissionEntry);
             }
@@ -109,9 +109,9 @@ public class PermissionsRepository : IPermissionsRepository
                     Id = permission.Id,
                     RoleId = permission.RoleId,
                     PermissionName = permission.PermissionName,
-                    Create = permission.Create,
-                    Delete = permission.Delete,
-                    Update = permission.Update
+                    Create = permission.CanCreate,
+                    Delete = permission.CanDelete,
+                    Update = permission.CanUpdate
                 };
                 permissions.Add(rolePermissionEntry);
             }
