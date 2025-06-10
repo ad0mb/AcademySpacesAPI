@@ -15,6 +15,12 @@ public partial class Announcment
 
     public DateTime CreatedAt { get; set; }
 
+    public string? Priority { get; set; }
+
+    public string? Category { get; set; }
+
+    public string? AnnouncmentName { get; set; }
+
     public virtual School School { get; set; } = null!;
 
     public virtual Faculty Sender { get; set; } = null!;

@@ -11,11 +11,11 @@ public partial class RolePermission
 
     public string PermissionName { get; set; } = null!;
 
-    public bool Create { get; set; }
+    public bool CanCreate { get; set; }
 
-    public bool Delete { get; set; }
+    public bool CanDelete { get; set; }
 
-    public bool Update { get; set; }
+    public bool CanUpdate { get; set; }
 
     public DateTime? DateCreated { get; set; }
 

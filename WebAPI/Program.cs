@@ -106,7 +106,7 @@ builder.Services.AddTransient<IEmailService, EmailService>();
 //Transient
 
 //Add DbContext
-var connectonString = builder.Configuration.GetConnectionString("StagingConnection");
+var connectonString = builder.Configuration.GetConnectionString("LocalConnection");
 builder.Services.AddDbContext<MyDbContext>(options =>
     options.UseMySql(ServerVersion.AutoDetect(connectonString)).UseExceptionProcessor()
 );
