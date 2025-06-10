@@ -4,6 +4,7 @@ using AcademySpacesAPI.WebApi.Attributes;
 using AcademySpacesAPI.WebApi.DTOs.Requests;
 using Core.ApplicationCore.DomainEntities;
 using Core.ApplicationCore.Interfaces.UseCases;
+using Core.ApplicationCore.UseCases;
 using Core.Exceptions;
 using Infrastructure.Infrastructure.Persistence.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -21,13 +22,15 @@ public class RolesController : ControllerBase
     private readonly IGetRolesUseCase _getRolesUseCase;
     private readonly ICreateRoleUseCase _createRoleUseCase;
     private readonly IGetUserRolesPermissionsUseCase _getUserRolesPermissionsUseCase;
+    private readonly IUpdateRoleUseCase _updateRoleUseCase;
 
-    public RolesController(IHttpContextAccessor accessor, IGetRolesUseCase getRolesUseCase, ICreateRoleUseCase createRoleUseCase, IGetUserRolesPermissionsUseCase getUserRolesPermissionsUseCase)
+    public RolesController(IHttpContextAccessor accessor, IGetRolesUseCase getRolesUseCase, ICreateRoleUseCase createRoleUseCase, IGetUserRolesPermissionsUseCase getUserRolesPermissionsUseCase, IUpdateRoleUseCase updateRoleUseCase)
     {
         _httpContextAccessor = accessor;
         _getRolesUseCase = getRolesUseCase;
         _createRoleUseCase = createRoleUseCase;
         _getUserRolesPermissionsUseCase = getUserRolesPermissionsUseCase;
+        _updateRoleUseCase = updateRoleUseCase;
     }
 
     [HasPermission("Roles:view")]
@@ -49,6 +52,7 @@ public class RolesController : ControllerBase
                 var roleCategories = new RoleCategories();
                 var createRoleRequest = new CreateRoleRequest
                 {
+                    RoleId = role.RoleId,
                     RoleName = role.RoleName,
                     RoleDescription = role.RoleDescription,
                     Permissions = roleCategories
@@ -67,6 +71,7 @@ public class RolesController : ControllerBase
                         {
                             property.SetValue(createRoleRequest.Permissions, new CreatePermissionRequest
                             {
+                                Id = permission.Id,
                                 View = true,
                                 Create = permission.Create,
                                 Delete = permission.Delete,
@@ -152,6 +157,68 @@ public class RolesController : ControllerBase
             {
                 Status = false,
                 Message = ex.Message,
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+
+    [HasPermission("Roles:update")]
+    [HttpPatch("update-role")]
+    public async Task<IActionResult> UpdateRole(CreateRoleRequest request)
+    {
+        var permissions = new List<RolePermissionEntry>();
+        var permissionsToDelete = new List<int>();
+
+        var jsonString = JsonSerializer.Serialize(request);
+        var json = JsonSerializer.Deserialize<JsonElement>(jsonString);
+
+        foreach (var permission in json.GetProperty("Permissions").EnumerateObject())
+        {
+            if (permission.Value.GetProperty("View").GetBoolean())
+            {
+                permissions.Add(new RolePermissionEntry
+                {
+                    Id = permission.Value.GetProperty("Id").GetInt32(),
+                    RoleId = request.RoleId,
+                    PermissionName = permission.Name.ToLower(),
+                    Create = permission.Value.GetProperty("Create").GetBoolean(),
+                    Delete = permission.Value.GetProperty("Delete").GetBoolean(),
+                    Update = permission.Value.GetProperty("Update").GetBoolean(),
+                });
+            }
+            else
+            {
+                if (permission.Value.GetProperty("Id").GetInt32() > 0)
+                {
+                    permissionsToDelete.Add(permission.Value.GetProperty("Id").GetInt32());
+                }
+            }
+        }
+        
+        try
+        {
+            await _updateRoleUseCase.UpdateRoleAsync(new RoleEntry
+            {
+                RoleId = request.RoleId,
+                RoleName = request.RoleName,
+                RoleDescription = request.RoleDescription,
+            }, permissions, permissionsToDelete);
+            
+            return Ok( new
+                {
+                    Status = true,
+                    Message = "Updated role successfully.",
+                    Data = (object[])null,
+                    Errors = (string[])null
+                }
+            );
+        } catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
                 Data = (object[])null,
                 Errors = new[] { ex.Message }
             });
