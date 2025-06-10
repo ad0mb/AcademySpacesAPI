@@ -1,6 +1,7 @@
 ﻿using Core.ApplicationCore.DomainEntities;
 using Core.ApplicationCore.Interfaces.Adapters;
 using Core.Exceptions;
+using EFCore.BulkExtensions;
 using Infrastructure.Infrastructure.Persistence.Context;
 using Infrastructure.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -121,6 +122,61 @@ public class PermissionsRepository : IPermissionsRepository
         catch (DbUpdateException ex)
         {
             throw new DbException("Issue retrieving role permissions from the database", ex);
+        }
+    }
+    
+    public async Task BulkUpdateOrInsertRolePermissionAsync(List<RolePermissionEntry> request)
+    {
+        try
+        {
+            var permissions = new List<RolePermission>();
+            
+            foreach (var permission in request)
+            {
+                permissions.Add(new RolePermission
+                {
+                    Id = permission.Id,
+                    RoleId = permission.RoleId,
+                    PermissionName = permission.PermissionName,
+                    CanCreate = permission.Create,
+                    CanDelete = permission.Delete,
+                    CanUpdate = permission.Update,
+                });
+            }
+
+            await _context.BulkInsertOrUpdateAsync(permissions, new BulkConfig
+            {
+                PreserveInsertOrder = false,
+                SetOutputIdentity = true
+            });
+            
+        }
+        
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue updating role permission in the database", ex);
+        }
+    }
+    
+    public async Task DeleteRolePermissionAsync(List<int> roleIds)
+    {
+        try
+        {
+            var permissions = new List<RolePermission>();
+            
+            foreach (var roleId in roleIds)
+            {
+                permissions.Add(new RolePermission
+                {
+                    Id = roleId,
+                });
+            }
+
+            await _context.BulkDeleteAsync(permissions);
+        } 
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue deleting role permission from the database", ex);
         }
     }
 }

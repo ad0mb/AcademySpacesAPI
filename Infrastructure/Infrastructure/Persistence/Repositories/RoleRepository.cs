@@ -121,4 +121,29 @@ public class RoleRepository : IRoleRepository
             throw new DbException("Issue retrieving roles from the database", ex);
         }
     }
+
+    public async Task UpdateRoleAsync(RoleEntry request)
+    {
+        try
+        {
+            var role =
+                await (from r in _context.Roles
+                    where r.RoleId == request.RoleId
+                    select r).FirstOrDefaultAsync();
+
+            if (role == null)
+            {
+                throw new NotFoundException("Role to update not found.");
+            }
+            
+            role.RoleName = request.RoleName;
+            role.RoleDescription = request.RoleDescription;
+            
+            var result = await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue updating role in the database", ex);
+        }
+    }
 }
