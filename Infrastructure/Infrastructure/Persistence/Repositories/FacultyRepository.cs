@@ -22,6 +22,15 @@ public class FacultyRepository : IFacultyRepository
     {
         try
         {
+            var existingEmail = await (from f in _context.Faculties
+                where f.Email == request.Email && f.SchoolId == request.SchoolId
+                select f.Email).FirstOrDefaultAsync();
+            
+            if (existingEmail == request.Email)
+            {
+                throw new DuplicateEmailException("Email already exists");
+            }
+            
             var faculty = new Faculty
             {
                 SchoolId = request.SchoolId,
@@ -52,6 +61,15 @@ public class FacultyRepository : IFacultyRepository
     {
         try
         {
+            var existingEmail = await (from f in _context.Faculties
+                where f.Email == request.Email && f.SchoolId == request.SchoolId
+                select f.Email).FirstOrDefaultAsync();
+            
+            if (existingEmail == request.Email)
+            {
+                throw new DuplicateEmailException("Email already exists");
+            }
+            
             var faculty = new Faculty
             {
                 SchoolId = request.SchoolId,
