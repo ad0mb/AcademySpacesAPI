@@ -96,6 +96,13 @@ builder.Services.AddScoped<ICreateParentUseCase, CreateParentUseCase>();
 builder.Services.AddScoped<IGetUserPreferencesUseCase, GetUserPreferencesUseCase>();
 builder.Services.AddScoped<IPostUserPreferencesUseCase, PostUserPreferencesUseCase>();
 builder.Services.AddScoped<ICreatePermissionsJwtUseCase, CreatePermissionsJwtUseCase>();
+builder.Services.AddScoped<IGetRolesUseCase, GetRolesUseCase>();
+builder.Services.AddScoped<ICreateRoleUseCase, CreateRoleUseCase>();
+builder.Services.AddScoped<IGetUserRolesPermissionsUseCase, GetUserRolesPermissionsUseCase>();
+builder.Services.AddScoped<IUpdateRoleUseCase, UpdateRoleUseCase>();
+builder.Services.AddScoped<IGetFacultyUseCase, GetFacultyUseCase>();
+builder.Services.AddScoped<IInviteFacultyUseCase, InviteFacultyUseCase>();
+builder.Services.AddScoped<IUpdateFacultyUseCase, UpdateFacultyUseCase>();
 //Scoped
 
 //Transient
@@ -103,7 +110,7 @@ builder.Services.AddTransient<IEmailService, EmailService>();
 //Transient
 
 //Add DbContext
-var connectonString = builder.Configuration.GetConnectionString("StagingConnection");
+var connectonString = builder.Configuration.GetConnectionString("LocalConnection");
 builder.Services.AddDbContext<MyDbContext>(options =>
     options.UseMySql(ServerVersion.AutoDetect(connectonString)).UseExceptionProcessor()
 );

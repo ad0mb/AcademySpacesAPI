@@ -41,7 +41,7 @@ public partial class MyDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=mysql6008.site4now.net;database=db_ab66bb_staging;uid=ab66bb_staging;pwd=PO6!^DDF67y", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.35-mysql"));
+        => optionsBuilder.UseMySql("server=localhost;database=db_ab66bb_staging;uid=root;pwd=PO6!^DDF67y", Microsoft.EntityFrameworkCore.ServerVersion.Parse("9.3.0-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -51,16 +51,38 @@ public partial class MyDbContext : DbContext
 
         modelBuilder.Entity<Announcment>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("announcments");
+            entity.HasKey(e => e.AnnouncmentId).HasName("PRIMARY");
 
+            entity.ToTable("announcments");
+
+            entity.HasIndex(e => e.SenderId, "Announcments_faculty_faculty_id_fk");
+
+            entity.HasIndex(e => e.SchoolId, "Announcments_schools_school_id_fk");
+
+            entity.Property(e => e.AnnouncmentId).HasColumnName("announcment_ID");
+            entity.Property(e => e.AnnouncmentName)
+                .HasMaxLength(255)
+                .HasColumnName("announcment_Name");
+            entity.Property(e => e.Category).HasMaxLength(255);
             entity.Property(e => e.CreatedAt)
                 .HasColumnType("datetime")
-                .HasColumnName("created_At");
+                .HasColumnName("Created_at");
             entity.Property(e => e.Message).HasColumnType("text");
-            entity.Property(e => e.RecieverId).HasColumnName("reciever_id");
-            entity.Property(e => e.SenderId).HasColumnName("sender_Id");
+            entity.Property(e => e.Priority)
+                .HasMaxLength(255)
+                .HasColumnName("priority");
+            entity.Property(e => e.SchoolId).HasColumnName("School_ID");
+            entity.Property(e => e.SenderId).HasColumnName("sender_ID");
+
+            entity.HasOne(d => d.School).WithMany(p => p.Announcments)
+                .HasForeignKey(d => d.SchoolId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Announcments_schools_school_id_fk");
+
+            entity.HasOne(d => d.Sender).WithMany(p => p.Announcments)
+                .HasForeignKey(d => d.SenderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Announcments_faculty_faculty_id_fk");
         });
 
         modelBuilder.Entity<Classroom>(entity =>
@@ -126,6 +148,9 @@ public partial class MyDbContext : DbContext
             entity.Property(e => e.LastName)
                 .HasMaxLength(100)
                 .HasColumnName("last_name");
+            entity.Property(e => e.MiddleName)
+                .HasMaxLength(100)
+                .HasColumnName("middle_name");
             entity.Property(e => e.PhoneNumber)
                 .HasMaxLength(50)
                 .HasColumnName("phone_number");
@@ -253,6 +278,9 @@ public partial class MyDbContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("datetime")
                 .HasColumnName("date_modified");
+            entity.Property(e => e.RoleDescription)
+                .HasMaxLength(255)
+                .HasColumnName("role_description");
             entity.Property(e => e.RoleName)
                 .HasMaxLength(255)
                 .HasColumnName("role_name");
@@ -272,7 +300,9 @@ public partial class MyDbContext : DbContext
             entity.HasIndex(e => e.RoleId, "role_permissions_roles_role_id_fk");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Create).HasColumnName("create");
+            entity.Property(e => e.CanCreate).HasColumnName("can_create");
+            entity.Property(e => e.CanDelete).HasColumnName("can_delete");
+            entity.Property(e => e.CanUpdate).HasColumnName("can_update");
             entity.Property(e => e.DateCreated)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("datetime")
@@ -282,12 +312,10 @@ public partial class MyDbContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("datetime")
                 .HasColumnName("date_modified");
-            entity.Property(e => e.Delete).HasColumnName("delete");
             entity.Property(e => e.PermissionName)
                 .HasMaxLength(150)
                 .HasColumnName("permission_name");
             entity.Property(e => e.RoleId).HasColumnName("role_id");
-            entity.Property(e => e.Update).HasColumnName("update");
 
             entity.HasOne(d => d.Role).WithMany(p => p.RolePermissions)
                 .HasForeignKey(d => d.RoleId)

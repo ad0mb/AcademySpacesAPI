@@ -17,6 +17,8 @@ public partial class School
 
     public DateTime? DateModified { get; set; }
 
+    public virtual ICollection<Announcment> Announcments { get; set; } = new List<Announcment>();
+
     public virtual ICollection<Classroom> Classrooms { get; set; } = new List<Classroom>();
 
     public virtual ICollection<Faculty> Faculties { get; set; } = new List<Faculty>();
