@@ -2,6 +2,7 @@
 using AcademySpacesAPI.WebApi.Attributes;
 using AcademySpacesAPI.WebApi.DTOs.GeneralObjects;
 using AcademySpacesAPI.WebApi.DTOs.Requests;
+using Core.ApplicationCore.DomainEntities;
 using Core.ApplicationCore.Interfaces.UseCases;
 using Core.Exceptions;
 using Infrastructure.Infrastructure.Auth;
@@ -18,26 +19,62 @@ public class FacultyController : ControllerBase
     
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IGetFacultyUseCase _getFacultyUseCase;
+    private readonly IInviteFacultyUseCase _inviteFacultyUseCase;
     
-    public FacultyController(IHttpContextAccessor httpContextAccessor, IGetFacultyUseCase getFacultyUseCase)
+    public FacultyController(IHttpContextAccessor httpContextAccessor, IGetFacultyUseCase getFacultyUseCase, IInviteFacultyUseCase inviteFacultyUseCase)
     {
         _httpContextAccessor = httpContextAccessor;
         _getFacultyUseCase = getFacultyUseCase;
+        _inviteFacultyUseCase = inviteFacultyUseCase;
     }
 
     [HasPermission("Faculty:create")]
     [HttpPost("invite-faculty")]
     public async Task<IActionResult> InviteFaculty(InviteFacultyRequest request)
     {
-        throw new NotImplementedException();
-        
-        return Ok(new
+        var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+
+        try
         {
-            Status = true,
-            Message = "Faculty created and invited.",
-            Data = (object)null,
-            Errors = (string[])null
-        });
+
+            await _inviteFacultyUseCase.InviteFacultyAsync(new FacultyEntry
+            {
+                SchoolId = schoolId,
+                FirstName = request.FirstName,
+                MiddleName = request.MiddleName,
+                LastName = request.LastName,
+                PhoneNumber = request.PhoneNumber,
+                Email = request.Email
+            }, request.Invite);
+
+            return Ok(new
+            {
+                Status = true,
+                Message = "Faculty created" + (request.Invite ? " and invited successfully." : " successfully."),
+                Data = (object)null,
+                Errors = (string[])null
+            });
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (DuplicateEmailException ex)
+        {
+            return StatusCode(409, new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
     }
 
     [HasPermission("Faculty:view")]
@@ -85,8 +122,6 @@ public class FacultyController : ControllerBase
                 Errors = new[] { ex.Message }
             });
         }
-
-        return Ok();
     }
 
 
