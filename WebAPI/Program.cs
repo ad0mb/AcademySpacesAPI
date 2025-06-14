@@ -101,6 +101,7 @@ builder.Services.AddScoped<ICreateRoleUseCase, CreateRoleUseCase>();
 builder.Services.AddScoped<IGetUserRolesPermissionsUseCase, GetUserRolesPermissionsUseCase>();
 builder.Services.AddScoped<IUpdateRoleUseCase, UpdateRoleUseCase>();
 builder.Services.AddScoped<IGetFacultyUseCase, GetFacultyUseCase>();
+builder.Services.AddScoped<IInviteFacultyUseCase, InviteFacultyUseCase>();
 //Scoped
 
 //Transient
