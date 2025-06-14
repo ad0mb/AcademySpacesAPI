@@ -9,4 +9,5 @@ public interface IFacultyRepository
     Task AddRoleToFacultyAsync(FacultyRoleEntry facultyRole);
     Task<FacultyEntry?> GetFacultyByIdentityIdAsync(string identityId);
     Task<List<FacultyEntry>> GetFacultyBySchoolIdAsync(int schoolId);
+    Task UpdateFacultyAsync(FacultyEntry request);
 }
