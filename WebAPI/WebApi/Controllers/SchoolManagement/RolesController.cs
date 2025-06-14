@@ -167,6 +167,8 @@ public class RolesController : ControllerBase
     [HttpPatch("update-role")]
     public async Task<IActionResult> UpdateRole(CreateRoleRequest request)
     {
+        var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+        
         var permissions = new List<RolePermissionEntry>();
         var permissionsToDelete = new List<int>();
 
@@ -195,17 +197,18 @@ public class RolesController : ControllerBase
                 }
             }
         }
-        
+
         try
         {
             await _updateRoleUseCase.UpdateRoleAsync(new RoleEntry
             {
+                SchoolId = schoolId,
                 RoleId = request.RoleId,
                 RoleName = request.RoleName,
                 RoleDescription = request.RoleDescription,
             }, permissions, permissionsToDelete);
-            
-            return Ok( new
+
+            return Ok(new
                 {
                     Status = true,
                     Message = "Updated role successfully.",
@@ -213,12 +216,33 @@ public class RolesController : ControllerBase
                     Errors = (string[])null
                 }
             );
-        } catch (DbException ex)
+        }
+        catch (DbException ex)
         {
             return StatusCode(500, new
             {
                 Status = false,
                 Message = "Internal server error.",
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (DuplicateNameException ex)
+        {
+            return StatusCode(409, new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (NotFoundException ex)
+        {
+            return StatusCode(404, new
+            {
+                Status = false,
+                Message = ex.Message,
                 Data = (object[])null,
                 Errors = new[] { ex.Message }
             });

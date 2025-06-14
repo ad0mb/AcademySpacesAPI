@@ -148,6 +148,16 @@ public class RoleRepository : IRoleRepository
                 throw new NotFoundException("Role to update not found.");
             }
             
+            var roleName =
+                await (from r in _context.Roles
+                    where r.SchoolId == request.SchoolId && r.RoleName == request.RoleName
+                    select r.RoleName).FirstOrDefaultAsync();
+            
+            if (roleName == request.RoleName)
+            {
+                throw new DuplicateNameException("A role with this name already exists.");
+            }
+            
             role.RoleName = request.RoleName;
             role.RoleDescription = request.RoleDescription;
             
