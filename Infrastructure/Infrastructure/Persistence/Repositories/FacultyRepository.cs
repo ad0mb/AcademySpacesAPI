@@ -144,4 +144,39 @@ public class FacultyRepository : IFacultyRepository
             throw new DbException("Issue retrieving faculty from the database", ex);
         }
     }
+
+    public async Task<List<FacultyEntry>> GetFacultyBySchoolIdAsync(int schoolId)
+    {
+        try
+        {
+            List<FacultyEntry> faculty = new List<FacultyEntry>();
+            
+            var dbFaculty = await (from r in _context.Faculties
+                where r.SchoolId == schoolId
+                select r).ToListAsync();
+
+            foreach (var user in dbFaculty)
+            {
+                faculty.Add(new FacultyEntry
+                {
+                    FacultyId = user.FacultyId,
+                    SchoolId = user.SchoolId,
+                    IdentityId = user.IdentityId,
+                    FirstName = user.FirstName,
+                    MiddleName = user.MiddleName,
+                    LastName = user.LastName,
+                    PhoneNumber = user.PhoneNumber,
+                    Email = user.Email,
+                    DateCreated = user.DateCreated,
+                    DateUpdated = user.DateModified
+                });
+            }
+            
+            return faculty;
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue retrieving faculty from the database", ex);
+        }
+    }
 }
