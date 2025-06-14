@@ -197,4 +197,31 @@ public class FacultyRepository : IFacultyRepository
             throw new DbException("Issue retrieving faculty from the database", ex);
         }
     }
+
+    public async Task UpdateFacultyAsync(FacultyEntry request)
+    {
+        try
+        {
+            var faculty =
+                await (from f in _context.Faculties
+                    where f.FacultyId == request.FacultyId
+                    select f).FirstOrDefaultAsync();
+            
+            if (faculty == null)
+            {
+                throw new NotFoundException("Role to update not found.");
+            }
+            
+            faculty.FirstName = request.FirstName;
+            faculty.MiddleName = request.MiddleName;
+            faculty.LastName = request.LastName;
+            faculty.PhoneNumber = request.PhoneNumber;
+            
+            var result = await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue updating faculty in the database", ex);
+        }
+    }
 }
