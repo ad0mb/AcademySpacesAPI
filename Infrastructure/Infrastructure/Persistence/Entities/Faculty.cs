@@ -13,6 +13,8 @@ public partial class Faculty
 
     public string FirstName { get; set; } = null!;
 
+    public string? MiddleName { get; set; }
+
     public string LastName { get; set; } = null!;
 
     public string? PhoneNumber { get; set; }
@@ -22,6 +24,8 @@ public partial class Faculty
     public DateTime? DateCreated { get; set; }
 
     public DateTime? DateModified { get; set; }
+
+    public virtual ICollection<Announcment> Announcments { get; set; } = new List<Announcment>();
 
     public virtual ICollection<Classroom> Classrooms { get; set; } = new List<Classroom>();
 

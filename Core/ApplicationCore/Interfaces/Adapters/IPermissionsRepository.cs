@@ -6,4 +6,7 @@ public interface IPermissionsRepository
 {
     Task CreateRolePermissionAsync(RolePermissionEntry rolePermissions);
     Task<List<RolePermissionEntry>?> GetUserPermissionsByIdentityIdAsync(string identityId, string userType);
+    Task<List<RolePermissionEntry>?> GetUserPermissionsByRoleIdAsync(int RoleId);
+    Task BulkUpdateOrInsertRolePermissionAsync(List<RolePermissionEntry> request);
+    Task DeleteRolePermissionAsync(List<int> roleIds);
 }
