@@ -41,7 +41,7 @@ public partial class MyDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=localhost;database=db_ab66bb_staging;uid=root;pwd=PO6!^DDF67y;AllowLoadLocalInfile=true;", Microsoft.EntityFrameworkCore.ServerVersion.Parse("9.3.0-mysql"));
+        => optionsBuilder.UseMySql("server=localhost;database=db_ab66bb_staging;uid=root;pwd=PO6!^DDF67y", Microsoft.EntityFrameworkCore.ServerVersion.Parse("9.3.0-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -148,6 +148,9 @@ public partial class MyDbContext : DbContext
             entity.Property(e => e.LastName)
                 .HasMaxLength(100)
                 .HasColumnName("last_name");
+            entity.Property(e => e.MiddleName)
+                .HasMaxLength(100)
+                .HasColumnName("middle_name");
             entity.Property(e => e.PhoneNumber)
                 .HasMaxLength(50)
                 .HasColumnName("phone_number");
