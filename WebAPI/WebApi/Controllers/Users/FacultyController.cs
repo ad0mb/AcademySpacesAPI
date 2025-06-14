@@ -20,12 +20,14 @@ public class FacultyController : ControllerBase
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IGetFacultyUseCase _getFacultyUseCase;
     private readonly IInviteFacultyUseCase _inviteFacultyUseCase;
+    private readonly IUpdateFacultyUseCase _updateFacultyUseCase;
     
-    public FacultyController(IHttpContextAccessor httpContextAccessor, IGetFacultyUseCase getFacultyUseCase, IInviteFacultyUseCase inviteFacultyUseCase)
+    public FacultyController(IHttpContextAccessor httpContextAccessor, IGetFacultyUseCase getFacultyUseCase, IInviteFacultyUseCase inviteFacultyUseCase, IUpdateFacultyUseCase updateFacultyUseCase)
     {
         _httpContextAccessor = httpContextAccessor;
         _getFacultyUseCase = getFacultyUseCase;
         _inviteFacultyUseCase = inviteFacultyUseCase;
+        _updateFacultyUseCase = updateFacultyUseCase;
     }
 
     [HasPermission("Faculty:create")]
@@ -124,6 +126,49 @@ public class FacultyController : ControllerBase
         }
     }
 
+    [HasPermission("Faculty:update")]
+    [HttpPatch("update-faculty")]
+    public async Task<IActionResult> UpdateFaculty(UpdateFacultyRequest request)
+    {
+        try
+        {
+            await _updateFacultyUseCase.UpdateFacultyAsync(new FacultyEntry
+            {
+                FacultyId = request.FacultyId,
+                FirstName = request.FirstName,
+                MiddleName = request.MiddleName,
+                LastName = request.LastName,
+                PhoneNumber = request.PhoneNumber,
+            });
 
+            return Ok(new
+            {
+                Status = true,
+                Message = "Faculty updated successfully.",
+                Data = (object)null,
+                Errors = (string[])null
+            });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
 
 }
