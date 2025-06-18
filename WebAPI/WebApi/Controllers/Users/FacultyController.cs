@@ -97,6 +97,7 @@ public class FacultyController : ControllerBase
                 {
                     FacultyId = facultyMember.FacultyId,
                     FirstName = facultyMember.FirstName,
+                    MiddleName = facultyMember.MiddleName,
                     LastName = facultyMember.LastName,
                     PhoneNumber = facultyMember.PhoneNumber,
                     Email = facultyMember.Email,
