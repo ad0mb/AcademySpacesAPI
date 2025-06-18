@@ -37,6 +37,8 @@ public partial class MyDbContext : DbContext
 
     public virtual DbSet<Student> Students { get; set; }
 
+    public virtual DbSet<StudentParent> StudentParents { get; set; }
+
     public virtual DbSet<UserAppPeference> UserAppPeferences { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -245,6 +247,9 @@ public partial class MyDbContext : DbContext
             entity.Property(e => e.LastName)
                 .HasMaxLength(100)
                 .HasColumnName("last_name");
+            entity.Property(e => e.MiddleName)
+                .HasMaxLength(100)
+                .HasColumnName("middle_name");
             entity.Property(e => e.PhoneNumber)
                 .HasMaxLength(50)
                 .HasColumnName("phone_number");
@@ -362,8 +367,6 @@ public partial class MyDbContext : DbContext
 
             entity.HasIndex(e => e.ClassId, "students_classrooms_class_id_fk");
 
-            entity.HasIndex(e => e.ParentId, "students_parents_parent_id_fk");
-
             entity.HasIndex(e => e.IdentityId, "students_pk_2").IsUnique();
 
             entity.HasIndex(e => e.RoleId, "students_roles_role_id_fk");
@@ -391,7 +394,6 @@ public partial class MyDbContext : DbContext
             entity.Property(e => e.LastName)
                 .HasMaxLength(150)
                 .HasColumnName("last_name");
-            entity.Property(e => e.ParentId).HasColumnName("parent_id");
             entity.Property(e => e.PhoneNumber)
                 .HasMaxLength(50)
                 .HasColumnName("phone_number");
@@ -403,10 +405,6 @@ public partial class MyDbContext : DbContext
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("students_classrooms_class_id_fk");
 
-            entity.HasOne(d => d.Parent).WithMany(p => p.Students)
-                .HasForeignKey(d => d.ParentId)
-                .HasConstraintName("students_parents_parent_id_fk");
-
             entity.HasOne(d => d.Role).WithMany(p => p.Students)
                 .HasForeignKey(d => d.RoleId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -416,6 +414,37 @@ public partial class MyDbContext : DbContext
                 .HasForeignKey(d => d.SchoolId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("students_schools_school_id_fk");
+        });
+
+        modelBuilder.Entity<StudentParent>(entity =>
+        {
+            entity.HasKey(e => new { e.StudentId, e.ParentId })
+                .HasName("PRIMARY")
+                .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
+
+            entity.ToTable("student_parents");
+
+            entity.HasIndex(e => e.ParentId, "student_parents_parents_parent_id_fk");
+
+            entity.Property(e => e.StudentId).HasColumnName("student_id");
+            entity.Property(e => e.ParentId).HasColumnName("parent_id");
+            entity.Property(e => e.DateCreated)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("date_created");
+            entity.Property(e => e.DateModified)
+                .ValueGeneratedOnAddOrUpdate()
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("date_modified");
+
+            entity.HasOne(d => d.Parent).WithMany(p => p.StudentParents)
+                .HasForeignKey(d => d.ParentId)
+                .HasConstraintName("student_parents_parents_parent_id_fk");
+
+            entity.HasOne(d => d.Student).WithMany(p => p.StudentParents)
+                .HasForeignKey(d => d.StudentId)
+                .HasConstraintName("student_parents_students_student_id_fk");
         });
 
         modelBuilder.Entity<UserAppPeference>(entity =>
