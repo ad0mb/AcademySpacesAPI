@@ -103,6 +103,8 @@ builder.Services.AddScoped<IUpdateRoleUseCase, UpdateRoleUseCase>();
 builder.Services.AddScoped<IGetFacultyUseCase, GetFacultyUseCase>();
 builder.Services.AddScoped<IInviteFacultyUseCase, InviteFacultyUseCase>();
 builder.Services.AddScoped<IUpdateFacultyUseCase, UpdateFacultyUseCase>();
+builder.Services.AddScoped<IGetParentsUseCase, GetParentsUseCase>();
+builder.Services.AddScoped<IUpdateParentUseCase, UpdateParentUseCase>();
 //Scoped
 
 //Transient
