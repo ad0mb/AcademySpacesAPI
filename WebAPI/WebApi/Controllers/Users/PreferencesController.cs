@@ -37,8 +37,8 @@ public class PreferencesController : ControllerBase
             
             var response = new GetUserPreferencesResponse
             {
-                PageBrightness = data.PageBrightness,
-                Locale = data.Locale
+                PageBrightness = data.PageBrightness ?? "system",
+                Locale = data.Locale ?? "en"
             };
 
             return Ok(new
