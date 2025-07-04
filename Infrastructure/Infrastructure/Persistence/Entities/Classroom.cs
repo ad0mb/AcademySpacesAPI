@@ -18,6 +18,4 @@ public partial class Classroom
     public virtual Faculty? ClassroomTeacher { get; set; }
 
     public virtual School School { get; set; } = null!;
-
-    public virtual ICollection<Student> Students { get; set; } = new List<Student>();
 }

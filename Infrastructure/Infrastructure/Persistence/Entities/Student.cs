@@ -11,11 +11,11 @@ public partial class Student
 
     public int RoleId { get; set; }
 
-    public int? ClassId { get; set; }
-
     public string? IdentityId { get; set; }
 
     public string FirstName { get; set; } = null!;
+
+    public string? MiddleName { get; set; }
 
     public string LastName { get; set; } = null!;
 
@@ -26,8 +26,6 @@ public partial class Student
     public DateTime? DateCreated { get; set; }
 
     public DateTime? DateModified { get; set; }
-
-    public virtual Classroom? Class { get; set; }
 
     public virtual Role Role { get; set; } = null!;
 
