@@ -62,7 +62,7 @@ public class PermissionsRepository : IPermissionsRepository
                     select rp).ToListAsync();
             }
             
-            if (rolePermissionsResult == null || rolePermissionsResult.Count < 1)
+            if (rolePermissionsResult == null || rolePermissionsResult.Count < 1 || rolePermissionsResult[0] == null)
             {
                 return null;
             }
