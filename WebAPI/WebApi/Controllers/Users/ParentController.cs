@@ -1,7 +1,9 @@
 ﻿using AcademySpacesAPI.WebApi.Attributes;
 using AcademySpacesAPI.WebApi.DTOs.Requests;
+using AcademySpacesAPI.WebApi.DTOs.Responses;
 using Core.ApplicationCore.DomainEntities;
 using Core.ApplicationCore.Interfaces.UseCases;
+using Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,16 +11,20 @@ namespace AcademySpacesAPI.WebApi.Controllers.Users;
 
 [ApiController]
 [Authorize(AuthenticationSchemes = "FirebaseAuthScheme")]
-[Route("api/user/faculty")]
+[Route("api/user/parents")]
 public class ParentController : ControllerBase
 {
     private readonly ICreateParentUseCase _createParentUseCase;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IGetParentsUseCase _getParentsUseCase;
+    private readonly IUpdateParentUseCase _updateParentUseCase;
     
-    public ParentController(ICreateParentUseCase createParentUseCase, IHttpContextAccessor httpContextAccessor)
+    public ParentController(ICreateParentUseCase createParentUseCase, IHttpContextAccessor httpContextAccessor, IGetParentsUseCase getParentsUseCase, IUpdateParentUseCase updateParentUseCase)
     {
         _createParentUseCase = createParentUseCase;
         _httpContextAccessor = httpContextAccessor;
+        _getParentsUseCase = getParentsUseCase;
+        _updateParentUseCase = updateParentUseCase;
     }
 
     [HasPermission("Parent:create")]
@@ -26,21 +32,137 @@ public class ParentController : ControllerBase
     public async Task<IActionResult> CreateParent(CreateParentRequest request)
     {
         var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
-        
-        await _createParentUseCase.CreateParentAsync(new ParentEntry
+
+        try
         {
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            Phone = request.Phone,
-            Email = request.Email,
-        }, schoolId);
-        
-        return Ok(new
+            await _createParentUseCase.CreateParentAsync(new ParentEntry
+            {
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                MiddleName = request.MiddleName,
+                Phone = request.PhoneNumber,
+                Email = request.Email,
+            }, schoolId);
+
+            return Ok(new
+            {
+                Status = true,
+                Message = "Parent created and invited.",
+                Data = (object)null,
+                Errors = (string[])null
+            });
+        }
+        catch (DbException ex)
         {
-            Status = true,
-            Message = "Parent created and invited.",
-            Data = (object)null,
-            Errors = (string[])null
-        });
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (DuplicateEmailException ex)
+        {
+            return StatusCode(409, new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+
+    [HasPermission("Parent:view")]
+    [HttpGet("get-parents")]
+    public async Task<IActionResult> GetParents()
+    {
+        var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+
+        var parentsList = new List<GetParentsResponse>();
+
+        try
+        {
+            var parents = await _getParentsUseCase.GetParentsAsync(schoolId);
+
+            foreach (var parent in parents)
+            {
+                parentsList.Add(new GetParentsResponse
+                {
+                    ParentId = parent.ParentId,
+                    FirstName = parent.FirstName,
+                    MiddleName = parent.MiddleName,
+                    LastName = parent.LastName,
+                    PhoneNumber = parent.Phone,
+                    Email = parent.Email
+                });
+            }
+
+            return Ok(new
+                {
+                    Status = true,
+                    Message = "Retrieved parents successfully.",
+                    Data = parentsList,
+                    Errors = (string[])null
+                }
+            );
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+
+    [HasPermission("Parent:update")]
+    [HttpPatch("update-parent")]
+    public async Task<IActionResult> UpdateParent(UpdateParentRequest request)
+    { 
+        try
+        {
+            await _updateParentUseCase.UpdateParentAsync(new ParentEntry
+            {
+                ParentId = request.ParentId,
+                FirstName = request.FirstName,
+                MiddleName = request.MiddleName,
+                LastName = request.LastName,
+                Phone = request.PhoneNumber,
+                Email = request.Email
+            });
+            
+            return Ok(new
+            {
+                Status = true,
+                Message = "Parent updated successfully.",
+                Data = (object)null,
+                Errors = (string[])null
+            });
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
     }
 }

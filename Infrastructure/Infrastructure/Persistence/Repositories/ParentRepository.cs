@@ -10,16 +10,25 @@ namespace Infrastructure.Infrastructure.Persistence.Repositories;
 public class ParentRepository : IParentRepository
 {
     private readonly MyDbContext _context;
-    
+
     public ParentRepository(MyDbContext context)
     {
         _context = context;
     }
-    
+
     public async Task CreateParentAsync(ParentEntry parent)
     {
         try
         {
+            var existingEmail = await (from p in _context.Parents
+                where p.Email == parent.Email && p.SchoolId == parent.SchoolId
+                select p.Email).FirstOrDefaultAsync();
+            
+            if (existingEmail == parent.Email && parent.Email != null && parent.Email.Length > 0)
+            {
+                throw new DuplicateEmailException("Email already exists");
+            }
+            
             var roleId = await (from r in _context.Roles
                 where r.RoleName == "Parent" && r.SchoolId == parent.SchoolId
                 select r.RoleId).FirstOrDefaultAsync();
@@ -29,6 +38,7 @@ public class ParentRepository : IParentRepository
                 SchoolId = parent.SchoolId,
                 RoleId = roleId,
                 FirstName = parent.FirstName,
+                MiddleName = parent.MiddleName,
                 LastName = parent.LastName,
                 PhoneNumber = parent.Phone,
                 Email = parent.Email,
@@ -40,9 +50,100 @@ public class ParentRepository : IParentRepository
             {
                 throw new NoRowsAffectedException("Now rows were affected when creating the parent.");
             }
-        } catch (DbUpdateException ex)
+        }
+        catch (DbUpdateException ex)
         {
             throw new DbException("Issue adding parent to the database", ex);
+        }
+    }
+
+    public async Task<ParentEntry> GetParentByParentIdAsync(int parentId)
+    {
+        try
+        {
+            var parent = await (from p in _context.Parents
+                where p.ParentId == parentId
+                select p).FirstOrDefaultAsync();
+
+            if (parent == null)
+            {
+                throw new NotFoundException("Parent not found");
+            }
+
+            var parentEntry = new ParentEntry
+            {
+                ParentId = parent.ParentId,
+                SchoolId = parent.SchoolId,
+                FirstName = parent.FirstName,
+                MiddleName = parent.MiddleName,
+                LastName = parent.LastName,
+                Phone = parent.PhoneNumber,
+                Email = parent.Email
+            };
+
+            return parentEntry;
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue retrieving parent from the database", ex);
+        }
+    }
+
+    public async Task<List<ParentEntry>> GetParentsBySchoolIdAsync(int schoolId)
+    {
+        try
+        {
+            List<ParentEntry> parents = new List<ParentEntry>();
+
+            var dbParents = await (from p in _context.Parents
+                where p.SchoolId == schoolId
+                select p).ToListAsync();
+
+            foreach (var parent in dbParents)
+            {
+                parents.Add(new ParentEntry
+                {
+                    ParentId = parent.ParentId,
+                    FirstName = parent.FirstName,
+                    MiddleName = parent.MiddleName,
+                    LastName = parent.LastName,
+                    Phone = parent.PhoneNumber,
+                    Email = parent.Email
+                });
+            }
+
+            return parents;
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue retrieving parents from the database", ex);
+        }
+    }
+
+    public async Task UpdateParentAsync(ParentEntry parent)
+    {
+        try
+        {
+            var existingParent = await (from p in _context.Parents
+                where p.ParentId == parent.ParentId
+                select p).FirstOrDefaultAsync();
+
+            if (existingParent == null)
+            {
+                throw new NotFoundException("Parent not found");
+            }
+
+            existingParent.FirstName = parent.FirstName;
+            existingParent.MiddleName = parent.MiddleName;
+            existingParent.LastName = parent.LastName;
+            existingParent.PhoneNumber = parent.Phone;
+            existingParent.Email = parent.Email;
+
+            var result = await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Isseue updating parent in the database", ex);
         }
     }
 }

@@ -11,13 +11,11 @@ public partial class Student
 
     public int RoleId { get; set; }
 
-    public int? ParentId { get; set; }
-
-    public int? ClassId { get; set; }
-
     public string? IdentityId { get; set; }
 
     public string FirstName { get; set; } = null!;
+
+    public string? MiddleName { get; set; }
 
     public string LastName { get; set; } = null!;
 
@@ -29,11 +27,9 @@ public partial class Student
 
     public DateTime? DateModified { get; set; }
 
-    public virtual Classroom? Class { get; set; }
-
-    public virtual Parent? Parent { get; set; }
-
     public virtual Role Role { get; set; } = null!;
 
     public virtual School School { get; set; } = null!;
+
+    public virtual ICollection<StudentParent> StudentParents { get; set; } = new List<StudentParent>();
 }

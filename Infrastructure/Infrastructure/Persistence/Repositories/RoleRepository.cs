@@ -153,7 +153,7 @@ public class RoleRepository : IRoleRepository
                     where r.SchoolId == request.SchoolId && r.RoleName == request.RoleName
                     select r.RoleName).FirstOrDefaultAsync();
             
-            if (roleName == request.RoleName)
+            if (request.RoleName != role.RoleName && roleName == request.RoleName)
             {
                 throw new DuplicateNameException("A role with this name already exists.");
             }

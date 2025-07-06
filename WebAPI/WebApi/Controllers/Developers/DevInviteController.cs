@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Text;
 using Core.ApplicationCore.Interfaces.Adapters;
+using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
@@ -14,12 +15,14 @@ public class DevInviteController : ControllerBase
     
     private readonly IConfiguration _configuration;
     private readonly IEmailService _emailService;
+    private readonly FirebaseAuth _authService;
 
     //TODO: Add special auth scheme for dev collection of endpoints
-    public DevInviteController(IConfiguration configuration, IEmailService emailService)
+    public DevInviteController(IConfiguration configuration, IEmailService emailService, FirebaseAuth firebaseAuth)
     {
         _configuration = configuration;
         _emailService = emailService;
+        _authService = firebaseAuth;
     }
     
     [HttpPost("invite-admin/{email}")]
@@ -47,6 +50,26 @@ public class DevInviteController : ControllerBase
             Status = true,
             Message = "Invitation sent successfully.",
             Data = new { email },
+            Errors = (string[])null
+        });
+    }
+
+    [HttpPost("add-claim")]
+    public async Task<IActionResult> AddClaim(string identityId, string claimType, string claimValue)
+    {
+        // await _authService.SetCustomUserClaimsAsync(identityId, new Dictionary<string, object>
+        // {
+        //     { claimType, claimValue }
+        // });
+
+        var userRecord = await _authService.GetUserAsync(identityId);
+        Console.WriteLine(userRecord.CustomClaims.ToString());
+
+        return Ok(new
+        {
+            Status = true,
+            Message = "Claim added successfully.",
+            Data = new { identityId, claimType, claimValue },
             Errors = (string[])null
         });
     }
