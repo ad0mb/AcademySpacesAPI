@@ -169,9 +169,9 @@ public class FacultyRepository : IFacultyRepository
         {
             List<FacultyEntry> faculty = new List<FacultyEntry>();
             
-            var dbFaculty = await (from r in _context.Faculties
-                where r.SchoolId == schoolId
-                select r).ToListAsync();
+            var dbFaculty = await (from f in _context.Faculties
+                where f.SchoolId == schoolId
+                select f).ToListAsync();
 
             foreach (var user in dbFaculty)
             {
@@ -191,6 +191,49 @@ public class FacultyRepository : IFacultyRepository
             }
             
             return faculty;
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue retrieving faculty from the database", ex);
+        }
+    }
+    
+    public async Task<(List<FacultyEntry> facultyList, int totalCount)> GetFacultyBySchoolIdAsync(int schoolId, int pageSize, int pageNumber)
+    {
+        try
+        {
+            List<FacultyEntry> faculty = new List<FacultyEntry>();
+
+            var totalCount = await (from f in _context.Faculties
+                where f.SchoolId == schoolId
+                select f).CountAsync();
+            
+            var dbFaculty = await (from f in _context.Faculties
+                where f.SchoolId == schoolId
+                orderby f.FacultyId
+                select f)
+                .Skip((pageNumber -1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            foreach (var user in dbFaculty)
+            {
+                faculty.Add(new FacultyEntry
+                {
+                    FacultyId = user.FacultyId,
+                    SchoolId = user.SchoolId,
+                    IdentityId = user.IdentityId,
+                    FirstName = user.FirstName,
+                    MiddleName = user.MiddleName,
+                    LastName = user.LastName,
+                    PhoneNumber = user.PhoneNumber,
+                    Email = user.Email,
+                    DateCreated = user.DateCreated,
+                    DateUpdated = user.DateModified
+                });
+            }
+            
+            return (faculty, totalCount);
         }
         catch (DbUpdateException ex)
         {
