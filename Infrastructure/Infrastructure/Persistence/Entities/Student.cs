@@ -27,6 +27,8 @@ public partial class Student
 
     public DateTime? DateModified { get; set; }
 
+    public virtual ICollection<ClassroomStudent> ClassroomStudents { get; set; } = new List<ClassroomStudent>();
+
     public virtual Role Role { get; set; } = null!;
 
     public virtual School School { get; set; } = null!;
