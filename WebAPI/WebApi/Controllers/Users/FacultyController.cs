@@ -81,16 +81,30 @@ public class FacultyController : ControllerBase
 
     [HasPermission("Faculty:view")]
     [HttpGet("get-faculty")]
-    public async Task<IActionResult> GetFaculty()
+    public async Task<IActionResult> GetFaculty([FromQuery] int? pageSize, [FromQuery] int? pageNumber, [FromQuery] string? sortBy)
     {
         var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
-
+        
+        int count = 0;
+        
         var facultyList = new List<GetFacultyResponse>();
-
+        
         try
         {
-            var faculty = await _getFacultyUseCase.GetFacultyAsync(schoolId);
+            List<FacultyEntry> faculty;
             
+            if (pageSize != null && pageNumber != null)
+            {
+                var (sortedList, totalCount)= await _getFacultyUseCase.GetFacultyAsync(schoolId, pageSize.Value, pageNumber.Value, sortBy);
+                faculty = sortedList;
+                count = totalCount;
+            }
+            else
+            {
+                faculty = await _getFacultyUseCase.GetFacultyAsync(schoolId);
+                count = faculty.Count;
+            }
+
             foreach (var facultyMember in faculty)
             {
                 facultyList.Add(new GetFacultyResponse
@@ -110,7 +124,11 @@ public class FacultyController : ControllerBase
                 {
                     Status = true,
                     Message = "Retrieved faculty successfully.",
-                    Data = facultyList,
+                    Data = new
+                    {
+                        FacultyList = facultyList,
+                        TotalCount = count
+                    },
                     Errors = (string[])null
                 }
             );
