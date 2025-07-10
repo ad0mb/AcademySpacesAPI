@@ -108,6 +108,8 @@ builder.Services.AddScoped<IUpdateFacultyUseCase, UpdateFacultyUseCase>();
 builder.Services.AddScoped<IGetParentsUseCase, GetParentsUseCase>();
 builder.Services.AddScoped<IUpdateParentUseCase, UpdateParentUseCase>();
 builder.Services.AddScoped<IGetStudentsUseCase, GetStudentsUseCase>();
+builder.Services.AddScoped<ICreateClassroomUseCase, CreateClassroomUseCase>();
+builder.Services.AddScoped<IGetClassroomsUseCase, GetClassroomsUseCase>();
 //Scoped
 
 //Transient
