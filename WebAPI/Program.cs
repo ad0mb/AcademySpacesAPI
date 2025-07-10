@@ -91,6 +91,7 @@ builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IPermissionsRepository, PermissionsRepository>();
 builder.Services.AddScoped<IWebPreferencesRepository, WebPreferencesRepository>();
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+builder.Services.AddScoped<IClassroomRepository, ClassroomRepository>();
 
 builder.Services.AddScoped<IRegisterSchoolAndAdminUseCase, RegisterSchoolAndAdminUseCase>();
 builder.Services.AddScoped<ICreateParentUseCase, CreateParentUseCase>();
