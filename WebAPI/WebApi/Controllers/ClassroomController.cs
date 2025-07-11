@@ -76,7 +76,7 @@ public class ClassroomController : ControllerBase
 
     [HasPermission("Classroom:view")]
     [HttpGet("get-classrooms")]
-    public async Task<IActionResult> GetClassrooms([FromQuery] int? pageSize, [FromQuery] int? pageNumber)
+    public async Task<IActionResult> GetClassrooms([FromQuery] int pageSize, [FromQuery] int pageNumber, [FromQuery] string? searchTerm)
     {
         try
         {
@@ -84,20 +84,12 @@ public class ClassroomController : ControllerBase
             
             var schooldId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
 
-            List< ClassroomEntry> classrooms;
+            List<ClassroomEntry> classrooms;
             int count = 0;
-            
-            if (pageSize != null && pageNumber != null)
-            {
-                var (sortedList, totalCount) = await _getClassroomsUseCase.GetClassroomsAsync(schooldId, pageSize.Value, pageNumber.Value);
-                classrooms = sortedList;
-                count = totalCount;
-            }
-            else
-            {
-                classrooms = await _getClassroomsUseCase.GetClassroomsAsync(schooldId);
-                count = classrooms.Count;
-            }
+
+            var (sortedList, totalCount) = await _getClassroomsUseCase.GetClassroomsAsync(schooldId, pageSize, pageNumber, searchTerm);
+            classrooms = sortedList;
+            count = totalCount; //TODO: Come back and make sure count is only grabbed in repostiory using a query if pagination is being used, currently it grabs count using a second query on any case.
 
             foreach (var classroom in classrooms)
             {
