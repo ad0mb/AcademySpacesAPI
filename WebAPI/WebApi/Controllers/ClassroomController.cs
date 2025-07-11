@@ -76,7 +76,7 @@ public class ClassroomController : ControllerBase
 
     [HasPermission("Classroom:view")]
     [HttpGet("get-classrooms")]
-    public async Task<IActionResult> GetClassrooms()
+    public async Task<IActionResult> GetClassrooms([FromQuery] int? pageSize, [FromQuery] int? pageNumber)
     {
         try
         {
@@ -84,7 +84,20 @@ public class ClassroomController : ControllerBase
             
             var schooldId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
 
-            var classrooms = await _getClassroomsUseCase.GetClassroomsAsync(schooldId);
+            List< ClassroomEntry> classrooms;
+            int count = 0;
+            
+            if (pageSize != null && pageNumber != null)
+            {
+                var (sortedList, totalCount) = await _getClassroomsUseCase.GetClassroomsAsync(schooldId, pageSize.Value, pageNumber.Value);
+                classrooms = sortedList;
+                count = totalCount;
+            }
+            else
+            {
+                classrooms = await _getClassroomsUseCase.GetClassroomsAsync(schooldId);
+                count = classrooms.Count;
+            }
 
             foreach (var classroom in classrooms)
             {
@@ -98,13 +111,18 @@ public class ClassroomController : ControllerBase
                 });
             }
             
-            return Ok(new
-            {
-                Status = true,
-                Message = "Classroom retrieved successfully.",
-                Data = classroomsList,
-                Errors = (string[])null
-            });
+            return Ok( new
+                {
+                    Status = true,
+                    Message = "Retrieved classrooms successfully.",
+                    Data = new
+                    {
+                        ClassroomsList = classroomsList,
+                        TotalCount = count
+                    },
+                    Errors = (string[])null
+                }
+            );
         }
         catch (DbException ex)
         {
