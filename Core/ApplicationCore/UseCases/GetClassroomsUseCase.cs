@@ -20,4 +20,11 @@ public class GetClassroomsUseCase : IGetClassroomsUseCase
 
         return classrooms;
     }
+    
+    public async Task<(List<ClassroomEntry> classrooms, int totalCount)> GetClassroomsAsync(int schoolId, int pageSize, int pageNumber)
+    {
+        var (classrooms, totalCount) = await _classroomRepository.GetClassroomsAsync(schoolId, pageSize, pageNumber);
+        
+        return (classrooms, totalCount);
+    }
 }

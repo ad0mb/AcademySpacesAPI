@@ -80,4 +80,52 @@ public class ClassroomRepository : IClassroomRepository
             throw new DbException("Issue retrieving classrooms from the database", ex);
         }
     }
+    
+    public async Task<(List<ClassroomEntry> classroomsList, int totalCount)> GetClassroomsAsync(int schoolId, int pageSize, int pageNumber)
+    {
+        try
+        {
+            List<ClassroomEntry> classrooms = new List<ClassroomEntry>();
+
+            var totalCount = await (from c in _context.Classrooms
+                where c.SchoolId == schoolId
+                select c).CountAsync();
+                    
+            var dbClassrooms = await (from c in _context.Classrooms
+                from f in _context.Faculties.Where(f => f.FacultyId == c.ClassroomTeacherId).DefaultIfEmpty()
+                join cs in _context.ClassroomStudents on c.ClassroomId equals cs.ClassroomId into studentGroup
+                where c.SchoolId == schoolId
+                orderby c.ClassroomId
+                select new
+                {
+                    Classroom = c,
+                    NumberOfStudents = studentGroup.Count(),
+                    ClassroomTeacherName =
+                        (f != null ? f.FirstName : "") +
+                        (f != null && !string.IsNullOrEmpty(f.MiddleName) ? " " + f.MiddleName : "") +
+                        (f != null && !string.IsNullOrEmpty(f.LastName) ? " " + f.LastName : "")
+                })
+                .Skip((pageNumber -1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            
+            foreach (var classroom in dbClassrooms)
+            {
+                classrooms.Add(new ClassroomEntry
+                {
+                    ClassroomId = classroom.Classroom.ClassroomId,
+                    ClassroomTeacherId = classroom.Classroom.ClassroomTeacherId,
+                    ClassroomName = classroom.Classroom.ClassroomName,
+                    NumberOfStudents = classroom.NumberOfStudents,
+                    ClassroomTeacherName = classroom.ClassroomTeacherName
+                });
+            }
+
+            return (classrooms, totalCount);
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue retrieving classrooms from the database", ex);
+        }
+    }
 }
