@@ -13,17 +13,10 @@ public class GetClassroomsUseCase : IGetClassroomsUseCase
     {
         _classroomRepository = classroomRepository;
     }
-
-    public async Task<List<ClassroomEntry>> GetClassroomsAsync(int schoolId)
-    {
-        var classrooms = await _classroomRepository.GetClassroomsAsync(schoolId);
-
-        return classrooms;
-    }
     
-    public async Task<(List<ClassroomEntry> classrooms, int totalCount)> GetClassroomsAsync(int schoolId, int pageSize, int pageNumber)
+    public async Task<(List<ClassroomEntry> classrooms, int totalCount)> GetClassroomsAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm)
     {
-        var (classrooms, totalCount) = await _classroomRepository.GetClassroomsAsync(schoolId, pageSize, pageNumber);
+        var (classrooms, totalCount) = await _classroomRepository.GetClassroomsAsync(schoolId, pageSize, pageNumber, searchTerm);
         
         return (classrooms, totalCount);
     }
