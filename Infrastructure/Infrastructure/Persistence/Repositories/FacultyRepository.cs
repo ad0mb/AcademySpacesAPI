@@ -162,59 +162,41 @@ public class FacultyRepository : IFacultyRepository
             throw new DbException("Issue retrieving faculty from the database", ex);
         }
     }
-
-    public async Task<List<FacultyEntry>> GetFacultyBySchoolIdAsync(int schoolId)
-    {
-        try
-        {
-            List<FacultyEntry> faculty = new List<FacultyEntry>();
-            
-            var dbFaculty = await (from f in _context.Faculties
-                where f.SchoolId == schoolId
-                select f).ToListAsync();
-
-            foreach (var user in dbFaculty)
-            {
-                faculty.Add(new FacultyEntry
-                {
-                    FacultyId = user.FacultyId,
-                    SchoolId = user.SchoolId,
-                    IdentityId = user.IdentityId,
-                    FirstName = user.FirstName,
-                    MiddleName = user.MiddleName,
-                    LastName = user.LastName,
-                    PhoneNumber = user.PhoneNumber,
-                    Email = user.Email,
-                    DateCreated = user.DateCreated,
-                    DateUpdated = user.DateModified
-                });
-            }
-            
-            return faculty;
-        }
-        catch (DbUpdateException ex)
-        {
-            throw new DbException("Issue retrieving faculty from the database", ex);
-        }
-    }
     
-    public async Task<(List<FacultyEntry> facultyList, int totalCount)> GetFacultyBySchoolIdAsync(int schoolId, int pageSize, int pageNumber)
+    public async Task<(List<FacultyEntry> facultyList, int totalCount)> GetFacultyBySchoolIdAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm)
     {
         try
         {
             List<FacultyEntry> faculty = new List<FacultyEntry>();
 
-            var totalCount = await (from f in _context.Faculties
+            IQueryable<Faculty> query = from f in _context.Faculties
                 where f.SchoolId == schoolId
-                select f).CountAsync();
-            
-            var dbFaculty = await (from f in _context.Faculties
-                where f.SchoolId == schoolId
+
+                      //Search filter
+                      && (
+                          string.IsNullOrEmpty(searchTerm) // If searchTerm is null or empty, return all classrooms
+                          || (
+                              f != null &&
+                              ( // Search by teacher's name
+                                  (f.FirstName != null && f.FirstName.ToLower().Contains(searchTerm)) ||
+                                  (f.MiddleName != null && f.MiddleName.ToLower().Contains(searchTerm)) ||
+                                  (f.LastName != null && f.LastName.ToLower().Contains(searchTerm))
+                              )
+                          )
+                      )
+
                 orderby f.FacultyId
-                select f)
-                .Skip((pageNumber -1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
+                select f;
+            
+            var totalCount = await query.CountAsync();
+            
+            if (pageSize > 0 && pageNumber > 0)
+            {
+                query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            }
+                
+            var dbFaculty = await query.ToListAsync();
+            
 
             foreach (var user in dbFaculty)
             {

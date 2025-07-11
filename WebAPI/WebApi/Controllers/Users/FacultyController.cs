@@ -81,7 +81,7 @@ public class FacultyController : ControllerBase
 
     [HasPermission("Faculty:view")]
     [HttpGet("get-faculty")]
-    public async Task<IActionResult> GetFaculty([FromQuery] int? pageSize, [FromQuery] int? pageNumber, [FromQuery] string? sortBy)
+    public async Task<IActionResult> GetFaculty([FromQuery] int pageSize, [FromQuery] int pageNumber, [FromQuery] string? searchTerm)
     {
         var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
         
@@ -93,17 +93,9 @@ public class FacultyController : ControllerBase
         {
             List<FacultyEntry> faculty;
             
-            if (pageSize != null && pageNumber != null)
-            {
-                var (sortedList, totalCount)= await _getFacultyUseCase.GetFacultyAsync(schoolId, pageSize.Value, pageNumber.Value, sortBy);
-                faculty = sortedList;
-                count = totalCount;
-            }
-            else
-            {
-                faculty = await _getFacultyUseCase.GetFacultyAsync(schoolId);
-                count = faculty.Count;
-            }
+            var (sortedList, totalCount)= await _getFacultyUseCase.GetFacultyAsync(schoolId, pageSize, pageNumber, searchTerm);
+            faculty = sortedList;
+            count = totalCount; //TODO: Come back and make sure count is only grabbed in repostiory using a query if pagination is being used, currently it grabs count using a second query on any case.
 
             foreach (var facultyMember in faculty)
             {
