@@ -34,4 +34,6 @@ public partial class School
     public virtual ICollection<SchoolCourse> SchoolCourses { get; set; } = new List<SchoolCourse>();
 
     public virtual ICollection<Student> Students { get; set; } = new List<Student>();
+
+    public virtual ICollection<YearLevel> YearLevels { get; set; } = new List<YearLevel>();
 }
