@@ -111,6 +111,7 @@ builder.Services.AddScoped<IUpdateParentUseCase, UpdateParentUseCase>();
 builder.Services.AddScoped<IGetStudentsUseCase, GetStudentsUseCase>();
 builder.Services.AddScoped<ICreateClassroomUseCase, CreateClassroomUseCase>();
 builder.Services.AddScoped<IGetClassroomsUseCase, GetClassroomsUseCase>();
+builder.Services.AddScoped<IGetYearLevelHierarchyUseCase, GetYearLevelHierarchyUseCase>();
 builder.Services.AddScoped<ISetYearLevelHierarchyUseCase, SetYearLevelHierarchyUseCase>();
 //Scoped
 
