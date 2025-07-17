@@ -21,6 +21,8 @@ public partial class School
 
     public virtual ICollection<Classroom> Classrooms { get; set; } = new List<Classroom>();
 
+    public virtual ICollection<Course> Courses { get; set; } = new List<Course>();
+
     public virtual ICollection<Faculty> Faculties { get; set; } = new List<Faculty>();
 
     public virtual Organization? Organization { get; set; }
@@ -30,8 +32,6 @@ public partial class School
     public virtual ICollection<Role> Roles { get; set; } = new List<Role>();
 
     public virtual ICollection<SchoolConfiguration> SchoolConfigurations { get; set; } = new List<SchoolConfiguration>();
-
-    public virtual ICollection<SchoolCourse> SchoolCourses { get; set; } = new List<SchoolCourse>();
 
     public virtual ICollection<Student> Students { get; set; } = new List<Student>();
 

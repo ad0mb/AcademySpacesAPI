@@ -23,6 +23,8 @@ public partial class MyDbContext : DbContext
 
     public virtual DbSet<ClassroomStudent> ClassroomStudents { get; set; }
 
+    public virtual DbSet<Course> Courses { get; set; }
+
     public virtual DbSet<Faculty> Faculties { get; set; }
 
     public virtual DbSet<FacultyRole> FacultyRoles { get; set; }
@@ -38,8 +40,6 @@ public partial class MyDbContext : DbContext
     public virtual DbSet<School> Schools { get; set; }
 
     public virtual DbSet<SchoolConfiguration> SchoolConfigurations { get; set; }
-
-    public virtual DbSet<SchoolCourse> SchoolCourses { get; set; }
 
     public virtual DbSet<Student> Students { get; set; }
 
@@ -169,6 +169,40 @@ public partial class MyDbContext : DbContext
             entity.HasOne(d => d.Student).WithMany(p => p.ClassroomStudents)
                 .HasForeignKey(d => d.StudentId)
                 .HasConstraintName("classroom_students_students_student_id_fk");
+        });
+
+        modelBuilder.Entity<Course>(entity =>
+        {
+            entity.HasKey(e => e.CourseId).HasName("PRIMARY");
+
+            entity.ToTable("courses");
+
+            entity.HasIndex(e => e.SchoolId, "courses_schools_school_id_fk");
+
+            entity.Property(e => e.CourseId).HasColumnName("course_id");
+            entity.Property(e => e.CourseCode)
+                .HasMaxLength(10)
+                .HasColumnName("course_code");
+            entity.Property(e => e.CourseDescription)
+                .HasMaxLength(255)
+                .HasColumnName("course_description");
+            entity.Property(e => e.CourseName)
+                .HasMaxLength(150)
+                .HasColumnName("course_name");
+            entity.Property(e => e.DateCreated)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("date_created");
+            entity.Property(e => e.DateModified)
+                .ValueGeneratedOnAddOrUpdate()
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("date_modified");
+            entity.Property(e => e.SchoolId).HasColumnName("school_id");
+
+            entity.HasOne(d => d.School).WithMany(p => p.Courses)
+                .HasForeignKey(d => d.SchoolId)
+                .HasConstraintName("courses_schools_school_id_fk");
         });
 
         modelBuilder.Entity<Faculty>(entity =>
@@ -434,32 +468,6 @@ public partial class MyDbContext : DbContext
             entity.HasOne(d => d.School).WithMany(p => p.SchoolConfigurations)
                 .HasForeignKey(d => d.SchoolId)
                 .HasConstraintName("school_configuration_schools_school_id_fk");
-        });
-
-        modelBuilder.Entity<SchoolCourse>(entity =>
-        {
-            entity.HasKey(e => e.CourseId).HasName("PRIMARY");
-
-            entity.ToTable("school_courses");
-
-            entity.HasIndex(e => e.SchoolId, "school_courses_schools_school_id_fk");
-
-            entity.Property(e => e.CourseId).HasColumnName("course_id");
-            entity.Property(e => e.CourseName).HasColumnName("course_name");
-            entity.Property(e => e.DateCreated)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("datetime")
-                .HasColumnName("date_created");
-            entity.Property(e => e.DateModified)
-                .ValueGeneratedOnAddOrUpdate()
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("datetime")
-                .HasColumnName("date_modified");
-            entity.Property(e => e.SchoolId).HasColumnName("school_id");
-
-            entity.HasOne(d => d.School).WithMany(p => p.SchoolCourses)
-                .HasForeignKey(d => d.SchoolId)
-                .HasConstraintName("school_courses_schools_school_id_fk");
         });
 
         modelBuilder.Entity<Student>(entity =>
