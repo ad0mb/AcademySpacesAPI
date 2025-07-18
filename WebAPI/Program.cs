@@ -114,6 +114,7 @@ builder.Services.AddScoped<ICreateClassroomUseCase, CreateClassroomUseCase>();
 builder.Services.AddScoped<IGetClassroomsUseCase, GetClassroomsUseCase>();
 builder.Services.AddScoped<IGetYearLevelHierarchyUseCase, GetYearLevelHierarchyUseCase>();
 builder.Services.AddScoped<ISetYearLevelHierarchyUseCase, SetYearLevelHierarchyUseCase>();
+builder.Services.AddScoped<IGetCoursesUseCase, GetCoursesUseCase>();
 //Scoped
 
 //Transient
