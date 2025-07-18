@@ -18,12 +18,14 @@ public class CoursesController : ControllerBase
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IGetCoursesUseCase _getCoursesUseCase;
     private readonly ICreateCourseUseCase _createCourseUseCase;
+    private readonly IUpdateCourseUseCase _updateCourseUseCase;
     
-    public CoursesController(IHttpContextAccessor httpContextAccessor, IGetCoursesUseCase getCoursesUseCase, ICreateCourseUseCase createCourseUseCase)
+    public CoursesController(IHttpContextAccessor httpContextAccessor, IGetCoursesUseCase getCoursesUseCase, ICreateCourseUseCase createCourseUseCase, IUpdateCourseUseCase updateCourseUseCase)
     {
         _httpContextAccessor = httpContextAccessor;
         _getCoursesUseCase = getCoursesUseCase;
         _createCourseUseCase = createCourseUseCase;
+        _updateCourseUseCase = updateCourseUseCase;
     }
     
     [HasPermission("Courses:view")]
@@ -116,5 +118,63 @@ public class CoursesController : ControllerBase
             });
         }
     }
-    
+
+    [HasPermission("Courses:update")]
+    [HttpPatch("update-course")]
+    public async Task<IActionResult> UpdateCourse(UpdateCourseRequest updateCourseRequest)
+    {
+        try
+        {
+            var schooldId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+
+            var courseEntry = new CourseEntry
+            {
+                CourseId = updateCourseRequest.CourseId,
+                SchoolId = schooldId,
+                CourseName = updateCourseRequest.CourseName,
+                CourseCode = updateCourseRequest.CourseCode,
+                CourseDescription = updateCourseRequest.CourseDescription,
+            };
+
+            await _updateCourseUseCase.UpdateCourseAsync(courseEntry);
+
+            return Ok(new
+            {
+                Status = true,
+                Message = "Course updated successfully.",
+                Data = new { },
+                Errors = (string[])null
+            });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (DuplicateNameException ex)
+        {
+            return StatusCode(409, new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
 }
