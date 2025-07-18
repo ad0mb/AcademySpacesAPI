@@ -162,16 +162,41 @@ public class FacultyRepository : IFacultyRepository
             throw new DbException("Issue retrieving faculty from the database", ex);
         }
     }
-
-    public async Task<List<FacultyEntry>> GetFacultyBySchoolIdAsync(int schoolId)
+    
+    public async Task<(List<FacultyEntry> facultyList, int totalCount)> GetFacultyBySchoolIdAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm)
     {
         try
         {
             List<FacultyEntry> faculty = new List<FacultyEntry>();
+
+            IQueryable<Faculty> query = from f in _context.Faculties
+                where f.SchoolId == schoolId
+
+                      //Search filter
+                      && (
+                          string.IsNullOrEmpty(searchTerm) // If searchTerm is null or empty, return all classrooms
+                          || (
+                              f != null &&
+                              ( // Search by teacher's name
+                                  (f.FirstName != null && f.FirstName.ToLower().Contains(searchTerm)) ||
+                                  (f.MiddleName != null && f.MiddleName.ToLower().Contains(searchTerm)) ||
+                                  (f.LastName != null && f.LastName.ToLower().Contains(searchTerm))
+                              )
+                          )
+                      )
+
+                orderby f.FacultyId
+                select f;
             
-            var dbFaculty = await (from r in _context.Faculties
-                where r.SchoolId == schoolId
-                select r).ToListAsync();
+            var totalCount = await query.CountAsync();
+            
+            if (pageSize > 0 && pageNumber > 0)
+            {
+                query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            }
+                
+            var dbFaculty = await query.ToListAsync();
+            
 
             foreach (var user in dbFaculty)
             {
@@ -190,7 +215,7 @@ public class FacultyRepository : IFacultyRepository
                 });
             }
             
-            return faculty;
+            return (faculty, totalCount);
         }
         catch (DbUpdateException ex)
         {

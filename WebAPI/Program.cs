@@ -91,6 +91,9 @@ builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IPermissionsRepository, PermissionsRepository>();
 builder.Services.AddScoped<IWebPreferencesRepository, WebPreferencesRepository>();
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+builder.Services.AddScoped<IClassroomRepository, ClassroomRepository>();
+builder.Services.AddScoped<IYearLevelRepository, YearLevelRepository>();
+builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 
 builder.Services.AddScoped<IRegisterSchoolAndAdminUseCase, RegisterSchoolAndAdminUseCase>();
 builder.Services.AddScoped<ICreateParentUseCase, CreateParentUseCase>();
@@ -107,6 +110,13 @@ builder.Services.AddScoped<IUpdateFacultyUseCase, UpdateFacultyUseCase>();
 builder.Services.AddScoped<IGetParentsUseCase, GetParentsUseCase>();
 builder.Services.AddScoped<IUpdateParentUseCase, UpdateParentUseCase>();
 builder.Services.AddScoped<IGetStudentsUseCase, GetStudentsUseCase>();
+builder.Services.AddScoped<ICreateClassroomUseCase, CreateClassroomUseCase>();
+builder.Services.AddScoped<IGetClassroomsUseCase, GetClassroomsUseCase>();
+builder.Services.AddScoped<IGetYearLevelHierarchyUseCase, GetYearLevelHierarchyUseCase>();
+builder.Services.AddScoped<ISetYearLevelHierarchyUseCase, SetYearLevelHierarchyUseCase>();
+builder.Services.AddScoped<IGetCoursesUseCase, GetCoursesUseCase>();
+builder.Services.AddScoped<ICreateCourseUseCase, CreateCourseUseCase>();
+builder.Services.AddScoped<IUpdateCourseUseCase, UpdateCourseUseCase>();
 //Scoped
 
 //Transient
