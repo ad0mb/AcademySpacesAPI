@@ -21,6 +21,10 @@ public partial class Announcment
 
     public string? AnnouncmentName { get; set; }
 
+    public DateTime? DateCreated { get; set; }
+
+    public DateTime? DateModified { get; set; }
+
     public virtual School School { get; set; } = null!;
 
     public virtual Faculty Sender { get; set; } = null!;

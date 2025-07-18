@@ -14,11 +14,10 @@ public class GetFacultyUseCase : IGetFacultyUseCase
         _facultyRepository = facultyRepository;
     }
     
-    public async Task<List<FacultyEntry>> GetFacultyAsync(int schoolId)
+    public async Task<(List<FacultyEntry> facultyList, int totalCount)> GetFacultyAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm)
     {
-
-        var faculty = await _facultyRepository.GetFacultyBySchoolIdAsync(schoolId);
-
-        return faculty;
+        var faculty = await _facultyRepository.GetFacultyBySchoolIdAsync(schoolId, pageSize, pageNumber, searchTerm);
+        
+        return (faculty.facultyList, faculty.totalCount);
     }
 }
