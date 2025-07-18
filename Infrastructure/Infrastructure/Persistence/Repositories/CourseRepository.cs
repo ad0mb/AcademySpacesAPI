@@ -83,4 +83,42 @@ public class CourseRepository : ICourseRepository
             throw new DbException("Issue creating course in the database", ex);
         }
     }
+
+    //TODO: Double check as it is a expensive operation (maximum of 3 queries!!!)
+    public async Task UpdateCourseAsync(CourseEntry courseEntry)
+    {
+        try
+        {
+            var course = await (from c in _context.Courses
+                where c.CourseId == courseEntry.CourseId
+                select c).FirstOrDefaultAsync();
+
+            if (course == null)
+            {
+                throw new NotFoundException("Course not found");
+            }
+            
+            
+            var existingContraints = await (from c in _context.Courses
+                where (c.CourseName == courseEntry.CourseName || c.CourseCode == courseEntry.CourseCode) 
+                      && c.SchoolId == courseEntry.SchoolId
+                      && c.CourseId != courseEntry.CourseId
+                select c).FirstOrDefaultAsync();
+            
+            if (existingContraints?.CourseCode == courseEntry.CourseCode || existingContraints?.CourseName == courseEntry.CourseName)
+            {
+                throw new DuplicateNameException("Course with the same name or code already exists");
+            }
+            
+            course.CourseName = courseEntry.CourseName;
+            course.CourseCode = courseEntry.CourseCode;
+            course.CourseDescription = courseEntry.CourseDescription;
+            
+            var result = await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex) 
+        {
+            throw new DbException("Issue updating course in the database", ex);
+        }
+    }
 }
