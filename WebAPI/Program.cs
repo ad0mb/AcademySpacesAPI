@@ -94,6 +94,7 @@ builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IClassroomRepository, ClassroomRepository>();
 builder.Services.AddScoped<IYearLevelRepository, YearLevelRepository>();
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+builder.Services.AddScoped<IPeriodsRepository, PeriodsRepository>();
 
 builder.Services.AddScoped<IRegisterSchoolAndAdminUseCase, RegisterSchoolAndAdminUseCase>();
 builder.Services.AddScoped<ICreateParentUseCase, CreateParentUseCase>();
@@ -117,6 +118,7 @@ builder.Services.AddScoped<ISetYearLevelHierarchyUseCase, SetYearLevelHierarchyU
 builder.Services.AddScoped<IGetCoursesUseCase, GetCoursesUseCase>();
 builder.Services.AddScoped<ICreateCourseUseCase, CreateCourseUseCase>();
 builder.Services.AddScoped<IUpdateCourseUseCase, UpdateCourseUseCase>();
+builder.Services.AddScoped<IGetPeriodsUseCase, GetPeriodsUseCase>();
 //Scoped
 
 //Transient
