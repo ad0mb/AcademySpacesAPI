@@ -33,6 +33,8 @@ public partial class MyDbContext : DbContext
 
     public virtual DbSet<Parent> Parents { get; set; }
 
+    public virtual DbSet<Period> Periods { get; set; }
+
     public virtual DbSet<Role> Roles { get; set; }
 
     public virtual DbSet<RolePermission> RolePermissions { get; set; }
@@ -348,6 +350,51 @@ public partial class MyDbContext : DbContext
             entity.HasOne(d => d.School).WithMany(p => p.Parents)
                 .HasForeignKey(d => d.SchoolId)
                 .HasConstraintName("parents_schools_school_id_fk");
+        });
+
+        modelBuilder.Entity<Period>(entity =>
+        {
+            entity.HasKey(e => e.PeriodId).HasName("PRIMARY");
+
+            entity.ToTable("periods");
+
+            entity.HasIndex(e => e.CourseId, "periods_courses_course_id_fk");
+
+            entity.HasIndex(e => e.TeacherId, "periods_faculty_faculty_id_fk");
+
+            entity.Property(e => e.PeriodId).HasColumnName("period_id");
+            entity.Property(e => e.Capacity).HasColumnName("capacity");
+            entity.Property(e => e.CourseId).HasColumnName("course_id");
+            entity.Property(e => e.DateCreated)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("date_created");
+            entity.Property(e => e.DateModified)
+                .ValueGeneratedOnAddOrUpdate()
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("date_modified");
+            entity.Property(e => e.DayOfWeek).HasColumnName("day_of_week");
+            entity.Property(e => e.EndTime)
+                .HasColumnType("time")
+                .HasColumnName("end_time");
+            entity.Property(e => e.Location)
+                .HasMaxLength(20)
+                .HasColumnName("location");
+            entity.Property(e => e.StartTime)
+                .HasColumnType("time")
+                .HasColumnName("start_time");
+            entity.Property(e => e.TeacherId).HasColumnName("teacher_id");
+
+            entity.HasOne(d => d.Course).WithMany(p => p.Periods)
+                .HasForeignKey(d => d.CourseId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("periods_courses_course_id_fk");
+
+            entity.HasOne(d => d.Teacher).WithMany(p => p.Periods)
+                .HasForeignKey(d => d.TeacherId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("periods_faculty_faculty_id_fk");
         });
 
         modelBuilder.Entity<Role>(entity =>
