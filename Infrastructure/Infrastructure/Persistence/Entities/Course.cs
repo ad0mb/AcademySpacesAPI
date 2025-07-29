@@ -19,5 +19,7 @@ public partial class Course
 
     public DateTime? DateModified { get; set; }
 
+    public virtual ICollection<Period> Periods { get; set; } = new List<Period>();
+
     public virtual School School { get; set; } = null!;
 }
