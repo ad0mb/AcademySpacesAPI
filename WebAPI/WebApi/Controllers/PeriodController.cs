@@ -23,19 +23,19 @@ public class PeriodController : ControllerBase
     }
 
     [HttpGet("get-periods")]
-    public async Task<IActionResult> GetPeriods([FromQuery] int pageSize, [FromQuery] int pageNumber, [FromQuery] string? searchTerm)
+    public async Task<IActionResult> GetPeriods([FromQuery] int pageSize, [FromQuery] int pageNumber, [FromQuery] string? searchTerm, [FromQuery] int facultyId, [FromQuery] int courseId, [FromQuery] TimeOnly? startTime, [FromQuery] TimeOnly? endTime)
     {
         try
         {
-            var periodsList = new List<GetPeriodsResponse>();
+            var periods = new List<GetPeriodsResponse>();
 
             var schooldId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
 
-            var periods = await _getPeriodsUseCase.GetPeriodsBySchoolAsync(schooldId);
+            var (periodsList, totalCount) = await _getPeriodsUseCase.GetPeriodsBySchoolAsync(schooldId, pageSize, pageNumber, searchTerm, facultyId, courseId, startTime, endTime);
 
-            foreach (var period in periods)
+            foreach (var period in periodsList)
             {
-                periodsList.Add(new GetPeriodsResponse
+                periods.Add(new GetPeriodsResponse
                 {
                     PeriodId = period.PeriodId,
                     Teacher = period.Teacher == null ? null : new GetFacultyResponse
@@ -66,7 +66,11 @@ public class PeriodController : ControllerBase
             {
                 Status = true,
                 Message = "Periods retrieved successfully.",
-                Data = periodsList,
+                Data = new 
+                {
+                    PeriodsList = periods,
+                    TotalCount = totalCount
+                },
                 Errors = (string[])null
             });
         }
