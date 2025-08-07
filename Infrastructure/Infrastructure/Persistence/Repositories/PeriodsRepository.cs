@@ -15,14 +15,46 @@ private readonly MyDbContext _context;
         _context = context;
     }
 
-    public async Task<List<PeriodEntry>> GetPeriodsBySchoolIdAsync(int schoolId)
+    public async Task<(List<PeriodEntry> periodsList, int totalCount)> GetPeriodsBySchoolIdAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm, int facultyId, int courseId, TimeOnly? startTime, TimeOnly? endTime)
     {
-        List<PeriodEntry> periods = new List<PeriodEntry>();
+        List<PeriodEntry> periodsList = new List<PeriodEntry>();
 
-        var dbPeriods = await (from c in _context.Courses
-            where c.SchoolId == schoolId
+        var query = from c in _context.Courses
+            where c.SchoolId == schoolId 
             from p in c.Periods
-            select p)
+            where (facultyId <= 0 || p.Teacher.FacultyId == facultyId) //Faculty filter
+            && (courseId <= 0 || p.CourseId == courseId) //Course filter
+            && (startTime == null || p.StartTime >= startTime) //Start time filter
+            && (endTime == null || p.EndTime <= endTime) //End time filter
+            
+            && (string.IsNullOrEmpty(searchTerm)
+                || (
+                    p.Teacher != null && (
+                        (p.Teacher.FirstName != null && p.Teacher.FirstName.ToLower().Contains(searchTerm))
+                        || (p.Teacher.MiddleName != null && p.Teacher.MiddleName.ToLower().Contains(searchTerm))
+                        || (p.Teacher.LastName != null && p.Teacher.LastName.ToLower().Contains(searchTerm)
+                        )
+                    )
+                )
+                || (
+                    p.Course != null && (
+                        (p.Course.CourseName != null && p.Course.CourseName.ToLower().Contains(searchTerm))
+                        || (p.Course.CourseCode != null && p.Course.CourseCode.ToLower().Contains(searchTerm))
+                        || (p.Location != null && p.Location.ToLower().Contains(searchTerm))
+                    )
+                )
+            )
+            orderby p.PeriodId
+            select p;
+        
+        var totalCount = await query.CountAsync();
+            
+        if (pageSize > 0 && pageNumber > 0)
+        {
+            query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+        }
+        
+        var dbPeriods = await query
             .Distinct()
             .Include(p => p.Teacher)
             .Include(p => p.Course)
@@ -30,7 +62,7 @@ private readonly MyDbContext _context;
 
         foreach (var period in dbPeriods)
         {
-            periods.Add(new PeriodEntry
+            periodsList.Add(new PeriodEntry
             {
                 PeriodId = period.PeriodId,
                 Teacher = period.Teacher == null ? null : new FacultyEntry
@@ -59,6 +91,6 @@ private readonly MyDbContext _context;
             });
         }
 
-        return periods;
+        return (periodsList, totalCount);
     }
 }
