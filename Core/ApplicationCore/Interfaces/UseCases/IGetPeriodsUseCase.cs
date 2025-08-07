@@ -4,5 +4,5 @@ namespace Core.ApplicationCore.Interfaces.UseCases;
 
 public interface IGetPeriodsUseCase
 {
-    Task<List<PeriodEntry>> GetPeriodsBySchoolAsync(int schoolId);
+    Task<(List<PeriodEntry> periodsList, int totalCount)> GetPeriodsBySchoolAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm, int facultyId, int courseId, TimeOnly? startTime, TimeOnly? endTime);
 }
