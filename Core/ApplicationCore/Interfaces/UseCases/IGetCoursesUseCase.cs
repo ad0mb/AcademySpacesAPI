@@ -4,5 +4,5 @@ namespace Core.ApplicationCore.Interfaces.UseCases;
 
 public interface IGetCoursesUseCase
 {
-    Task<List<CourseEntry>> GetCoursesAsync(int schoolId);
+    Task<(List<CourseEntry> courseList, int totalCount)> GetCoursesAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm);
 }

@@ -20,16 +20,38 @@ public class CourseRepository : ICourseRepository
         
     }
 
-    public async Task<List<CourseEntry>> GetCoursesBySchoolIdAsync(int schoolId)
+    public async Task<(List<CourseEntry> courseList, int totalCount)> GetCoursesBySchoolIdAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm)
     {
         try
         {
             var courses = new List<CourseEntry>();
 
-            var dbCourses = await (from c in _context.Courses
+            IQueryable<Course> query = from c in _context.Courses
                 where c.SchoolId == schoolId
-                select c).ToListAsync();
+                
+                && (
+                    string.IsNullOrEmpty(searchTerm)
+                    || (
+                        c != null && (
+                            (c.CourseName != null && c.CourseName.ToLower().Contains(searchTerm))
+                            || (c.CourseCode != null && c.CourseCode.ToLower().Contains(searchTerm))
+                            )
+                        )
+                    )
+                
+                orderby c.CourseId
+                select c;
+            
+            var totalCount = await query.CountAsync();
+            
+            if (pageSize > 0 && pageNumber > 0)
+            {
+                query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            }
 
+            var dbCourses = await query
+                .ToListAsync();
+            
             foreach (var course in dbCourses)
             {
                 courses.Add(new CourseEntry
@@ -41,7 +63,7 @@ public class CourseRepository : ICourseRepository
                 });
             }
 
-            return courses;
+            return (courses, totalCount);
         }
         catch (DbUpdateException ex)
         {
