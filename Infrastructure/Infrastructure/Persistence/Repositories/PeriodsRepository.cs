@@ -93,4 +93,9 @@ private readonly MyDbContext _context;
 
         return (periodsList, totalCount);
     }
+
+    public async Task CreatePeriodAsync(PeriodEntry request)
+    {
+        throw new NotImplementedException("CreatePeriodAsync method is not implemented yet.");
+    }
 }
