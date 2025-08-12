@@ -85,4 +85,10 @@ public class PeriodController : ControllerBase
             });
         }
     }
+
+    [HttpPost("create-period")]
+    public async Task<IActionResult> CreatePeriod()
+    {
+        throw new NotImplementedException();
+    }
 }
