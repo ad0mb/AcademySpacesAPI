@@ -10,15 +10,17 @@ public class AuthService
     private readonly FirebaseAuth _firebaseAuth;
     private readonly IPermissionsRepository _permissionsRepo;
     private readonly IFacultyRepository _facultyRepository;
+    private readonly ISchoolRepository _schoolRepository;
 
-    public AuthService(FirebaseAuth firebaseAuth, IPermissionsRepository permissionsRepo, IFacultyRepository facultyRepository)
+    public AuthService(FirebaseAuth firebaseAuth, IPermissionsRepository permissionsRepo, IFacultyRepository facultyRepository, ISchoolRepository schoolRepository)
     {
         _firebaseAuth = firebaseAuth;
         _permissionsRepo = permissionsRepo;
         _facultyRepository = facultyRepository;
+        _schoolRepository = schoolRepository;
     }
     
-    public async Task<ClaimsPrincipal> ProcessIdTokenAsync(string idToken)
+    public async Task<ClaimsPrincipal> ProcessIdTokenAsync(string idToken, string? cycleIdOverride = null)
     {
         ClaimsIdentity identity;
         
@@ -53,6 +55,20 @@ public class AuthService
         {
             identity = new ClaimsIdentity(claims, "Firebase");
             return new ClaimsPrincipal(identity);
+        }
+
+        int? cycleId = 0;
+        if ((permissions.Any(p => p.PermissionName == "administrator" || p.PermissionName == "chiefadministrator" || (p.PermissionName == "cycle"))) && cycleIdOverride != null)
+        {
+            claims.Add(new Claim("cycle_id", cycleIdOverride));
+        }
+        else
+        { 
+            cycleId = await _schoolRepository.GetActiveCycleIdAsync(int.Parse(faculty.SchoolId.ToString()));
+            if (cycleId != null)
+            {
+                claims.Add(new Claim("cycle_id", cycleId.ToString()));
+            }        
         }
         
         foreach (var permission in permissions)
