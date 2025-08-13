@@ -33,11 +33,11 @@ public class ClassroomController : ControllerBase
     {
         try
         {
-            var schooldId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+            var cycleId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("cycle_id").Value);
             
             var classroomEntry = new ClassroomEntry
             {
-                SchoolId = schooldId,
+                CycleId = cycleId,
                 ClassroomTeacherId = request.ClassroomTeacherId,
                 ClassroomName = request.ClassroomName,
             };
@@ -83,11 +83,12 @@ public class ClassroomController : ControllerBase
             var classroomsList = new List<GetClassroomsResponse>();
             
             var schooldId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+            var cycleId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("cycle_id").Value);
 
             List<ClassroomEntry> classrooms;
             int count = 0;
 
-            var (sortedList, totalCount) = await _getClassroomsUseCase.GetClassroomsAsync(schooldId, pageSize, pageNumber, searchTerm);
+            var (sortedList, totalCount) = await _getClassroomsUseCase.GetClassroomsAsync(schooldId, cycleId, pageSize, pageNumber, searchTerm);
             classrooms = sortedList;
             count = totalCount; //TODO: Come back and make sure count is only grabbed in repostiory using a query if pagination is being used, currently it grabs count using a second query on any case.
 
@@ -128,4 +129,25 @@ public class ClassroomController : ControllerBase
         }
     }
     
+    // TODO: Decide on a permission or way to gatekeep retrieving classrooms
+    [HttpGet("get-classroom")]
+    public async Task<IActionResult> GetClassroom([FromQuery] int classroomId)
+    {
+        try
+        {
+            var schooldId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+
+            throw new NotImplementedException();
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
 }
