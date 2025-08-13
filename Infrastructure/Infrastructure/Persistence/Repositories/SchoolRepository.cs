@@ -58,4 +58,31 @@ public class SchoolRepository : ISchoolRepository
             throw new DbException("Issue adding school to the database", ex);
         }
     }
+
+    public async Task<SchoolConfigurationEntry> GetSchoolConfigurationAsync(int schoolId)
+    {
+        throw new NotImplementedException();
+    }
+    
+    public async Task<int?> GetActiveCycleIdAsync(int schoolId)
+    {
+        try
+        {
+            var cycleId = await (from c in _context.Cycles
+                where c.SchoolId == schoolId && c.IsActive == true
+                select c).SingleOrDefaultAsync();
+
+            if (cycleId == null)
+            {
+                return null;
+            }
+            
+            return cycleId.CycleId;
+            
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbUpdateException("Issue retrieving school configuration from the database", ex);
+        }
+    }
 }
