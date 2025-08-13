@@ -23,7 +23,7 @@ public class ClassroomRepository : IClassroomRepository
         {
             var classroom = new Classroom
             {
-                SchoolId = classroomEntry.SchoolId,
+                CycleId = classroomEntry.CycleId,
                 ClassroomTeacherId = classroomEntry.ClassroomTeacherId,
                 ClassroomName = classroomEntry.ClassroomName,
             };
@@ -41,7 +41,8 @@ public class ClassroomRepository : IClassroomRepository
         }
     }
     
-    public async Task<(List<ClassroomEntry> classroomsList, int totalCount)> GetClassroomsAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm)
+    //TODO: Handle case if cycle is null or empty
+    public async Task<(List<ClassroomEntry> classroomsList, int totalCount)> GetClassroomsAsync(int schoolId, int cycleId, int pageSize, int pageNumber, string? searchTerm)
     {
         try
         {
@@ -50,7 +51,7 @@ public class ClassroomRepository : IClassroomRepository
             var query =  from c in _context.Classrooms
                 from f in _context.Faculties.Where(f => f.FacultyId == c.ClassroomTeacherId).DefaultIfEmpty()
                 join cs in _context.ClassroomStudents on c.ClassroomId equals cs.ClassroomId into studentGroup
-                where c.SchoolId == schoolId
+                where c.Cycle.SchoolId == schoolId && c.CycleId == cycleId
 
                       //Search filter
                       && (
