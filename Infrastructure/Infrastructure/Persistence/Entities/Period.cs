@@ -28,4 +28,6 @@ public partial class Period
     public virtual Course Course { get; set; } = null!;
 
     public virtual Faculty? Teacher { get; set; }
+
+    public virtual ICollection<GradingPeriod> GradingPeriods { get; set; } = new List<GradingPeriod>();
 }

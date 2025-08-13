@@ -25,9 +25,13 @@ public partial class MyDbContext : DbContext
 
     public virtual DbSet<Course> Courses { get; set; }
 
+    public virtual DbSet<Cycle> Cycles { get; set; }
+
     public virtual DbSet<Faculty> Faculties { get; set; }
 
     public virtual DbSet<FacultyRole> FacultyRoles { get; set; }
+
+    public virtual DbSet<GradingPeriod> GradingPeriods { get; set; }
 
     public virtual DbSet<Organization> Organizations { get; set; }
 
@@ -112,15 +116,16 @@ public partial class MyDbContext : DbContext
 
             entity.ToTable("classrooms");
 
-            entity.HasIndex(e => e.ClassroomTeacherId, "classrooms_faculty_faculty_id_fk");
+            entity.HasIndex(e => e.CycleId, "classrooms_cycles_cycle_id_fk");
 
-            entity.HasIndex(e => e.SchoolId, "classrooms_schools_school_id_fk");
+            entity.HasIndex(e => e.ClassroomTeacherId, "classrooms_faculty_faculty_id_fk");
 
             entity.Property(e => e.ClassroomId).HasColumnName("classroom_id");
             entity.Property(e => e.ClassroomName)
                 .HasMaxLength(255)
                 .HasColumnName("classroom_name");
             entity.Property(e => e.ClassroomTeacherId).HasColumnName("classroom_teacher_id");
+            entity.Property(e => e.CycleId).HasColumnName("cycle_id");
             entity.Property(e => e.DateCreated)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("datetime")
@@ -130,16 +135,15 @@ public partial class MyDbContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("datetime")
                 .HasColumnName("date_modified");
-            entity.Property(e => e.SchoolId).HasColumnName("school_id");
 
             entity.HasOne(d => d.ClassroomTeacher).WithMany(p => p.Classrooms)
                 .HasForeignKey(d => d.ClassroomTeacherId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("classrooms_faculty_faculty_id_fk");
 
-            entity.HasOne(d => d.School).WithMany(p => p.Classrooms)
-                .HasForeignKey(d => d.SchoolId)
-                .HasConstraintName("classrooms_schools_school_id_fk");
+            entity.HasOne(d => d.Cycle).WithMany(p => p.Classrooms)
+                .HasForeignKey(d => d.CycleId)
+                .HasConstraintName("classrooms_cycles_cycle_id_fk");
         });
 
         modelBuilder.Entity<ClassroomStudent>(entity =>
@@ -205,6 +209,31 @@ public partial class MyDbContext : DbContext
             entity.HasOne(d => d.School).WithMany(p => p.Courses)
                 .HasForeignKey(d => d.SchoolId)
                 .HasConstraintName("courses_schools_school_id_fk");
+        });
+
+        modelBuilder.Entity<Cycle>(entity =>
+        {
+            entity.HasKey(e => e.CycleId).HasName("PRIMARY");
+
+            entity.ToTable("cycles");
+
+            entity.HasIndex(e => e.SchoolId, "cycles_schools_school_id_fk");
+
+            entity.Property(e => e.CycleId).HasColumnName("cycle_id");
+            entity.Property(e => e.Code)
+                .HasMaxLength(10)
+                .HasColumnName("code");
+            entity.Property(e => e.EndDate).HasColumnName("end_date");
+            entity.Property(e => e.IsActive).HasColumnName("is_active");
+            entity.Property(e => e.Name)
+                .HasMaxLength(50)
+                .HasColumnName("name");
+            entity.Property(e => e.SchoolId).HasColumnName("school_id");
+            entity.Property(e => e.StartDate).HasColumnName("start_date");
+
+            entity.HasOne(d => d.School).WithMany(p => p.Cycles)
+                .HasForeignKey(d => d.SchoolId)
+                .HasConstraintName("cycles_schools_school_id_fk");
         });
 
         modelBuilder.Entity<Faculty>(entity =>
@@ -279,6 +308,24 @@ public partial class MyDbContext : DbContext
             entity.HasOne(d => d.Role).WithMany(p => p.FacultyRoles)
                 .HasForeignKey(d => d.RoleId)
                 .HasConstraintName("faculty_roles_roles_role_id_fk");
+        });
+
+        modelBuilder.Entity<GradingPeriod>(entity =>
+        {
+            entity.HasKey(e => e.GradingPeriodId).HasName("PRIMARY");
+
+            entity.ToTable("grading_periods");
+
+            entity.HasIndex(e => e.CycleId, "grading_periods_cycles_cycle_id_fk");
+
+            entity.Property(e => e.GradingPeriodId).HasColumnName("grading_period_id");
+            entity.Property(e => e.CycleId).HasColumnName("cycle_id");
+            entity.Property(e => e.EndDate).HasColumnName("end_date");
+            entity.Property(e => e.StartDate).HasColumnName("start_date");
+
+            entity.HasOne(d => d.Cycle).WithMany(p => p.GradingPeriods)
+                .HasForeignKey(d => d.CycleId)
+                .HasConstraintName("grading_periods_cycles_cycle_id_fk");
         });
 
         modelBuilder.Entity<Organization>(entity =>
@@ -388,13 +435,32 @@ public partial class MyDbContext : DbContext
 
             entity.HasOne(d => d.Course).WithMany(p => p.Periods)
                 .HasForeignKey(d => d.CourseId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("periods_courses_course_id_fk");
 
             entity.HasOne(d => d.Teacher).WithMany(p => p.Periods)
                 .HasForeignKey(d => d.TeacherId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("periods_faculty_faculty_id_fk");
+
+            entity.HasMany(d => d.GradingPeriods).WithMany(p => p.Classes)
+                .UsingEntity<Dictionary<string, object>>(
+                    "ClassGradingPeriod",
+                    r => r.HasOne<GradingPeriod>().WithMany()
+                        .HasForeignKey("GradingPeriodId")
+                        .HasConstraintName("class_grading_periods_grading periods_grading_period_id_fk"),
+                    l => l.HasOne<Period>().WithMany()
+                        .HasForeignKey("ClassId")
+                        .HasConstraintName("class_grading_periods_periods_period_id_fk"),
+                    j =>
+                    {
+                        j.HasKey("ClassId", "GradingPeriodId")
+                            .HasName("PRIMARY")
+                            .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
+                        j.ToTable("class_grading_periods");
+                        j.HasIndex(new[] { "GradingPeriodId" }, "class_grading_periods_grading periods_grading_period_id_fk");
+                        j.IndexerProperty<int>("ClassId").HasColumnName("class_id");
+                        j.IndexerProperty<int>("GradingPeriodId").HasColumnName("grading_period_id");
+                    });
         });
 
         modelBuilder.Entity<Role>(entity =>
