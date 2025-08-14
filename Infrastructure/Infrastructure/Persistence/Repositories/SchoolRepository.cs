@@ -1,4 +1,5 @@
-﻿using Core.ApplicationCore.DomainEntities;
+﻿using System.Runtime.InteropServices.JavaScript;
+using Core.ApplicationCore.DomainEntities;
 using Core.ApplicationCore.Interfaces.Adapters;
 using Core.Exceptions;
 using Infrastructure.Infrastructure.Persistence.Context;
@@ -63,6 +64,50 @@ public class SchoolRepository : ISchoolRepository
     {
         throw new NotImplementedException();
     }
+
+    public async Task<(List<CycleEntry> cyclesList, int totalCount)> GetCyclesAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm)
+    {
+        try
+        {
+            var cycles = new List<CycleEntry>();
+
+            IQueryable<Cycle> query = from c in _context.Cycles
+                where c.SchoolId == schoolId
+                orderby c.EndDate descending
+                select c;
+
+            var totalCount = await query.CountAsync();
+            
+            if (pageSize > 0 && pageNumber > 0)
+            {
+                query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            }
+            
+            var dbCycles = await query
+                .ToListAsync();
+
+            foreach (var course in dbCycles)
+            {
+                cycles.Add(new CycleEntry
+                {
+                    CycleId = course.CycleId,
+                    SchoolId = course.SchoolId,
+                    IsActive = course.IsActive,
+                    CycleName = course.Name,
+                    Code = course.Code,
+                    StartDate = course.StartDate,
+                    EndDate = course.EndDate,
+                    IsExpired = DateOnly.FromDateTime(DateTime.Now) > course.EndDate,
+                });
+            }
+            
+            return (cycles, totalCount);
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue retrieving cycles from the database", ex);
+        }
+    }
     
     public async Task<int?> GetActiveCycleIdAsync(int schoolId)
     {
@@ -82,7 +127,7 @@ public class SchoolRepository : ISchoolRepository
         }
         catch (DbUpdateException ex)
         {
-            throw new DbUpdateException("Issue retrieving school configuration from the database", ex);
+            throw new DbException("Issue retrieving school configuration from the database", ex);
         }
     }
 }
