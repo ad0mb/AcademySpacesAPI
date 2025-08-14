@@ -29,6 +29,8 @@ public partial class School
 
     public virtual ICollection<Parent> Parents { get; set; } = new List<Parent>();
 
+    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+
     public virtual ICollection<Role> Roles { get; set; } = new List<Role>();
 
     public virtual ICollection<SchoolConfiguration> SchoolConfigurations { get; set; } = new List<SchoolConfiguration>();

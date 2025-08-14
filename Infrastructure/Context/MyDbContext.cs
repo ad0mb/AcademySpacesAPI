@@ -4,7 +4,7 @@ using Infrastructure.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
-namespace Infrastructure.Infrastructure.Persistence.Context;
+namespace Infrastructure.Context;
 
 public partial class MyDbContext : DbContext
 {
@@ -17,8 +17,7 @@ public partial class MyDbContext : DbContext
     {
     }
 
-    public virtual DbSet<Announcment> Announcements { get; set; }
-    
+    public virtual DbSet<Announcment> Announcments { get; set; }
 
     public virtual DbSet<Classroom> Classrooms { get; set; }
 
@@ -33,7 +32,7 @@ public partial class MyDbContext : DbContext
     public virtual DbSet<Organization> Organizations { get; set; }
 
     public virtual DbSet<Parent> Parents { get; set; }
-    
+
     public virtual DbSet<Payment> Payments { get; set; }
 
     public virtual DbSet<Period> Periods { get; set; }
@@ -56,7 +55,7 @@ public partial class MyDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=192.168.12.113;database=ABDI;uid=root;pwd=Abdirauuf2004!;allowloadlocalinfile=true", Microsoft.EntityFrameworkCore.ServerVersion.Parse("9.3.0-mysql"));
+        => optionsBuilder.UseMySql("server=192.168.12.113;database=ABDI;uid=root;pwd=Abdirauuf2004!;allowloadlocalinfile=true", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.42-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,7 +65,7 @@ public partial class MyDbContext : DbContext
 
         modelBuilder.Entity<Announcment>(entity =>
         {
-            entity.HasKey(e => e.AnnouncmentId).HasName("PRIMARY");
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
 
             entity.ToTable("announcments");
 
@@ -74,7 +73,10 @@ public partial class MyDbContext : DbContext
 
             entity.HasIndex(e => e.SchoolId, "Announcments_schools_school_id_fk");
 
-            entity.Property(e => e.AnnouncmentId).HasColumnName("announcment_ID");
+            entity.Property(e => e.Id).HasColumnName("ID");
+            entity.Property(e => e.AnnouncmentId)
+                .HasColumnType("text")
+                .HasColumnName("announcment_ID");
             entity.Property(e => e.AnnouncmentName)
                 .HasMaxLength(255)
                 .HasColumnName("announcment_Name");
@@ -97,17 +99,21 @@ public partial class MyDbContext : DbContext
                 .HasColumnName("priority");
             entity.Property(e => e.SchoolId).HasColumnName("School_ID");
             entity.Property(e => e.SenderId).HasColumnName("sender_ID");
+            entity.Property(e => e.Tags)
+                .HasColumnType("text")
+                .HasColumnName("tags");
+            entity.Property(e => e.Title).HasColumnType("text");
 
             entity.HasOne(d => d.School).WithMany(p => p.Announcments)
                 .HasForeignKey(d => d.SchoolId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Announcments_schools_school_id_fk");
-            
+
             entity.HasOne(d => d.Sender).WithMany(p => p.Announcments)
-                           .HasForeignKey(d => d.SenderId)
-                           .OnDelete(DeleteBehavior.ClientSetNull)
-                           .HasConstraintName("Announcments_faculty_faculty_id_fk");
-            });
+                .HasForeignKey(d => d.SenderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Announcments_faculty_faculty_id_fk");
+        });
 
         modelBuilder.Entity<Classroom>(entity =>
         {
@@ -353,6 +359,35 @@ public partial class MyDbContext : DbContext
             entity.HasOne(d => d.School).WithMany(p => p.Parents)
                 .HasForeignKey(d => d.SchoolId)
                 .HasConstraintName("parents_schools_school_id_fk");
+        });
+
+        modelBuilder.Entity<Payment>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.HasIndex(e => e.SchoolId, "Payments_schools_school_id_fk");
+
+            entity.HasIndex(e => e.StudentId, "Payments_students_student_id_fk");
+
+            entity.HasIndex(e => e.ReceiptNumber, "ReceiptNumber").IsUnique();
+
+            entity.Property(e => e.Amount).HasPrecision(10);
+            entity.Property(e => e.Date).HasColumnType("datetime");
+            entity.Property(e => e.Description).HasColumnType("text");
+            entity.Property(e => e.Feetype).HasMaxLength(50);
+            entity.Property(e => e.Paymentmethod).HasMaxLength(50);
+            entity.Property(e => e.ReceiptNumber).HasMaxLength(50);
+            entity.Property(e => e.Status).HasMaxLength(50);
+
+            entity.HasOne(d => d.School).WithMany(p => p.Payments)
+                .HasForeignKey(d => d.SchoolId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Payments_schools_school_id_fk");
+
+            entity.HasOne(d => d.Student).WithMany(p => p.Payments)
+                .HasForeignKey(d => d.StudentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("Payments_students_student_id_fk");
         });
 
         modelBuilder.Entity<Period>(entity =>

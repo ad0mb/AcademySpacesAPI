@@ -31,6 +31,7 @@ public class DefaultAuthenticationHandler : AuthenticationHandler<Authentication
         
         if (idToken == null)
         {
+            Console.WriteLine("not authenticated");
             errorType = "id_token_invalid";
             return AuthenticateResult.Fail("Id token is missing");
         }

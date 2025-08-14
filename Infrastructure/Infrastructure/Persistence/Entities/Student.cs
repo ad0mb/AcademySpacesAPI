@@ -29,6 +29,8 @@ public partial class Student
 
     public virtual ICollection<ClassroomStudent> ClassroomStudents { get; set; } = new List<ClassroomStudent>();
 
+    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+
     public virtual Role Role { get; set; } = null!;
 
     public virtual School School { get; set; } = null!;

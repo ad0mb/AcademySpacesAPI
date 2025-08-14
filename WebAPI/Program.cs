@@ -1,7 +1,9 @@
 using System.Text;
 using AcademySpacesAPI;
 using AcademySpacesAPI.WebApi.Authentication;
+using AcademySpacesAPI.WebApi.Controllers.Announcement;
 using Core.ApplicationCore.Interfaces.Adapters;
+using Core.ApplicationCore.Interfaces.HelperFiles;
 using Core.ApplicationCore.Interfaces.UseCases;
 using Core.ApplicationCore.UseCases;
 using EntityFramework.Exceptions.MySQL.Pomelo;
@@ -15,6 +17,7 @@ using Infrastructure.Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -119,6 +122,13 @@ builder.Services.AddScoped<IGetCoursesUseCase, GetCoursesUseCase>();
 builder.Services.AddScoped<ICreateCourseUseCase, CreateCourseUseCase>();
 builder.Services.AddScoped<IUpdateCourseUseCase, UpdateCourseUseCase>();
 builder.Services.AddScoped<IGetPeriodsUseCase, GetPeriodsUseCase>();
+builder.Services.AddScoped<ICreateAnnouncementService, AnnouncementRepository>();
+builder.Services.AddScoped<IAblyService, AblyPublisher>();
+builder.Services.AddScoped<ICreateAnnouncementUseCase, CreateAnnouncementUseCase>();
+builder.Services.AddScoped<IGetAnnouncementsUseCase, GetAnnouncementsService>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<PaymentRepoUsecase>();
+//builder.Services.AddScoped<ICreateAnnouncementService,c>();
 //Scoped
 
 //Transient
@@ -183,7 +193,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 
-// app.UseCors("AllowAllOrigins");
+ app.UseCors("AllowAllOrigins");
 
 if (app.Environment.IsDevelopment())
 {

@@ -5,7 +5,7 @@ namespace Infrastructure.Infrastructure.Persistence.Entities;
 
 public partial class Announcment
 {
-    public int AnnouncmentId { get; set; }
+    public int Id { get; set; }
 
     public string Message { get; set; } = null!;
 
@@ -24,6 +24,12 @@ public partial class Announcment
     public DateTime? DateCreated { get; set; }
 
     public DateTime? DateModified { get; set; }
+
+    public string? Tags { get; set; }
+
+    public string? Title { get; set; }
+
+    public string AnnouncmentId { get; set; } = null!;
 
     public virtual School School { get; set; } = null!;
 
