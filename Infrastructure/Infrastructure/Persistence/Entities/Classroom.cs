@@ -22,4 +22,6 @@ public partial class Classroom
     public virtual Faculty? ClassroomTeacher { get; set; }
 
     public virtual Cycle Cycle { get; set; } = null!;
+
+    public virtual ICollection<Period> Periods { get; set; } = new List<Period>();
 }

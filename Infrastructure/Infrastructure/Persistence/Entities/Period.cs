@@ -13,8 +13,6 @@ public partial class Period
 
     public string? Location { get; set; }
 
-    public int Capacity { get; set; }
-
     public int? DayOfWeek { get; set; }
 
     public TimeOnly? StartTime { get; set; }
@@ -25,9 +23,11 @@ public partial class Period
 
     public DateTime? DateModified { get; set; }
 
+    public virtual ICollection<ClassGradingPeriod> ClassGradingPeriods { get; set; } = new List<ClassGradingPeriod>();
+
     public virtual Course Course { get; set; } = null!;
 
     public virtual Faculty? Teacher { get; set; }
 
-    public virtual ICollection<GradingPeriod> GradingPeriods { get; set; } = new List<GradingPeriod>();
+    public virtual ICollection<Classroom> Classrooms { get; set; } = new List<Classroom>();
 }
