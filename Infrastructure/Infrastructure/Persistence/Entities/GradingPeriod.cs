@@ -13,7 +13,11 @@ public partial class GradingPeriod
 
     public DateOnly EndDate { get; set; }
 
-    public virtual Cycle Cycle { get; set; } = null!;
+    public DateTime? DateModified { get; set; }
 
-    public virtual ICollection<Period> Classes { get; set; } = new List<Period>();
+    public DateTime? DateCreated { get; set; }
+
+    public virtual ICollection<ClassGradingPeriod> ClassGradingPeriods { get; set; } = new List<ClassGradingPeriod>();
+
+    public virtual Cycle Cycle { get; set; } = null!;
 }
