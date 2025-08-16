@@ -82,7 +82,6 @@ private readonly MyDbContext _context;
                     CourseDescription = period.Course.CourseDescription,
                 },
                 Location = period.Location,
-                Capacity = period.Capacity,
                 DayOfWeek = period.DayOfWeek,
                 StartTime = period.StartTime,
                 EndTime = period.EndTime,

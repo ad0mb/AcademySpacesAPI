@@ -6,7 +6,6 @@ public class PeriodEntry
     public int? TeacherId { get; set; }
     public int CourseId { get; set; }
     public string? Location { get; set; }
-    public int Capacity { get; set; }
     public int? DayOfWeek { get; set; }
     public TimeOnly? StartTime { get; set; }
     public TimeOnly? EndTime { get; set; }
