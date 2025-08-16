@@ -84,20 +84,38 @@ public class SchoolRepository : ISchoolRepository
             }
             
             var dbCycles = await query
+                .Include(c => c.GradingPeriods)
                 .ToListAsync();
 
             foreach (var course in dbCycles)
             {
+                var gradingPeriods = new List<GradingPeriodEntry>();
+                foreach (var gradingPeriod in course.GradingPeriods.OrderBy(gp => gp.StartDate))
+                {
+                    gradingPeriods.Add(new GradingPeriodEntry
+                    {
+                        GradingPeriodId = gradingPeriod.GradingPeriodId,
+                        StartDate = gradingPeriod.StartDate,
+                        EndDate = gradingPeriod.EndDate,
+                        DateCreated = gradingPeriod.DateCreated,
+                        DateUpdated = gradingPeriod.DateModified
+                    });
+                }
                 cycles.Add(new CycleEntry
                 {
                     CycleId = course.CycleId,
                     SchoolId = course.SchoolId,
                     IsActive = course.IsActive,
+                    isArchived = course.IsArchived,
                     CycleName = course.Name,
                     Code = course.Code,
+                    ScheduleType = course.ScheduleType,
                     StartDate = course.StartDate,
                     EndDate = course.EndDate,
+                    GradingPeriods = gradingPeriods,
                     IsExpired = DateOnly.FromDateTime(DateTime.Now) > course.EndDate,
+                    DateCreated = course.DateCreated,
+                    DateUpdated = course.DateModified
                 });
             }
             
