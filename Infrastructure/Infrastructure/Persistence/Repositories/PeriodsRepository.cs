@@ -1,5 +1,6 @@
 ﻿using Core.ApplicationCore.DomainEntities;
 using Core.ApplicationCore.Interfaces.Adapters;
+using Core.Exceptions;
 using Infrastructure.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,82 +16,94 @@ private readonly MyDbContext _context;
         _context = context;
     }
 
-    public async Task<(List<PeriodEntry> periodsList, int totalCount)> GetPeriodsBySchoolIdAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm, int facultyId, int courseId, TimeOnly? startTime, TimeOnly? endTime)
+    public async Task<(List<PeriodEntry> periodsList, int totalCount)> GetPeriodsBySchoolIdAsync(int schoolId, int cycleId, int pageSize, int pageNumber, string? searchTerm, int facultyId, int courseId, TimeOnly? startTime, TimeOnly? endTime)
     {
         List<PeriodEntry> periodsList = new List<PeriodEntry>();
 
-        var query = from c in _context.Courses
-            where c.SchoolId == schoolId 
-            from p in c.Periods
-            where (facultyId <= 0 || p.Teacher.FacultyId == facultyId) //Faculty filter
-            && (courseId <= 0 || p.CourseId == courseId) //Course filter
-            && (startTime == null || p.StartTime >= startTime) //Start time filter
-            && (endTime == null || p.EndTime <= endTime) //End time filter
-            
-            && (string.IsNullOrEmpty(searchTerm)
-                || (
-                    p.Teacher != null && (
-                        (p.Teacher.FirstName != null && p.Teacher.FirstName.ToLower().Contains(searchTerm))
-                        || (p.Teacher.MiddleName != null && p.Teacher.MiddleName.ToLower().Contains(searchTerm))
-                        || (p.Teacher.LastName != null && p.Teacher.LastName.ToLower().Contains(searchTerm)
-                        )
-                    )
-                )
-                || (
-                    p.Course != null && (
-                        (p.Course.CourseName != null && p.Course.CourseName.ToLower().Contains(searchTerm))
-                        || (p.Course.CourseCode != null && p.Course.CourseCode.ToLower().Contains(searchTerm))
-                        || (p.Location != null && p.Location.ToLower().Contains(searchTerm))
-                    )
-                )
-            )
-            orderby p.PeriodId
-            select p;
-        
-        var totalCount = await query.CountAsync();
-            
-        if (pageSize > 0 && pageNumber > 0)
+        try
         {
-            query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
-        }
-        
-        var dbPeriods = await query
-            .Distinct()
-            .Include(p => p.Teacher)
-            .Include(p => p.Course)
-            .ToListAsync();
+            var query = from c in _context.Courses
+                where c.SchoolId == schoolId
+                from p in c.Periods
+                where p.CycleId == cycleId
+                      && (facultyId <= 0 || p.Teacher.FacultyId == facultyId) //Faculty filter
+                      && (courseId <= 0 || p.CourseId == courseId) //Course filter
+                      && (startTime == null || p.StartTime >= startTime) //Start time filter
+                      && (endTime == null || p.EndTime <= endTime) //End time filter
 
-        foreach (var period in dbPeriods)
-        {
-            periodsList.Add(new PeriodEntry
+                      && (string.IsNullOrEmpty(searchTerm)
+                          || (
+                              p.Teacher != null && (
+                                  (p.Teacher.FirstName != null && p.Teacher.FirstName.ToLower().Contains(searchTerm))
+                                  || (p.Teacher.MiddleName != null &&
+                                      p.Teacher.MiddleName.ToLower().Contains(searchTerm))
+                                  || (p.Teacher.LastName != null && p.Teacher.LastName.ToLower().Contains(searchTerm)
+                                  )
+                              )
+                          )
+                          || (
+                              p.Course != null && (
+                                  (p.Course.CourseName != null && p.Course.CourseName.ToLower().Contains(searchTerm))
+                                  || (p.Course.CourseCode != null && p.Course.CourseCode.ToLower().Contains(searchTerm))
+                                  || (p.Location != null && p.Location.ToLower().Contains(searchTerm))
+                              )
+                          )
+                      )
+                orderby p.PeriodId
+                select p;
+
+            var totalCount = await query.CountAsync();
+
+            if (pageSize > 0 && pageNumber > 0)
             {
-                PeriodId = period.PeriodId,
-                Teacher = period.Teacher == null ? null : new FacultyEntry
-                {
-                    FacultyId = period.Teacher.FacultyId,
-                    FirstName = period.Teacher.FirstName,
-                    MiddleName = period.Teacher.MiddleName,
-                    LastName = period.Teacher.LastName,
-                    PhoneNumber = period.Teacher.PhoneNumber,
-                    Email = period.Teacher.Email,
-                },
-                Course = new CourseEntry
-                {
-                    CourseId = period.Course.CourseId,
-                    CourseName = period.Course.CourseName,
-                    CourseCode = period.Course.CourseCode,
-                    CourseDescription = period.Course.CourseDescription,
-                },
-                Location = period.Location,
-                DayOfWeek = period.DayOfWeek,
-                StartTime = period.StartTime,
-                EndTime = period.EndTime,
-                DateCreated = period.DateCreated,
-                DateUpdated = period.DateModified,
-            });
-        }
+                query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            }
 
-        return (periodsList, totalCount);
+            var dbPeriods = await query
+                .Distinct()
+                .Include(p => p.Teacher)
+                .Include(p => p.Course)
+                .ToListAsync();
+
+            foreach (var period in dbPeriods)
+            {
+                periodsList.Add(new PeriodEntry
+                {
+                    PeriodId = period.PeriodId,
+                    Teacher = period.Teacher == null
+                        ? null
+                        : new FacultyEntry
+                        {
+                            FacultyId = period.Teacher.FacultyId,
+                            FirstName = period.Teacher.FirstName,
+                            MiddleName = period.Teacher.MiddleName,
+                            LastName = period.Teacher.LastName,
+                            PhoneNumber = period.Teacher.PhoneNumber,
+                            Email = period.Teacher.Email,
+                        },
+                    Course = new CourseEntry
+                    {
+                        CourseId = period.Course.CourseId,
+                        CourseName = period.Course.CourseName,
+                        CourseCode = period.Course.CourseCode,
+                        CourseDescription = period.Course.CourseDescription,
+                    },
+                    Name = period.Name,
+                    Location = period.Location,
+                    DayOfWeek = period.DayOfWeek,
+                    StartTime = period.StartTime,
+                    EndTime = period.EndTime,
+                    DateCreated = period.DateCreated,
+                    DateUpdated = period.DateModified,
+                });
+            }
+
+            return (periodsList, totalCount);
+        } 
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("An error occurred while retrieving periods.", ex);
+        }
     }
 
     public async Task CreatePeriodAsync(PeriodEntry request)
