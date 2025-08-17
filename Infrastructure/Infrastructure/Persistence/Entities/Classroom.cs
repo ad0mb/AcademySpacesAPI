@@ -17,11 +17,11 @@ public partial class Classroom
 
     public DateTime? DateModified { get; set; }
 
+    public virtual ICollection<ClassroomSchedule> ClassroomSchedules { get; set; } = new List<ClassroomSchedule>();
+
     public virtual ICollection<ClassroomStudent> ClassroomStudents { get; set; } = new List<ClassroomStudent>();
 
     public virtual Faculty? ClassroomTeacher { get; set; }
 
     public virtual Cycle Cycle { get; set; } = null!;
-
-    public virtual ICollection<Period> Periods { get; set; } = new List<Period>();
 }

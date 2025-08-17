@@ -31,5 +31,7 @@ public partial class Cycle
 
     public virtual ICollection<GradingPeriod> GradingPeriods { get; set; } = new List<GradingPeriod>();
 
+    public virtual ICollection<Period> Periods { get; set; } = new List<Period>();
+
     public virtual School School { get; set; } = null!;
 }
