@@ -148,4 +148,25 @@ public class SchoolRepository : ISchoolRepository
             throw new DbException("Issue retrieving school configuration from the database", ex);
         }
     }
+
+    public async Task<bool> IsCycleValidAsync(int schoolId, int cycleId)
+    {
+        try
+        {
+            var verifiedId = await (from c in _context.Cycles
+                where c.SchoolId == schoolId && c.CycleId == cycleId
+                    select c).SingleOrDefaultAsync();
+
+            if (cycleId == null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue verifying cycle from the database", ex);
+        }
+    }
 }
