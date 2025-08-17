@@ -2,6 +2,7 @@
 using Core.ApplicationCore.Interfaces.Adapters;
 using Core.Exceptions;
 using Infrastructure.Infrastructure.Persistence.Context;
+using Infrastructure.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Infrastructure.Persistence.Repositories;
@@ -108,6 +109,46 @@ private readonly MyDbContext _context;
 
     public async Task CreatePeriodAsync(PeriodEntry request)
     {
-        throw new NotImplementedException("CreatePeriodAsync method is not implemented yet.");
+        try
+        {
+            var conflictingPeriods = await (from p in _context.Periods 
+                where p.CycleId == request.CycleId
+                    && (request.TeacherId <= 0 || p.TeacherId == request.TeacherId) 
+                    && (
+                        (request.StartTime == null || request.EndTime == null || request.DayOfWeek <= 0) 
+                        || 
+                        (p.StartTime <= request.EndTime && request.StartTime <= p.EndTime && p.DayOfWeek == request.DayOfWeek)
+                        )
+                    select p).ToListAsync();
+
+            if (conflictingPeriods.Any())
+            {
+                throw new SchedulingConflictException("A period with the same teacher, day of week, and time already exists.");
+            }
+            
+            var period = new Period
+            {
+                CycleId = request.CycleId,
+                TeacherId = request.TeacherId,
+                CourseId = request.CourseId,
+                Name = request.Name,
+                Location = request.Location,
+                DayOfWeek = request.DayOfWeek,
+                StartTime = request.StartTime,
+                EndTime = request.EndTime,
+            };
+
+            await _context.Periods.AddAsync(period);
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                throw new NoRowsAffectedException("Period not created");
+            }
+            
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue adding period to the database", ex);
+        }
     }
 }
