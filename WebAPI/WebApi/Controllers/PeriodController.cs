@@ -22,6 +22,7 @@ public class PeriodController : ControllerBase
         _getPeriodsUseCase = getPeriodsUseCase;
     }
 
+    [HasPermission("Periods:view")]
     [HttpGet("get-periods")]
     public async Task<IActionResult> GetPeriods([FromQuery] int pageSize, [FromQuery] int pageNumber, [FromQuery] string? searchTerm, [FromQuery] int facultyId, [FromQuery] int courseId, [FromQuery] TimeOnly? startTime, [FromQuery] TimeOnly? endTime)
     {
@@ -30,8 +31,10 @@ public class PeriodController : ControllerBase
             var periods = new List<GetPeriodsResponse>();
 
             var schooldId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+            
+            var cycleId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("cycle_id").Value);
 
-            var (periodsList, totalCount) = await _getPeriodsUseCase.GetPeriodsBySchoolAsync(schooldId, pageSize, pageNumber, searchTerm, facultyId, courseId, startTime, endTime);
+            var (periodsList, totalCount) = await _getPeriodsUseCase.GetPeriodsBySchoolAsync(schooldId, cycleId, pageSize, pageNumber, searchTerm, facultyId, courseId, startTime, endTime);
 
             foreach (var period in periodsList)
             {
@@ -54,6 +57,7 @@ public class PeriodController : ControllerBase
                         CourseCode = period.Course.CourseCode,
                         CourseDescription = period.Course.CourseDescription,
                     },
+                    Name = period.Name,
                     Location = period.Location,
                     DayOfWeek = period.DayOfWeek,
                     StartTime = period.StartTime,
