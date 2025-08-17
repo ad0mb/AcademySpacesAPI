@@ -57,18 +57,31 @@ public class AuthService
             return new ClaimsPrincipal(identity);
         }
 
-        int? cycleId = 0;
+        // TODO: Check this logic for cycle overrides and cycleIds in general
+        // TODO: Find better errors to throw and handle errors better in DefaultAutheticationHandler
         if ((permissions.Any(p => p.PermissionName == "administrator" || p.PermissionName == "chiefadministrator" || (p.PermissionName == "cycle"))) && cycleIdOverride != null)
         {
-            claims.Add(new Claim("cycle_id", cycleIdOverride));
+            var isValid = await _schoolRepository.IsCycleValidAsync(faculty.SchoolId, int.Parse(cycleIdOverride));
+            if (isValid)
+            {
+                claims.Add(new Claim("cycle_id", cycleIdOverride));
+            }
+            else
+            {
+                throw new InvalidOperationException("Invalid cycle id");
+            }
         }
         else
         { 
-            cycleId = await _schoolRepository.GetActiveCycleIdAsync(int.Parse(faculty.SchoolId.ToString()));
+            var cycleId = await _schoolRepository.GetActiveCycleIdAsync(int.Parse(faculty.SchoolId.ToString()));
             if (cycleId != null)
             {
                 claims.Add(new Claim("cycle_id", cycleId.ToString()));
-            }        
+            }
+            else
+            {
+                throw new InvalidOperationException("CycleId not found");
+            }
         }
         
         foreach (var permission in permissions)
