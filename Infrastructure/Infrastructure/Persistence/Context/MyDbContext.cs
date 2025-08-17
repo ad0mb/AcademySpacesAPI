@@ -23,6 +23,8 @@ public partial class MyDbContext : DbContext
 
     public virtual DbSet<Classroom> Classrooms { get; set; }
 
+    public virtual DbSet<ClassroomSchedule> ClassroomSchedules { get; set; }
+
     public virtual DbSet<ClassroomStudent> ClassroomStudents { get; set; }
 
     public virtual DbSet<Course> Courses { get; set; }
@@ -177,26 +179,37 @@ public partial class MyDbContext : DbContext
             entity.HasOne(d => d.Cycle).WithMany(p => p.Classrooms)
                 .HasForeignKey(d => d.CycleId)
                 .HasConstraintName("classrooms_cycles_cycle_id_fk");
+        });
 
-            entity.HasMany(d => d.Periods).WithMany(p => p.Classrooms)
-                .UsingEntity<Dictionary<string, object>>(
-                    "ClassroomSchedule",
-                    r => r.HasOne<Period>().WithMany()
-                        .HasForeignKey("PeriodId")
-                        .HasConstraintName("classroom_schedules_periods_period_id_fk"),
-                    l => l.HasOne<Classroom>().WithMany()
-                        .HasForeignKey("ClassroomId")
-                        .HasConstraintName("classroom_schedules_classrooms_classroom_id_fk"),
-                    j =>
-                    {
-                        j.HasKey("ClassroomId", "PeriodId")
-                            .HasName("PRIMARY")
-                            .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
-                        j.ToTable("classroom_schedules");
-                        j.HasIndex(new[] { "PeriodId" }, "classroom_schedules_periods_period_id_fk");
-                        j.IndexerProperty<int>("ClassroomId").HasColumnName("classroom_id");
-                        j.IndexerProperty<int>("PeriodId").HasColumnName("period_id");
-                    });
+        modelBuilder.Entity<ClassroomSchedule>(entity =>
+        {
+            entity.HasKey(e => new { e.ClassroomId, e.PeriodId })
+                .HasName("PRIMARY")
+                .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
+
+            entity.ToTable("classroom_schedules");
+
+            entity.HasIndex(e => e.PeriodId, "classroom_schedules_periods_period_id_fk");
+
+            entity.Property(e => e.ClassroomId).HasColumnName("classroom_id");
+            entity.Property(e => e.PeriodId).HasColumnName("period_id");
+            entity.Property(e => e.DateCreated)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("date_created");
+            entity.Property(e => e.DateModified)
+                .ValueGeneratedOnAddOrUpdate()
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("date_modified");
+
+            entity.HasOne(d => d.Classroom).WithMany(p => p.ClassroomSchedules)
+                .HasForeignKey(d => d.ClassroomId)
+                .HasConstraintName("classroom_schedules_classrooms_classroom_id_fk");
+
+            entity.HasOne(d => d.Period).WithMany(p => p.ClassroomSchedules)
+                .HasForeignKey(d => d.PeriodId)
+                .HasConstraintName("classroom_schedules_periods_period_id_fk");
         });
 
         modelBuilder.Entity<ClassroomStudent>(entity =>
@@ -480,10 +493,13 @@ public partial class MyDbContext : DbContext
 
             entity.HasIndex(e => e.CourseId, "periods_courses_course_id_fk");
 
+            entity.HasIndex(e => e.CycleId, "periods_cycles_cycle_id_fk");
+
             entity.HasIndex(e => e.TeacherId, "periods_faculty_faculty_id_fk");
 
             entity.Property(e => e.PeriodId).HasColumnName("period_id");
             entity.Property(e => e.CourseId).HasColumnName("course_id");
+            entity.Property(e => e.CycleId).HasColumnName("cycle_id");
             entity.Property(e => e.DateCreated)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("datetime")
@@ -500,6 +516,9 @@ public partial class MyDbContext : DbContext
             entity.Property(e => e.Location)
                 .HasMaxLength(20)
                 .HasColumnName("location");
+            entity.Property(e => e.Name)
+                .HasMaxLength(15)
+                .HasColumnName("name");
             entity.Property(e => e.StartTime)
                 .HasColumnType("time")
                 .HasColumnName("start_time");
@@ -508,6 +527,10 @@ public partial class MyDbContext : DbContext
             entity.HasOne(d => d.Course).WithMany(p => p.Periods)
                 .HasForeignKey(d => d.CourseId)
                 .HasConstraintName("periods_courses_course_id_fk");
+
+            entity.HasOne(d => d.Cycle).WithMany(p => p.Periods)
+                .HasForeignKey(d => d.CycleId)
+                .HasConstraintName("periods_cycles_cycle_id_fk");
 
             entity.HasOne(d => d.Teacher).WithMany(p => p.Periods)
                 .HasForeignKey(d => d.TeacherId)
