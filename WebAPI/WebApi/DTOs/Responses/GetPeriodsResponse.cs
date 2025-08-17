@@ -8,6 +8,7 @@ public class GetPeriodsResponse
     [Required] public int PeriodId { get; set; }
     public GetFacultyResponse? Teacher { get; set; }
     [Required] public GetCoursesResponse Course { get; set; }
+    [Required] public string Name { get; set; }
     public string? Location { get; set; }
     public int? DayOfWeek { get; set; }
     public TimeOnly? StartTime { get; set; }
