@@ -112,11 +112,11 @@ private readonly MyDbContext _context;
     {
         try
         {
-            if (request.StartTime != null && request.EndTime != null && request.DayOfWeek > 0)
+            if (request.StartTime != null && request.EndTime != null && request.DayOfWeek > 0 && request.TeacherId > 0)
             {
                 var conflictingPeriods = await (from p in _context.Periods
                     where p.CycleId == request.CycleId
-                          && (request.TeacherId <= 0 || p.TeacherId == request.TeacherId)
+                          && (p.TeacherId == request.TeacherId)
                           && (
                               (p.StartTime <= request.EndTime && request.StartTime <= p.EndTime &&
                                p.DayOfWeek == request.DayOfWeek)
@@ -169,11 +169,11 @@ private readonly MyDbContext _context;
                 throw new NotFoundException("Period not found");
             }
 
-            if (request.StartTime != null && request.EndTime != null && request.DayOfWeek > 0)
+            if (request.StartTime != null && request.EndTime != null && request.DayOfWeek > 0 && request.TeacherId > 0)
             {
                 var conflictingPeriods = await (from p in _context.Periods
                     where p.CycleId == request.CycleId
-                          && (request.TeacherId <= 0 || p.TeacherId == request.TeacherId)
+                          && (p.TeacherId == request.TeacherId)
                           && (
                               (p.StartTime <= request.EndTime && request.StartTime <= p.EndTime &&
                                p.DayOfWeek == request.DayOfWeek)
