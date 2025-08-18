@@ -107,23 +107,27 @@ private readonly MyDbContext _context;
         }
     }
 
+    //TODO: Double check create and update period methods to ensure there are no scheduling conflicts
     public async Task CreatePeriodAsync(PeriodEntry request)
     {
         try
         {
-            var conflictingPeriods = await (from p in _context.Periods 
-                where p.CycleId == request.CycleId
-                    && (request.TeacherId <= 0 || p.TeacherId == request.TeacherId) 
-                    && (
-                        (request.StartTime == null || request.EndTime == null || request.DayOfWeek <= 0) 
-                        || 
-                        (p.StartTime <= request.EndTime && request.StartTime <= p.EndTime && p.DayOfWeek == request.DayOfWeek)
-                        )
+            if (request.StartTime != null && request.EndTime != null && request.DayOfWeek > 0)
+            {
+                var conflictingPeriods = await (from p in _context.Periods
+                    where p.CycleId == request.CycleId
+                          && (request.TeacherId <= 0 || p.TeacherId == request.TeacherId)
+                          && (
+                              (p.StartTime <= request.EndTime && request.StartTime <= p.EndTime &&
+                               p.DayOfWeek == request.DayOfWeek)
+                          )
                     select p).ToListAsync();
 
-            if (conflictingPeriods.Any())
-            {
-                throw new SchedulingConflictException("A period with the same teacher, day of week, and time already exists.");
+                if (conflictingPeriods.Any())
+                {
+                    throw new SchedulingConflictException(
+                        "A period with the same teacher, day of week, and time already exists.");
+                }
             }
             
             var period = new Period
@@ -149,6 +153,53 @@ private readonly MyDbContext _context;
         catch (DbUpdateException ex)
         {
             throw new DbException("Issue adding period to the database", ex);
+        }
+    }
+
+    public async Task UpdatePeriodAsync(PeriodEntry request)
+    {
+        try
+        {
+            var period = await (from p in _context.Periods
+                where p.PeriodId == request.PeriodId && p.CycleId == request.CycleId
+                select p).FirstOrDefaultAsync();
+
+            if (period == null)
+            {
+                throw new NotFoundException("Period not found");
+            }
+
+            if (request.StartTime != null && request.EndTime != null && request.DayOfWeek > 0)
+            {
+                var conflictingPeriods = await (from p in _context.Periods
+                    where p.CycleId == request.CycleId
+                          && (request.TeacherId <= 0 || p.TeacherId == request.TeacherId)
+                          && (
+                              (p.StartTime <= request.EndTime && request.StartTime <= p.EndTime &&
+                               p.DayOfWeek == request.DayOfWeek)
+                          )
+                    select p).ToListAsync();
+
+                if (conflictingPeriods.Any())
+                {
+                    throw new SchedulingConflictException(
+                        "A period with the same teacher, day of week, and time already exists.");
+                }
+            }
+
+            period.TeacherId = request.TeacherId;
+            period.CourseId = request.CourseId;
+            period.Name = request.Name;
+            period.Location = request.Location;
+            period.DayOfWeek = request.DayOfWeek;
+            period.StartTime = request.StartTime;
+            period.EndTime = request.EndTime;
+            
+            var result = await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue updating period in the database", ex);
         }
     }
 }
