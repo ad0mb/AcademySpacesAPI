@@ -121,6 +121,7 @@ builder.Services.AddScoped<IUpdateCourseUseCase, UpdateCourseUseCase>();
 builder.Services.AddScoped<IGetPeriodsUseCase, GetPeriodsUseCase>();
 builder.Services.AddScoped<IGetCyclesUseCase, GetCyclesUseCase>();
 builder.Services.AddScoped<ICreatePeriodUseCase, CreatePeriodUseCase>();
+builder.Services.AddScoped<IUpdatePeriodUseCase, UpdatePeriodUseCase>();
 //Scoped
 
 //Transient
