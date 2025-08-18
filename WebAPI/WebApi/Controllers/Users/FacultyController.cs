@@ -30,6 +30,7 @@ public class FacultyController : ControllerBase
         _updateFacultyUseCase = updateFacultyUseCase;
     }
 
+    //TODO: Add no rows affected exception
     [HasPermission("Faculty:create")]
     [HttpPost("invite-faculty")]
     public async Task<IActionResult> InviteFaculty(InviteFacultyRequest request)
@@ -141,10 +142,14 @@ public class FacultyController : ControllerBase
     [HttpPatch("update-faculty")]
     public async Task<IActionResult> UpdateFaculty(UpdateFacultyRequest request)
     {
+        
+        var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+        
         try
         {
             await _updateFacultyUseCase.UpdateFacultyAsync(new FacultyEntry
             {
+                SchoolId = schoolId,
                 FacultyId = request.FacultyId,
                 FirstName = request.FirstName,
                 MiddleName = request.MiddleName,

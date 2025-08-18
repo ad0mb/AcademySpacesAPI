@@ -223,13 +223,14 @@ public class FacultyRepository : IFacultyRepository
         }
     }
 
+    //TODO: Add school id to not found exception checker to ensure only users school fields can be edited
     public async Task UpdateFacultyAsync(FacultyEntry request)
     {
         try
         {
             var faculty =
                 await (from f in _context.Faculties
-                    where f.FacultyId == request.FacultyId
+                    where f.FacultyId == request.FacultyId && f.SchoolId == request.SchoolId
                     select f).FirstOrDefaultAsync();
             
             if (faculty == null)
