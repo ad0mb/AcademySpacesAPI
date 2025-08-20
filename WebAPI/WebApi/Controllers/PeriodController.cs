@@ -35,7 +35,7 @@ public class PeriodController : ControllerBase
     [HttpGet("get-periods")]
     public async Task<IActionResult> GetPeriods([FromQuery] int pageSize, [FromQuery] int pageNumber,
         [FromQuery] string? searchTerm, [FromQuery] int facultyId, [FromQuery] int courseId,
-        [FromQuery] TimeOnly? startTime, [FromQuery] TimeOnly? endTime)
+        [FromQuery] TimeOnly? startTime, [FromQuery] TimeOnly? endTime, [FromQuery] bool onlyScheduled = false)
     {
         try
         {
@@ -46,7 +46,7 @@ public class PeriodController : ControllerBase
             var cycleId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("cycle_id").Value);
 
             var (periodsList, totalCount) = await _getPeriodsUseCase.GetPeriodsBySchoolAsync(schooldId, cycleId,
-                pageSize, pageNumber, searchTerm, facultyId, courseId, startTime, endTime);
+                pageSize, pageNumber, searchTerm, facultyId, courseId, startTime, endTime, onlyScheduled);
 
             foreach (var period in periodsList)
             {
