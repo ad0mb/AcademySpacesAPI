@@ -17,7 +17,8 @@ private readonly MyDbContext _context;
         _context = context;
     }
 
-    public async Task<(List<PeriodEntry> periodsList, int totalCount)> GetPeriodsBySchoolIdAsync(int schoolId, int cycleId, int pageSize, int pageNumber, string? searchTerm, int facultyId, int courseId, TimeOnly? startTime, TimeOnly? endTime, bool onlyScheduled = false)
+    //TODO: Verify serach term filter logic
+    public async Task<(List<PeriodEntry> periodsList, int totalCount)> GetPeriodsBySchoolIdAsync(int schoolId, int cycleId, int pageSize, int pageNumber, string? searchTerm, int facultyId, int courseId, TimeOnly? startTime, TimeOnly? endTime, int dayOfWeek, bool onlyScheduled = false)
     {
         List<PeriodEntry> periodsList = new List<PeriodEntry>();
 
@@ -31,6 +32,7 @@ private readonly MyDbContext _context;
                       && (courseId <= 0 || p.CourseId == courseId) //Course filter
                       && (startTime == null || p.StartTime >= startTime) //Start time filter
                       && (endTime == null || p.EndTime <= endTime) //End time filter
+                      && (dayOfWeek <= 0 || p.DayOfWeek == dayOfWeek) //Day of week filter
                         && (!onlyScheduled || (p.StartTime != null && p.EndTime != null && p.DayOfWeek > 0 && p.DayOfWeek != null)) //Only scheduled periods
 
                       && (string.IsNullOrEmpty(searchTerm)
