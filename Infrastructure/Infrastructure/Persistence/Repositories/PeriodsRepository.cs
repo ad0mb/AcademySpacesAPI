@@ -18,7 +18,7 @@ private readonly MyDbContext _context;
     }
 
     //TODO: Verify serach term filter logic
-    public async Task<(List<PeriodEntry> periodsList, int totalCount)> GetPeriodsBySchoolIdAsync(int schoolId, int cycleId, int pageSize, int pageNumber, string? searchTerm, int facultyId, int courseId, TimeOnly? startTime, TimeOnly? endTime, int dayOfWeek, bool onlyScheduled = false)
+    public async Task<(List<PeriodEntry> periodsList, int totalCount)> GetPeriodsBySchoolIdAsync(int schoolId, int cycleId, int pageSize, int pageNumber, string? searchTerm, int facultyId, int courseId, TimeOnly? startTime, TimeOnly? endTime, int dayOfWeek, bool excludeClassroomId = false, bool onlyScheduled = false)
     {
         List<PeriodEntry> periodsList = new List<PeriodEntry>();
 
@@ -35,6 +35,9 @@ private readonly MyDbContext _context;
                       && (dayOfWeek <= 0 || p.DayOfWeek == dayOfWeek) //Day of week filter
                         && (!onlyScheduled || (p.StartTime != null && p.EndTime != null && p.DayOfWeek > 0 && p.DayOfWeek != null)) //Only scheduled periods
 
+                      && (excludeClassroomId == false ||
+                          !_context.ClassroomSchedules.Any(cs => cs.PeriodId == p.PeriodId)) //Exclude classroom filter
+                      
                       && (string.IsNullOrEmpty(searchTerm)
                           || (
                               p.Teacher != null && (
@@ -203,6 +206,60 @@ private readonly MyDbContext _context;
         catch (DbUpdateException ex)
         {
             throw new DbException("Issue updating period in the database", ex);
+        }
+    }
+
+    public async Task<List<PeriodEntry>> GetPeriodsByClassroomIdAsync(int classroomId, int cycleId)
+    {
+        try
+        {
+            var periodsList = new List<PeriodEntry>();
+
+            var periods = await (from cs in _context.ClassroomSchedules
+                join p in _context.Periods.Include(p => p.Teacher).Include(p => p.Course) on cs.PeriodId equals p.PeriodId
+                where cs.ClassroomId == classroomId && cs.Classroom.CycleId == cycleId && p.CycleId == cycleId
+                select p).ToListAsync();
+                
+
+
+            foreach (var period in periods)
+            {
+                periodsList.Add(new PeriodEntry
+                {
+                    PeriodId = period.PeriodId,
+                    Teacher = period.Teacher == null
+                        ? null
+                        : new FacultyEntry
+                        {
+                            FacultyId = period.Teacher.FacultyId,
+                            FirstName = period.Teacher.FirstName,
+                            MiddleName = period.Teacher.MiddleName,
+                            LastName = period.Teacher.LastName,
+                            PhoneNumber = period.Teacher.PhoneNumber,
+                            Email = period.Teacher.Email,
+                        },
+                    Course = new CourseEntry
+                    {
+                        CourseId = period.Course.CourseId,
+                        CourseName = period.Course.CourseName,
+                        CourseCode = period.Course.CourseCode,
+                        CourseDescription = period.Course.CourseDescription,
+                    },
+                    Name = period.Name,
+                    Location = period.Location,
+                    DayOfWeek = period.DayOfWeek,
+                    StartTime = period.StartTime,
+                    EndTime = period.EndTime,
+                    DateCreated = period.DateCreated,
+                    DateUpdated = period.DateModified,
+                });
+            }
+
+            return periodsList;
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("An error occurred while retrieving periods for the classroom.", ex);
         }
     }
 }
