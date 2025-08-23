@@ -1,4 +1,5 @@
 ﻿using AcademySpacesAPI.WebApi.Attributes;
+using AcademySpacesAPI.WebApi.DTOs.GeneralObjects;
 using AcademySpacesAPI.WebApi.DTOs.Requests;
 using AcademySpacesAPI.WebApi.DTOs.Responses;
 using Core.ApplicationCore.DomainEntities;
@@ -18,12 +19,14 @@ public class ClassroomController : ControllerBase
     private readonly ICreateClassroomUseCase _createClassroomUseCase;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IGetClassroomsUseCase _getClassroomsUseCase;
+    private readonly IGetClassroomScheduleUseCase _getClassroomScheduleUseCase;
     
-    public ClassroomController(ICreateClassroomUseCase createClassroomUseCase, IHttpContextAccessor httpContextAccessor, IGetClassroomsUseCase getClassroomsUseCase)
+    public ClassroomController(ICreateClassroomUseCase createClassroomUseCase, IHttpContextAccessor httpContextAccessor, IGetClassroomsUseCase getClassroomsUseCase, IGetClassroomScheduleUseCase getClassroomScheduleUseCase)
     {
         _createClassroomUseCase = createClassroomUseCase;
         _httpContextAccessor = httpContextAccessor;
         _getClassroomsUseCase = getClassroomsUseCase;
+        _getClassroomScheduleUseCase = getClassroomScheduleUseCase;
     }
     
     //TODO: Has school wide setting enabled attribute to add
@@ -138,6 +141,70 @@ public class ClassroomController : ControllerBase
             var schooldId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
 
             throw new NotImplementedException();
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+
+    [HttpGet("get-classroom-schedule")]
+    public async Task<IActionResult> GetClassroomSchedule([FromQuery] int classroomId)
+    {
+
+        try
+        {
+            var periodsList = new List<GetPeriodsResponse>();
+            
+            var cycleId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("cycle_id").Value);
+
+            var periods = await _getClassroomScheduleUseCase.GetClassroomScheduleAsync(classroomId, cycleId);
+
+            foreach (var period in periods)
+            {
+                periodsList.Add(new GetPeriodsResponse
+                {
+                    PeriodId = period.PeriodId,
+                    Teacher = period.Teacher == null
+                        ? null
+                        : new GetFacultyResponse
+                        {
+                            FacultyId = period.Teacher.FacultyId,
+                            FirstName = period.Teacher.FirstName,
+                            MiddleName = period.Teacher.MiddleName,
+                            LastName = period.Teacher.LastName,
+                            PhoneNumber = period.Teacher.PhoneNumber,
+                            Email = period.Teacher.Email,
+                        },
+                    Course = new GetCoursesResponse
+                    {
+                        CourseId = period.Course.CourseId,
+                        CourseName = period.Course.CourseName,
+                        CourseCode = period.Course.CourseCode,
+                        CourseDescription = period.Course.CourseDescription,
+                    },
+                    Name = period.Name,
+                    Location = period.Location,
+                    DayOfWeek = period.DayOfWeek,
+                    StartTime = period.StartTime,
+                    EndTime = period.EndTime
+                    
+                });
+            }
+
+            return Ok(new
+            {
+                Status = true,
+                Message = "Retrieved classroom schedule successfully.",
+                Data = periodsList,
+                Errors = (string[])null
+            });
         }
         catch (DbException ex)
         {
