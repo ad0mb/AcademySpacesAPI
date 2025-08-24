@@ -191,9 +191,14 @@ public class ClassroomController : ControllerBase
                     },
                     Name = period.Name,
                     Location = period.Location,
-                    DayOfWeek = period.DayOfWeek,
-                    StartTime = period.StartTime,
-                    EndTime = period.EndTime
+                    PeriodSchedule = period.PeriodSchedule
+                        .Select(ps => new GetPeriodScheduleEntryResponse
+                        {
+                            PsId = ps.Id,
+                            DayOfWeek = ps.DayOfWeek,
+                            StartTime = ps.StartTime,
+                            EndTime = ps.EndTime
+                        }).ToList()
                     
                 });
             }

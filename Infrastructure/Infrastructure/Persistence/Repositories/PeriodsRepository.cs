@@ -1,6 +1,7 @@
 ﻿using Core.ApplicationCore.DomainEntities;
 using Core.ApplicationCore.Interfaces.Adapters;
 using Core.Exceptions;
+using EFCore.BulkExtensions;
 using Infrastructure.Infrastructure.Persistence.Context;
 using Infrastructure.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -9,34 +10,40 @@ namespace Infrastructure.Infrastructure.Persistence.Repositories;
 
 public class PeriodsRepository : IPeriodsRepository
 {
-    
-private readonly MyDbContext _context;
+
+    private readonly MyDbContext _context;
 
     public PeriodsRepository(MyDbContext context)
     {
         _context = context;
     }
 
-    //TODO: Verify serach term filter logic
-    public async Task<(List<PeriodEntry> periodsList, int totalCount)> GetPeriodsBySchoolIdAsync(int schoolId, int cycleId, int pageSize, int pageNumber, string? searchTerm, int facultyId, int courseId, TimeOnly? startTime, TimeOnly? endTime, int dayOfWeek, bool excludeClassroomId = false, bool onlyScheduled = false)
+    //TODO: Just come back and check this logic again especially conflict checking
+    public async Task<(List<PeriodEntry> periodsList, int totalCount)> GetPeriodsBySchoolIdAsync(int schoolId,
+        int cycleId, int pageSize, int pageNumber, string? searchTerm, int facultyId, int courseId, TimeOnly? startTime,
+        TimeOnly? endTime, int[] dayOfWeek, bool excludeClassroomId = false, bool onlyScheduled = false)
     {
         List<PeriodEntry> periodsList = new List<PeriodEntry>();
 
         try
         {
-            var query = from c in _context.Courses
-                where c.SchoolId == schoolId
-                from p in c.Periods
+            var query = from p in _context.Periods
+                join ps in _context.PeriodSchedules on p.PeriodId equals ps.PeriodId into psGroup
+                from ps in psGroup.DefaultIfEmpty()
                 where p.CycleId == cycleId
                       && (facultyId <= 0 || p.Teacher.FacultyId == facultyId) //Faculty filter
                       && (courseId <= 0 || p.CourseId == courseId) //Course filter
-                      && (startTime == null || p.StartTime >= startTime) //Start time filter
-                      && (endTime == null || p.EndTime <= endTime) //End time filter
-                      && (dayOfWeek <= 0 || p.DayOfWeek == dayOfWeek) //Day of week filter
-                        && (!onlyScheduled || (p.StartTime != null && p.EndTime != null && p.DayOfWeek > 0 && p.DayOfWeek != null)) //Only scheduled periods
 
-                      && (excludeClassroomId == false ||
-                          !_context.ClassroomSchedules.Any(cs => cs.PeriodId == p.PeriodId)) //Exclude classroom filter
+                      // Time and day filtering on PeriodSchedule
+                      && (startTime == null || ps.StartTime >= startTime)
+                      && (endTime == null || ps.EndTime <= endTime)
+                      && (dayOfWeek.Length <= 0 || dayOfWeek.Sum() <= 0 || dayOfWeek.Contains(ps.DayOfWeek))
+                      
+                      // Only scheduled periods: must have at least one PeriodSchedule
+                      && (!onlyScheduled || _context.PeriodSchedules.Any(s => s.PeriodId == p.PeriodId))
+
+                      && (!excludeClassroomId ||
+                          !_context.ClassroomSchedules.Any(cs => cs.PeriodId == p.PeriodId))
                       
                       && (string.IsNullOrEmpty(searchTerm)
                           || (
@@ -70,6 +77,7 @@ private readonly MyDbContext _context;
                 .Distinct()
                 .Include(p => p.Teacher)
                 .Include(p => p.Course)
+                .Include(p => p.PeriodSchedules)
                 .ToListAsync();
 
             foreach (var period in dbPeriods)
@@ -97,45 +105,74 @@ private readonly MyDbContext _context;
                     },
                     Name = period.Name,
                     Location = period.Location,
-                    DayOfWeek = period.DayOfWeek,
-                    StartTime = period.StartTime,
-                    EndTime = period.EndTime,
+                    PeriodSchedule = period.PeriodSchedules
+                        .Select(ps => new PeriodScheduleEntry
+                        {
+                            Id = ps.Id,
+                            DayOfWeek = ps.DayOfWeek,
+                            StartTime = ps.StartTime,
+                            EndTime = ps.EndTime,
+                        }).ToList(),
                     DateCreated = period.DateCreated,
                     DateUpdated = period.DateModified,
                 });
             }
 
             return (periodsList, totalCount);
-        } 
+        }
         catch (DbUpdateException ex)
         {
             throw new DbException("An error occurred while retrieving periods.", ex);
         }
     }
 
-    //TODO: Double check create and update period methods to ensure there are no scheduling conflicts
+    //TODO: Just come back and check this logic again especially conflict checking
     public async Task CreatePeriodAsync(PeriodEntry request)
     {
         try
         {
-            if (request.StartTime != null && request.EndTime != null && request.DayOfWeek > 0 && request.TeacherId > 0)
+            
+            if (request.PeriodSchedule != null && request.PeriodSchedule.Count > 0 && request.TeacherId > 0) //conflict checker
             {
-                var conflictingPeriods = await (from p in _context.Periods
+                var scheduleTuples = request.PeriodSchedule
+                    .Select(ps => new { ps.DayOfWeek, ps.StartTime, ps.EndTime, ps.Id })
+                    .ToList();
+                
+                var possibleConflicts = await (from p in _context.Periods
+                    join ps in _context.PeriodSchedules on p.PeriodId equals ps.PeriodId
                     where p.CycleId == request.CycleId
-                          && (p.TeacherId == request.TeacherId)
-                          && (
-                              (p.StartTime <= request.EndTime && request.StartTime <= p.EndTime &&
-                               p.DayOfWeek == request.DayOfWeek)
-                          )
-                    select p).ToListAsync();
+                          && p.TeacherId == request.TeacherId
+                    select new { ps.Id, ps.DayOfWeek, ps.StartTime, ps.EndTime }).ToListAsync();
 
-                if (conflictingPeriods.Any())
+                var hasServerConflict = scheduleTuples.Any(tuples =>
+                    possibleConflicts.Any(dbEntries =>
+                        tuples.DayOfWeek == dbEntries.DayOfWeek
+                        && dbEntries.Id != tuples.Id
+                        && dbEntries.StartTime < tuples.EndTime
+                        && tuples.StartTime < dbEntries.EndTime
+                    ));
+
+                var hasRequestConflict = scheduleTuples
+                    .Select((outer, outerIndex) => new { outer, innerIndex = outerIndex })
+                    .Any(x => scheduleTuples
+                        .Select((inner, innerIndex) => new { inner, innerIndex })
+                        .Any(y =>
+                            x.innerIndex != y.innerIndex &&
+                            x.outer.DayOfWeek == y.inner.DayOfWeek &&
+                            x.outer.StartTime < y.inner.EndTime &&
+                            y.inner.StartTime < x.outer.EndTime
+                        )
+                    );
+
+                var hasConflict = hasServerConflict || hasRequestConflict;
+
+                if (hasConflict)
                 {
                     throw new SchedulingConflictException(
-                        "A period with the same teacher, day of week, and time already exists.");
+                        "A period with the same teacher, day of week, and overlapping time already exists.");
                 }
             }
-            
+
             var period = new Period
             {
                 CycleId = request.CycleId,
@@ -143,9 +180,13 @@ private readonly MyDbContext _context;
                 CourseId = request.CourseId,
                 Name = request.Name,
                 Location = request.Location,
-                DayOfWeek = request.DayOfWeek,
-                StartTime = request.StartTime,
-                EndTime = request.EndTime,
+                PeriodSchedules = request.PeriodSchedule
+                    .Select(ps => new PeriodSchedule
+                    {
+                        DayOfWeek = ps.DayOfWeek,
+                        StartTime = ps.StartTime,
+                        EndTime = ps.EndTime,
+                    }).ToList()
             };
 
             await _context.Periods.AddAsync(period);
@@ -154,7 +195,7 @@ private readonly MyDbContext _context;
             {
                 throw new NoRowsAffectedException("Period not created");
             }
-            
+
         }
         catch (DbUpdateException ex)
         {
@@ -162,6 +203,7 @@ private readonly MyDbContext _context;
         }
     }
 
+    //TODO: Just come back and check this logic again especially conflict checking
     public async Task UpdatePeriodAsync(PeriodEntry request)
     {
         try
@@ -175,21 +217,44 @@ private readonly MyDbContext _context;
                 throw new NotFoundException("Period not found");
             }
 
-            if (request.StartTime != null && request.EndTime != null && request.DayOfWeek > 0 && request.TeacherId > 0)
+            if (request.PeriodSchedule != null && request.PeriodSchedule.Count > 0 && request.TeacherId > 0) //conflict checker
             {
-                var conflictingPeriods = await (from p in _context.Periods
+                var scheduleTuples = request.PeriodSchedule
+                    .Select(ps => new { ps.DayOfWeek, ps.StartTime, ps.EndTime, ps.Id })
+                    .ToList();
+                
+                var possibleConflicts = await (from p in _context.Periods
+                    join ps in _context.PeriodSchedules on p.PeriodId equals ps.PeriodId
                     where p.CycleId == request.CycleId
-                          && (p.TeacherId == request.TeacherId)
-                          && (
-                              (p.StartTime <= request.EndTime && request.StartTime <= p.EndTime &&
-                               p.DayOfWeek == request.DayOfWeek)
-                          )
-                    select p).ToListAsync();
+                          && p.TeacherId == request.TeacherId
+                    select new { ps.Id, ps.DayOfWeek, ps.StartTime, ps.EndTime }).ToListAsync();
 
-                if (conflictingPeriods.Any())
+                var hasServerConflict = scheduleTuples.Any(tuples =>
+                    possibleConflicts.Any(dbEntries =>
+                        tuples.DayOfWeek == dbEntries.DayOfWeek
+                        && dbEntries.Id != tuples.Id
+                        && dbEntries.StartTime < tuples.EndTime
+                        && tuples.StartTime < dbEntries.EndTime
+                    ));
+
+                var hasRequestConflict = scheduleTuples
+                    .Select((outer, outerIndex) => new { outer, innerIndex = outerIndex })
+                    .Any(x => scheduleTuples
+                        .Select((inner, innerIndex) => new { inner, innerIndex })
+                        .Any(y =>
+                            x.innerIndex != y.innerIndex &&
+                            x.outer.DayOfWeek == y.inner.DayOfWeek &&
+                            x.outer.StartTime < y.inner.EndTime &&
+                            y.inner.StartTime < x.outer.EndTime
+                        )
+                    );
+
+                var hasConflict = hasServerConflict || hasRequestConflict;
+
+                if (hasConflict)
                 {
                     throw new SchedulingConflictException(
-                        "A period with the same teacher, day of week, and time already exists.");
+                        "A period with the same teacher, day of week, and overlapping time already exists.");
                 }
             }
 
@@ -197,15 +262,63 @@ private readonly MyDbContext _context;
             period.CourseId = request.CourseId;
             period.Name = request.Name;
             period.Location = request.Location;
-            period.DayOfWeek = request.DayOfWeek;
-            period.StartTime = request.StartTime;
-            period.EndTime = request.EndTime;
             
             var result = await _context.SaveChangesAsync();
+            
+            var periodSchedule = new List<PeriodSchedule>();
+            
+            foreach (var ps in request.PeriodSchedule)
+            {
+                var periodScheduleEntry = new PeriodSchedule
+                {
+                    Id = ps.Id,
+                    PeriodId = ps.PeriodId,
+                    DayOfWeek = ps.DayOfWeek,
+                    StartTime = ps.StartTime,
+                    EndTime = ps.EndTime,
+                    DateUpdated = DateTime.Now
+                };
+
+                if (ps.Id <= 0)
+                {
+                    periodScheduleEntry.DateCreated = DateTime.Now; //TODO: Fix date created logic, setting to null whne ps.Id > 0
+                }
+                
+                periodSchedule.Add(periodScheduleEntry);
+            }
+            
+            await _context.BulkInsertOrUpdateAsync(periodSchedule, new BulkConfig
+            {
+                PreserveInsertOrder = false,
+                SetOutputIdentity = true
+            });
+
         }
         catch (DbUpdateException ex)
         {
             throw new DbException("Issue updating period in the database", ex);
+        }
+    }
+
+    public async Task BulkDeletePeriodScheduleEntriesAsync(List<int> periodScheduleEntriesToDelete)
+    {
+        try
+        {
+            var periodSchedules = new List<PeriodSchedule>();
+            
+            foreach (var id in periodScheduleEntriesToDelete)
+            {
+                periodSchedules.Add(new PeriodSchedule
+                {
+                    Id = id
+                });
+            }
+
+            await _context.BulkDeleteAsync(periodSchedules);
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue deleting period schedule entries from the database", ex);
         }
     }
 
@@ -216,10 +329,11 @@ private readonly MyDbContext _context;
             var periodsList = new List<PeriodEntry>();
 
             var periods = await (from cs in _context.ClassroomSchedules
-                join p in _context.Periods.Include(p => p.Teacher).Include(p => p.Course) on cs.PeriodId equals p.PeriodId
+                join p in _context.Periods.Include(p => p.Teacher).Include(p => p.Course) on cs.PeriodId equals p
+                    .PeriodId
                 where cs.ClassroomId == classroomId && cs.Classroom.CycleId == cycleId && p.CycleId == cycleId
                 select p).ToListAsync();
-                
+
 
 
             foreach (var period in periods)
@@ -246,15 +360,19 @@ private readonly MyDbContext _context;
                         CourseDescription = period.Course.CourseDescription,
                     },
                     Name = period.Name,
-                    Location = period.Location,
-                    DayOfWeek = period.DayOfWeek,
-                    StartTime = period.StartTime,
-                    EndTime = period.EndTime,
+                    PeriodSchedule = period.PeriodSchedules
+                        .Select(ps => new PeriodScheduleEntry
+                        {
+                            Id = ps.Id,
+                            DayOfWeek = ps.DayOfWeek,
+                            StartTime = ps.StartTime,
+                            EndTime = ps.EndTime,
+                        }).ToList(),
                     DateCreated = period.DateCreated,
                     DateUpdated = period.DateModified,
                 });
             }
-
+            
             return periodsList;
         }
         catch (DbUpdateException ex)
