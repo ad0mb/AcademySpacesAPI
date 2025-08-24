@@ -14,8 +14,10 @@ private readonly IPeriodsRepository _periodsRepository;
         _periodsRepository = periodsRepository;
     }
 
-    public async Task UpdatePeriodAsync(PeriodEntry request)
+    public async Task UpdatePeriodAsync(PeriodEntry request, List<int> periodScheduleEntriesToDelete)
     {
+        await _periodsRepository.BulkDeletePeriodScheduleEntriesAsync(periodScheduleEntriesToDelete);
+        
         await _periodsRepository.UpdatePeriodAsync(request);
     }
 }

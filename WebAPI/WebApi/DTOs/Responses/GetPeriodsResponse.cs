@@ -10,7 +10,5 @@ public class GetPeriodsResponse
     [Required] public GetCoursesResponse Course { get; set; }
     [Required] public string Name { get; set; }
     public string? Location { get; set; }
-    public int? DayOfWeek { get; set; }
-    public TimeOnly? StartTime { get; set; }
-    public TimeOnly? EndTime { get; set; }
+    [Required] public List<GetPeriodScheduleEntryResponse> PeriodSchedule { get; set; }
 }

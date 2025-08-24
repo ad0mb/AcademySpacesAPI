@@ -35,7 +35,7 @@ public class PeriodController : ControllerBase
     [HttpGet("get-periods")]
     public async Task<IActionResult> GetPeriods([FromQuery] int pageSize, [FromQuery] int pageNumber,
         [FromQuery] string? searchTerm, [FromQuery] int facultyId, [FromQuery] int courseId,
-        [FromQuery] TimeOnly? startTime, [FromQuery] TimeOnly? endTime, [FromQuery] int dayOfWeek,
+        [FromQuery] TimeOnly? startTime, [FromQuery] TimeOnly? endTime, [FromQuery] int[] dayOfWeek,
         [FromQuery] bool excludeClassroomId = false, [FromQuery] bool onlyScheduled = false)
     {
         try
@@ -74,9 +74,14 @@ public class PeriodController : ControllerBase
                     },
                     Name = period.Name,
                     Location = period.Location,
-                    DayOfWeek = period.DayOfWeek,
-                    StartTime = period.StartTime,
-                    EndTime = period.EndTime
+                    PeriodSchedule = period.PeriodSchedule
+                        .Select(ps => new GetPeriodScheduleEntryResponse
+                        {
+                            PsId = ps.Id,
+                            DayOfWeek = ps.DayOfWeek,
+                            StartTime = ps.StartTime,
+                            EndTime = ps.EndTime
+                        }).ToList()
                 });
             }
 
@@ -119,9 +124,13 @@ public class PeriodController : ControllerBase
                 CourseId = request.CourseId,
                 Name = request.Name,
                 Location = request.Location,
-                DayOfWeek = request.DayOfWeek,
-                StartTime = request.StartTime,
-                EndTime = request.EndTime,
+                PeriodSchedule = request.PeriodSchedule
+                    .Select(ps => new PeriodScheduleEntry
+                    {
+                        DayOfWeek = ps.DayOfWeek,
+                        StartTime = ps.StartTime,
+                        EndTime = ps.EndTime
+                    }).ToList()
             };
 
             await _createPeriodUseCase.CreatePeriodAsync(periodEntry);
@@ -174,6 +183,11 @@ public class PeriodController : ControllerBase
         {
             var cycleId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("cycle_id").Value);
 
+            var periodScheduleEntriesToDelete = request.PeriodSchedule
+                .Where(ps => ps.toDelete)
+                .Select(ps => ps.PsId)
+                .ToList();
+            
             var periodEntry = new PeriodEntry
             {
                 PeriodId = request.PeriodId,
@@ -182,12 +196,19 @@ public class PeriodController : ControllerBase
                 CourseId = request.CourseId,
                 Name = request.Name,
                 Location = request.Location,
-                DayOfWeek = request.DayOfWeek,
-                StartTime = request.StartTime,
-                EndTime = request.EndTime,
+                PeriodSchedule = request.PeriodSchedule
+                    .Where(ps => !ps.toDelete)
+                    .Select(ps => new PeriodScheduleEntry
+                    {
+                        Id = ps.PsId,
+                        PeriodId = request.PeriodId,
+                        DayOfWeek = ps.DayOfWeek,
+                        StartTime = ps.StartTime,
+                        EndTime = ps.EndTime,
+                    }).ToList()
             };
 
-            await _updatePeriodUseCase.UpdatePeriodAsync(periodEntry);
+            await _updatePeriodUseCase.UpdatePeriodAsync(periodEntry, periodScheduleEntriesToDelete);
 
             return Ok(new
             {
