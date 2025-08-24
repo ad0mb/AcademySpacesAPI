@@ -233,8 +233,8 @@ public class PeriodsRepository : IPeriodsRepository
                     possibleConflicts.Any(dbEntries =>
                         tuples.DayOfWeek == dbEntries.DayOfWeek
                         && dbEntries.Id != tuples.Id
-                        && dbEntries.StartTime < tuples.EndTime
-                        && tuples.StartTime < dbEntries.EndTime
+                        && dbEntries.StartTime < tuples.EndTime //start time of the first comparison is before the end time of the second comparison
+                        && tuples.StartTime < dbEntries.EndTime //start time of the second comparison is before the end time of the first comparison
                     ));
 
                 var hasRequestConflict = scheduleTuples
@@ -244,8 +244,8 @@ public class PeriodsRepository : IPeriodsRepository
                         .Any(y =>
                             x.innerIndex != y.innerIndex &&
                             x.outer.DayOfWeek == y.inner.DayOfWeek &&
-                            x.outer.StartTime < y.inner.EndTime &&
-                            y.inner.StartTime < x.outer.EndTime
+                            x.outer.StartTime < y.inner.EndTime && //start time of the first comparison is before the end time of the second comparison
+                            y.inner.StartTime < x.outer.EndTime //start time of the second comparison is before the end time of the first comparison
                         )
                     );
 
@@ -329,7 +329,7 @@ public class PeriodsRepository : IPeriodsRepository
             var periodsList = new List<PeriodEntry>();
 
             var periods = await (from cs in _context.ClassroomSchedules
-                join p in _context.Periods.Include(p => p.Teacher).Include(p => p.Course) on cs.PeriodId equals p
+                join p in _context.Periods.Include(p => p.Teacher).Include(p => p.Course).Include(p => p.PeriodSchedules) on cs.PeriodId equals p
                     .PeriodId
                 where cs.ClassroomId == classroomId && cs.Classroom.CycleId == cycleId && p.CycleId == cycleId
                 select p).ToListAsync();
