@@ -43,6 +43,8 @@ public partial class MyDbContext : DbContext
 
     public virtual DbSet<Period> Periods { get; set; }
 
+    public virtual DbSet<PeriodSchedule> PeriodSchedules { get; set; }
+
     public virtual DbSet<Role> Roles { get; set; }
 
     public virtual DbSet<RolePermission> RolePermissions { get; set; }
@@ -509,19 +511,12 @@ public partial class MyDbContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("datetime")
                 .HasColumnName("date_modified");
-            entity.Property(e => e.DayOfWeek).HasColumnName("day_of_week");
-            entity.Property(e => e.EndTime)
-                .HasColumnType("time")
-                .HasColumnName("end_time");
             entity.Property(e => e.Location)
                 .HasMaxLength(20)
                 .HasColumnName("location");
             entity.Property(e => e.Name)
-                .HasMaxLength(15)
+                .HasMaxLength(50)
                 .HasColumnName("name");
-            entity.Property(e => e.StartTime)
-                .HasColumnType("time")
-                .HasColumnName("start_time");
             entity.Property(e => e.TeacherId).HasColumnName("teacher_id");
 
             entity.HasOne(d => d.Course).WithMany(p => p.Periods)
@@ -536,6 +531,38 @@ public partial class MyDbContext : DbContext
                 .HasForeignKey(d => d.TeacherId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("periods_faculty_faculty_id_fk");
+        });
+
+        modelBuilder.Entity<PeriodSchedule>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("period_schedules");
+
+            entity.HasIndex(e => e.PeriodId, "period_schedules_periods_period_id_fk");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.DateCreated)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("date_created");
+            entity.Property(e => e.DateUpdated)
+                .ValueGeneratedOnAddOrUpdate()
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("date_updated");
+            entity.Property(e => e.DayOfWeek).HasColumnName("day_of_week");
+            entity.Property(e => e.EndTime)
+                .HasColumnType("time")
+                .HasColumnName("end_time");
+            entity.Property(e => e.PeriodId).HasColumnName("period_id");
+            entity.Property(e => e.StartTime)
+                .HasColumnType("time")
+                .HasColumnName("start_time");
+
+            entity.HasOne(d => d.Period).WithMany(p => p.PeriodSchedules)
+                .HasForeignKey(d => d.PeriodId)
+                .HasConstraintName("period_schedules_periods_period_id_fk");
         });
 
         modelBuilder.Entity<Role>(entity =>

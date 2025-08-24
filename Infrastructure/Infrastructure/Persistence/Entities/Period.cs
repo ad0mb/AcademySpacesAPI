@@ -17,12 +17,6 @@ public partial class Period
 
     public string? Location { get; set; }
 
-    public int? DayOfWeek { get; set; }
-
-    public TimeOnly? StartTime { get; set; }
-
-    public TimeOnly? EndTime { get; set; }
-
     public DateTime? DateCreated { get; set; }
 
     public DateTime? DateModified { get; set; }
@@ -34,6 +28,8 @@ public partial class Period
     public virtual Course Course { get; set; } = null!;
 
     public virtual Cycle Cycle { get; set; } = null!;
+
+    public virtual ICollection<PeriodSchedule> PeriodSchedules { get; set; } = new List<PeriodSchedule>();
 
     public virtual Faculty? Teacher { get; set; }
 }
