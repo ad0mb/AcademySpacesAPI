@@ -123,6 +123,7 @@ builder.Services.AddScoped<IGetCyclesUseCase, GetCyclesUseCase>();
 builder.Services.AddScoped<ICreatePeriodUseCase, CreatePeriodUseCase>();
 builder.Services.AddScoped<IUpdatePeriodUseCase, UpdatePeriodUseCase>();
 builder.Services.AddScoped<IGetClassroomScheduleUseCase, GetClassroomScheduleUseCase>();
+builder.Services.AddScoped<IUpdateClassroomScheduleUseCase, UpdateClassroomScheduleUseCase>();
 //Scoped
 
 //Transient
@@ -187,7 +188,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 
-// app.UseCors("AllowAllOrigins");
+app.UseCors("AllowAllOrigins");
 
 if (app.Environment.IsDevelopment())
 {
