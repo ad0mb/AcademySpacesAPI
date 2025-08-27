@@ -546,11 +546,11 @@ public partial class MyDbContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("datetime")
                 .HasColumnName("date_created");
-            entity.Property(e => e.DateUpdated)
+            entity.Property(e => e.DateModified)
                 .ValueGeneratedOnAddOrUpdate()
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("datetime")
-                .HasColumnName("date_updated");
+                .HasColumnName("date_modified");
             entity.Property(e => e.DayOfWeek).HasColumnName("day_of_week");
             entity.Property(e => e.EndTime)
                 .HasColumnType("time")
