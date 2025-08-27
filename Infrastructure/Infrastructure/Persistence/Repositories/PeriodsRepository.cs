@@ -276,7 +276,7 @@ public class PeriodsRepository : IPeriodsRepository
                     DayOfWeek = ps.DayOfWeek,
                     StartTime = ps.StartTime,
                     EndTime = ps.EndTime,
-                    DateUpdated = DateTime.Now
+                    DateModified = DateTime.Now
                 };
 
                 if (ps.Id <= 0)
