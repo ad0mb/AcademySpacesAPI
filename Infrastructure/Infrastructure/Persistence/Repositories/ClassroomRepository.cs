@@ -1,6 +1,7 @@
 ﻿using Core.ApplicationCore.DomainEntities;
 using Core.ApplicationCore.Interfaces.Adapters;
 using Core.Exceptions;
+using EFCore.BulkExtensions;
 using Infrastructure.Infrastructure.Persistence.Context;
 using Infrastructure.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -104,6 +105,74 @@ public class ClassroomRepository : IClassroomRepository
         catch (DbUpdateException ex)
         {
             throw new DbException("Issue retrieving classrooms from the database", ex);
+        }
+    }
+
+    //TODO: Take a look at whether to keep delete logic local or make it a new method and change request type to include a delete flag
+    public async Task UpdateClassroomScheduleAsync(int cycleId, int classroomId, List<int> periodId)
+    {
+        try
+        {
+            var result = await (from assignedScheduleEntries in _context.PeriodSchedules //conflict checker
+                where assignedScheduleEntries.Period.CycleId == cycleId
+                      && assignedScheduleEntries.Period.ClassroomSchedules.Any(cs => cs.ClassroomId == classroomId)
+                from requestedScheduleEntries in _context.PeriodSchedules
+                where requestedScheduleEntries.Period.CycleId == cycleId && periodId.Contains(requestedScheduleEntries
+                                                                             .PeriodId)
+                                                                         && requestedScheduleEntries.PeriodId !=
+                                                                         assignedScheduleEntries.PeriodId
+                                                                         && requestedScheduleEntries.DayOfWeek !=
+                                                                         assignedScheduleEntries.DayOfWeek
+                                                                         && requestedScheduleEntries.StartTime <
+                                                                         assignedScheduleEntries.EndTime
+                                                                         && requestedScheduleEntries.EndTime >
+                                                                         assignedScheduleEntries.StartTime
+                select new
+                {
+                    ClassPeriodId = assignedScheduleEntries.PeriodId,
+                    ConflictingPeriodId = requestedScheduleEntries.PeriodId,
+                    DayOfWeek = requestedScheduleEntries.DayOfWeek
+                }).AnyAsync();
+
+            if (result)
+            {
+                throw new SchedulingConflictException("One or more of the requested periods conflict with existing scheduled periods for this classroom.");
+            }
+            
+            
+            var dbDeleteEntries = new List<ClassroomSchedule>();
+            var dbAddOrUpdateEntries = new List<ClassroomSchedule>();
+
+            var entriesToDelete = await (from c in _context.ClassroomSchedules
+                where c.ClassroomId == classroomId && !periodId.Contains(c.PeriodId)
+                select c.PeriodId).ToListAsync();
+
+            foreach (var entry in entriesToDelete)
+            {
+                dbDeleteEntries.Add(new ClassroomSchedule
+                {
+                    ClassroomId = classroomId,
+                    PeriodId = entry
+                });
+            }
+
+            await _context.BulkDeleteAsync(dbDeleteEntries);
+            
+            foreach (var id in periodId)
+            {
+                dbAddOrUpdateEntries.Add(new ClassroomSchedule
+                {
+                    ClassroomId = classroomId,
+                    PeriodId = id
+                });
+            }
+
+            //TODO: Does not add date created and modified to bulk inserted or updated entries
+            await _context.BulkInsertOrUpdateAsync(dbAddOrUpdateEntries);
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue updating classroom schedule in the database", ex);
         }
     }
 }
