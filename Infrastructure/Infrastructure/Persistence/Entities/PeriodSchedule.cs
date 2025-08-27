@@ -17,7 +17,7 @@ public partial class PeriodSchedule
 
     public DateTime? DateCreated { get; set; }
 
-    public DateTime? DateUpdated { get; set; }
+    public DateTime? DateModified { get; set; }
 
     public virtual Period Period { get; set; } = null!;
 }
