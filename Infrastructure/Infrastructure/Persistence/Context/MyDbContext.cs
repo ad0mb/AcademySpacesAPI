@@ -445,8 +445,6 @@ public partial class MyDbContext : DbContext
 
             entity.HasIndex(e => e.IdentityId, "parents_pk").IsUnique();
 
-            entity.HasIndex(e => e.RoleId, "parents_roles_role_id_fk");
-
             entity.HasIndex(e => e.SchoolId, "parents_schools_school_id_fk");
 
             entity.Property(e => e.ParentId).HasColumnName("parent_id");
@@ -475,12 +473,7 @@ public partial class MyDbContext : DbContext
             entity.Property(e => e.PhoneNumber)
                 .HasMaxLength(50)
                 .HasColumnName("phone_number");
-            entity.Property(e => e.RoleId).HasColumnName("role_id");
             entity.Property(e => e.SchoolId).HasColumnName("school_id");
-
-            entity.HasOne(d => d.Role).WithMany(p => p.Parents)
-                .HasForeignKey(d => d.RoleId)
-                .HasConstraintName("parents_roles_role_id_fk");
 
             entity.HasOne(d => d.School).WithMany(p => p.Parents)
                 .HasForeignKey(d => d.SchoolId)
@@ -693,9 +686,9 @@ public partial class MyDbContext : DbContext
 
             entity.HasIndex(e => e.IdentityId, "students_pk_2").IsUnique();
 
-            entity.HasIndex(e => e.RoleId, "students_roles_role_id_fk");
-
             entity.HasIndex(e => e.SchoolId, "students_schools_school_id_fk");
+
+            entity.HasIndex(e => e.YearLevel, "students_year_levels_id_fk");
 
             entity.Property(e => e.StudentId).HasColumnName("student_id");
             entity.Property(e => e.DateCreated)
@@ -723,18 +716,17 @@ public partial class MyDbContext : DbContext
             entity.Property(e => e.PhoneNumber)
                 .HasMaxLength(50)
                 .HasColumnName("phone_number");
-            entity.Property(e => e.RoleId).HasColumnName("role_id");
             entity.Property(e => e.SchoolId).HasColumnName("school_id");
-
-            entity.HasOne(d => d.Role).WithMany(p => p.Students)
-                .HasForeignKey(d => d.RoleId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("students_roles_role_id_fk");
+            entity.Property(e => e.YearLevel).HasColumnName("year_level");
 
             entity.HasOne(d => d.School).WithMany(p => p.Students)
                 .HasForeignKey(d => d.SchoolId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("students_schools_school_id_fk");
+
+            entity.HasOne(d => d.YearLevelNavigation).WithMany(p => p.Students)
+                .HasForeignKey(d => d.YearLevel)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("students_year_levels_id_fk");
         });
 
         modelBuilder.Entity<StudentParent>(entity =>
