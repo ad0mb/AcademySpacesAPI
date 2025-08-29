@@ -9,8 +9,6 @@ public partial class Parent
 
     public int SchoolId { get; set; }
 
-    public int? RoleId { get; set; }
-
     public string? IdentityId { get; set; }
 
     public string FirstName { get; set; } = null!;
@@ -26,8 +24,6 @@ public partial class Parent
     public DateTime? DateCreated { get; set; }
 
     public DateTime? DateModified { get; set; }
-
-    public virtual Role? Role { get; set; }
 
     public virtual School School { get; set; } = null!;
 

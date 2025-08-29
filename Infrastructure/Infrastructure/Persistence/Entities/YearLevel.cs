@@ -22,4 +22,6 @@ public partial class YearLevel
     public DateTime? DateModified { get; set; }
 
     public virtual School School { get; set; } = null!;
+
+    public virtual ICollection<Student> Students { get; set; } = new List<Student>();
 }
