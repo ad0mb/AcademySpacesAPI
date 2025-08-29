@@ -36,7 +36,6 @@ public class ParentRepository : IParentRepository
             var newParent = new Parent
             {
                 SchoolId = parent.SchoolId,
-                RoleId = roleId,
                 FirstName = parent.FirstName,
                 MiddleName = parent.MiddleName,
                 LastName = parent.LastName,

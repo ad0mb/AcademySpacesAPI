@@ -24,6 +24,8 @@ public class StudentController : ControllerBase
         _httpContextAccessor = httpContextAccessor;
     }
 
+    //TODO: CHECK STUDENT YEAR LEVELS FOREIGN KEY ON DELETE ANED ON UPDATE CASCADE OPTIONS
+    
     [HasPermission("Student:view")]
     [HttpGet("get-students")]
     public async Task<IActionResult> CreateStudent()
@@ -41,7 +43,9 @@ public class StudentController : ControllerBase
             {
                 returnList.Add(new GetStudentsResponse
                 {
+                    
                     StudentId = student.StudentId,
+                    YearLevelId = student.YearLevelId,
                     FirstName = student.FirstName,
                     MiddleName = student.MiddleName,
                     LastName = student.LastName,

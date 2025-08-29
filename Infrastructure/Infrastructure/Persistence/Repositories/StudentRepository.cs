@@ -50,7 +50,7 @@ public class StudentRepository : IStudentRepository
                     {
                         StudentId = student.Student.StudentId,
                         SchoolId = student.Student.SchoolId,
-                        RoleId = student.Student.RoleId,
+                        YearLevelId = student.Student.YearLevel,
                         IdentityId = student.Student.IdentityId,
                         FirstName = student.Student.FirstName,
                         MiddleName = student.Student.MiddleName,
