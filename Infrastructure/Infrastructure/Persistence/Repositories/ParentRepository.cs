@@ -88,15 +88,38 @@ public class ParentRepository : IParentRepository
         }
     }
 
-    public async Task<List<ParentEntry>> GetParentsBySchoolIdAsync(int schoolId)
+    public async Task<(List<ParentEntry> parentList, int totalCount)> GetParentsBySchoolIdAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm)
     {
         try
         {
             List<ParentEntry> parents = new List<ParentEntry>();
 
-            var dbParents = await (from p in _context.Parents
+            IQueryable<Parent> query = from p in _context.Parents
                 where p.SchoolId == schoolId
-                select p).ToListAsync();
+                
+                && (
+                    string.IsNullOrEmpty(searchTerm) 
+                    || (
+                        p != null && 
+                        (
+                            (p.FirstName != null && p.FirstName.ToLower().Contains(searchTerm)) ||
+                            (p.MiddleName != null && p.MiddleName.ToLower().Contains(searchTerm)) || 
+                            (p.LastName != null && p.LastName.ToLower().Contains(searchTerm))
+                        )
+                    )
+                )
+                
+                orderby p.ParentId
+                select p;
+
+            var totalCount = await query.CountAsync();
+            
+            if (pageSize > 0 && pageNumber > 0)
+            {
+                query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            }
+
+            var dbParents = await query.ToListAsync();
 
             foreach (var parent in dbParents)
             {
@@ -111,7 +134,7 @@ public class ParentRepository : IParentRepository
                 });
             }
 
-            return parents;
+            return (parents, totalCount);
         }
         catch (DbUpdateException ex)
         {
