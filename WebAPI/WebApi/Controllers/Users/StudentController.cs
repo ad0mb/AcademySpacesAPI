@@ -28,7 +28,7 @@ public class StudentController : ControllerBase
     
     [HasPermission("Student:view")]
     [HttpGet("get-students")]
-    public async Task<IActionResult> CreateStudent()
+    public async Task<IActionResult> GetStudents([FromQuery] int pageSize, [FromQuery] int pageNumber, [FromQuery] string? searchTerm, [FromQuery] int yearLevelId)
     {
 
         var returnList = new List<GetStudentsResponse>();
@@ -37,7 +37,7 @@ public class StudentController : ControllerBase
         {
             var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
 
-            var students = await _getStudentsUseCase.GetStudentsAsync(schoolId);
+            var (students, totalCount) = await _getStudentsUseCase.GetStudentsAsync(schoolId, pageSize, pageNumber, searchTerm, yearLevelId);
 
             foreach (var student in students)
             {
@@ -59,7 +59,11 @@ public class StudentController : ControllerBase
             {
                 Status = true,
                 Message = "Students retrieved successfully.",
-                Data = returnList,
+                Data = new
+                {
+                    StudentsList = returnList,
+                    TotalCount = totalCount
+                },
                 Errors = (string[])null
             });
             
