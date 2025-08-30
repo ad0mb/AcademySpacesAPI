@@ -16,20 +16,35 @@ public class StudentRepository : IStudentRepository
         _context = context;
     }
 
-    public async Task<List<StudentEntry>> GetStudentsAsync(int schoolId)
+    public async Task<(List<StudentEntry> studentList, int totalCount )> GetStudentsAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm, int yearLevelId)
     {
         try
         {
             var students = new List<StudentEntry>();
 
-            var dbStudents = await (from s in _context.Students
+            //TODO: Implement search filtering
+            var query = from s in _context.Students
                 join sp in _context.StudentParents on s.StudentId equals sp.StudentId
                 where s.SchoolId == schoolId
+                
+                    && (yearLevelId <= 0 || s.YearLevel == yearLevelId)
+                
+                
                 select new
                 {
                     Student = s,
                     ParentId = sp.ParentId
-                }).ToListAsync();
+                };
+            
+            var totalCount = await query.CountAsync();
+
+            if (pageSize > 0 && pageNumber > 0)
+            {
+                query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            }
+
+            var dbStudents = await query
+                .ToListAsync();
 
             foreach (var student in dbStudents)
             {
@@ -64,7 +79,7 @@ public class StudentRepository : IStudentRepository
                 }
             }
 
-            return students;
+            return (students, totalCount);
         }
         catch (DbUpdateException ex)
         {
