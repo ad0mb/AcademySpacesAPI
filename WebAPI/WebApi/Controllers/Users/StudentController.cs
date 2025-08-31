@@ -19,12 +19,14 @@ public class StudentController : ControllerBase
     private readonly IGetStudentsUseCase _getStudentsUseCase;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ICreateStudentUseCase _createStudentUseCase;
+    private readonly IUpdateStudentUseCase _updateStudentUseCase;
     
-    public StudentController(IGetStudentsUseCase getStudentsUseCase, IHttpContextAccessor httpContextAccessor, ICreateStudentUseCase createStudentUseCase)
+    public StudentController(IGetStudentsUseCase getStudentsUseCase, IHttpContextAccessor httpContextAccessor, ICreateStudentUseCase createStudentUseCase, IUpdateStudentUseCase updateStudentUseCase)
     {
         _getStudentsUseCase = getStudentsUseCase;
         _httpContextAccessor = httpContextAccessor;
         _createStudentUseCase = createStudentUseCase;
+        _updateStudentUseCase = updateStudentUseCase;
     }
 
     //TODO: CHECK STUDENT YEAR LEVELS FOREIGN KEY ON DELETE ANED ON UPDATE CASCADE OPTIONS
@@ -118,6 +120,59 @@ public class StudentController : ControllerBase
             {
                 Status = false,
                 Message = "Internal server error.",
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+
+    [HasPermission("Student:update")]
+    [HttpPatch("update-student")]
+    public async Task<IActionResult> UpdateStudent(UpdateStudentRequest request)
+    {
+        try
+        {
+            var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+
+            var student = new StudentEntry
+            {
+                StudentId = request.StudentId,
+                SchoolId = schoolId,
+                YearLevelId = request.YearLevelId,
+                FirstName = request.FirstName,
+                MiddleName = request.MiddleName,
+                LastName = request.LastName,
+                Phone = request.Phone,
+                Email = request.Email,
+                ParentIds = request.ParentIds ?? new HashSet<int>()
+            };
+
+            await _updateStudentUseCase.UpdateStudentAsync(student);
+            
+            return Ok(new
+            {
+                Status = true,
+                Message = "Student updated successfully.",
+                Data = (object)null,
+                Errors = (string[])null
+            });
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new
+            {
+                Status = false,
+                Message = "Student to update was not found.",
                 Data = (object)null,
                 Errors = new[] { ex.Message }
             });
