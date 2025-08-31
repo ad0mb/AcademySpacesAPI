@@ -12,6 +12,6 @@ public class GetStudentsResponse
     [Phone] public string? Phone { get; set; }
     [EmailAddress] public string? Email { get; set; }
     
-    public List<int> ParentIds { get; set; }
+    public HashSet<int> ParentIds { get; set; }
     
 }

@@ -14,5 +14,5 @@ public class StudentEntry
     public DateTime? DateCreated { get; set; }
     public DateTime? DateUpdated { get; set; }
     
-    public List<int> ParentIds { get; set; }
+    public HashSet<int> ParentIds { get; set; }
 }
