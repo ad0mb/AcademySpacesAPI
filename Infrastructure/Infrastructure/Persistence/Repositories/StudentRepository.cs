@@ -104,4 +104,32 @@ public class StudentRepository : IStudentRepository
             throw new DbException("Issue creating student in the database", ex);
         }
     }
+
+    public async Task UpdateStudentAsync(StudentEntry student)
+    {
+        try
+        {
+            var existingStudent = await (from s in _context.Students
+                where s.StudentId == student.StudentId && s.SchoolId == student.SchoolId
+                select s).FirstOrDefaultAsync();
+
+            if (existingStudent == null)
+            {
+                throw new NotFoundException("Student not found");
+            }
+
+            existingStudent.YearLevel = student.YearLevelId;
+            existingStudent.FirstName = student.FirstName;
+            existingStudent.MiddleName = student.MiddleName;
+            existingStudent.LastName = student.LastName;
+            existingStudent.PhoneNumber = student.Phone;
+            existingStudent.Email = student.Email;
+            
+            var result = await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue updating student in the database", ex);
+        }
+    }
 }
