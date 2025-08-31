@@ -18,6 +18,7 @@ public class FacultyRepository : IFacultyRepository
     }
 
     //TODO: Exception Handling (use result), return exception meant for core
+    //TODO: Phone number conflict checking
     public async Task<int> CreateFacultyAsync(FacultyEntry request)
     {
         try
