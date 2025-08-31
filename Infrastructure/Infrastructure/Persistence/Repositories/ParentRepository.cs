@@ -1,6 +1,7 @@
 ﻿using Core.ApplicationCore.DomainEntities;
 using Core.ApplicationCore.Interfaces.Adapters;
 using Core.Exceptions;
+using EFCore.BulkExtensions;
 using Infrastructure.Infrastructure.Persistence.Context;
 using Infrastructure.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -60,6 +61,7 @@ public class ParentRepository : IParentRepository
     {
         try
         {
+            //TODO: Make it search by schoolId too
             var parent = await (from p in _context.Parents
                 where p.ParentId == parentId
                 select p).FirstOrDefaultAsync();
@@ -166,6 +168,36 @@ public class ParentRepository : IParentRepository
         catch (DbUpdateException ex)
         {
             throw new DbException("Isseue updating parent in the database", ex);
+        }
+    }
+
+    public async Task BulkLinkStudentToParentAsync(HashSet< int> parentIds, int studentId)
+    {
+        try
+        {
+            var entryList = new List<StudentParent>();
+            
+            if (parentIds.Count > 0)
+            {
+                foreach (var parentId in parentIds)
+                {
+                    entryList.Add(new StudentParent
+                    {
+                        ParentId = parentId,
+                        StudentId = studentId
+                    });
+                }
+
+                await _context.BulkInsertOrUpdateAsync(entryList, new BulkConfig
+                {
+                    PreserveInsertOrder = false,
+                    SetOutputIdentity = true
+                });
+            }
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue linking student to parents in the database", ex);
         }
     }
 }
