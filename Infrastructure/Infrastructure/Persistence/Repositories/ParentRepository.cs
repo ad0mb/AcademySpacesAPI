@@ -144,6 +144,7 @@ public class ParentRepository : IParentRepository
         }
     }
 
+    //TODO: Add schoolId to existingParent query to ensure parent belongs to the school
     public async Task UpdateParentAsync(ParentEntry parent)
     {
         try
@@ -175,10 +176,28 @@ public class ParentRepository : IParentRepository
     {
         try
         {
-            var entryList = new List<StudentParent>();
+            var entryToDeleteList = new List<StudentParent>();
+
+            var entriesToDelete = await (from sp in _context.StudentParents
+                where sp.StudentId == studentId && !parentIds.Contains(sp.ParentId)
+                select sp.ParentId).ToListAsync();
+
+            foreach (var parentId in entriesToDelete)
+            {
+                entryToDeleteList.Add(new StudentParent
+                {
+                    ParentId = parentId,
+                    StudentId = studentId
+                });
+            }
+
+            await _context.BulkDeleteAsync(entryToDeleteList);
             
             if (parentIds.Count > 0)
             {
+                var entryList = new List<StudentParent>();
+        
+        
                 foreach (var parentId in parentIds)
                 {
                     entryList.Add(new StudentParent
