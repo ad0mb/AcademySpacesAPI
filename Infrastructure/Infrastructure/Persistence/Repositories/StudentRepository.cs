@@ -2,6 +2,7 @@
 using Core.ApplicationCore.Interfaces.Adapters;
 using Core.Exceptions;
 using Infrastructure.Infrastructure.Persistence.Context;
+using Infrastructure.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Infrastructure.Persistence.Repositories;
@@ -16,6 +17,7 @@ public class StudentRepository : IStudentRepository
         _context = context;
     }
 
+    //TODO: Comeback and implement distinct or a better way to deal with duplicate entries due to parent Ids (inefficient looping perhaps)
     public async Task<(List<StudentEntry> studentList, int totalCount )> GetStudentsAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm, int yearLevelId)
     {
         try
@@ -24,7 +26,6 @@ public class StudentRepository : IStudentRepository
 
             //TODO: Implement search filtering
             var query = from s in _context.Students
-                join sp in _context.StudentParents on s.StudentId equals sp.StudentId
                 where s.SchoolId == schoolId
                 
                     && (yearLevelId <= 0 || s.YearLevel == yearLevelId)
@@ -33,7 +34,7 @@ public class StudentRepository : IStudentRepository
                 select new
                 {
                     Student = s,
-                    ParentId = sp.ParentId
+                    ParentIds = new HashSet<int>(s.StudentParents.Select(sp => sp.ParentId))
                 };
             
             var totalCount = await query.CountAsync();
@@ -48,35 +49,21 @@ public class StudentRepository : IStudentRepository
 
             foreach (var student in dbStudents)
             {
-                var added = false;
-                
-                foreach (var student2 in students)
+                students.Add(new StudentEntry
                 {
-                    if (student2.StudentId == student.Student.StudentId)
-                    {
-                        student2.ParentIds.Add(student.ParentId);
-                        added = true;
-                    }
-                }
-
-                if (!added)
-                {
-                    students.Add(new StudentEntry
-                    {
-                        StudentId = student.Student.StudentId,
-                        SchoolId = student.Student.SchoolId,
-                        YearLevelId = student.Student.YearLevel,
-                        IdentityId = student.Student.IdentityId,
-                        FirstName = student.Student.FirstName,
-                        MiddleName = student.Student.MiddleName,
-                        LastName = student.Student.LastName,
-                        Phone = student.Student.PhoneNumber,
-                        Email = student.Student.Email,
-                        DateCreated = student.Student.DateCreated,
-                        DateUpdated = student.Student.DateModified,
-                        ParentIds = new List<int>() { student.ParentId }
-                    });
-                }
+                    StudentId = student.Student.StudentId,
+                    SchoolId = student.Student.SchoolId,
+                    YearLevelId = student.Student.YearLevel,
+                    IdentityId = student.Student.IdentityId,
+                    FirstName = student.Student.FirstName,
+                    MiddleName = student.Student.MiddleName,
+                    LastName = student.Student.LastName,
+                    Phone = student.Student.PhoneNumber,
+                    Email = student.Student.Email,
+                    DateCreated = student.Student.DateCreated,
+                    DateUpdated = student.Student.DateModified,
+                    ParentIds = student.ParentIds
+                });
             }
 
             return (students, totalCount);
@@ -84,6 +71,37 @@ public class StudentRepository : IStudentRepository
         catch (DbUpdateException ex)
         {
             throw new DbException("Issue retrieving students from the database", ex);
+        }
+    }
+
+    //TODO: Implement dupliate checking for email and phone
+    public async Task<int> CreateStudentAsync(StudentEntry student)
+    {
+        try
+        {
+            var dbStudent = new Student
+            {
+                SchoolId = student.SchoolId,
+                YearLevel = student.YearLevelId,
+                FirstName = student.FirstName,
+                MiddleName = student.MiddleName,
+                LastName = student.LastName,
+                PhoneNumber = student.Phone,
+                Email = student.Email,
+            };
+            
+            await _context.Students.AddAsync(dbStudent);
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                throw new NoRowsAffectedException("Student not created");
+            }
+
+            return dbStudent.StudentId;
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue creating student in the database", ex);
         }
     }
 }
