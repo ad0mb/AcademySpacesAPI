@@ -115,13 +115,14 @@ public class ClassroomRepository : IClassroomRepository
         {
             var result = await (from assignedScheduleEntries in _context.PeriodSchedules //conflict checker
                 where assignedScheduleEntries.Period.CycleId == cycleId
-                      && assignedScheduleEntries.Period.ClassroomSchedules.Any(cs => cs.ClassroomId == classroomId)
+                      && assignedScheduleEntries.Period.ClassroomSchedule != null
+                      && assignedScheduleEntries.Period.ClassroomSchedule.ClassroomId == classroomId
                 from requestedScheduleEntries in _context.PeriodSchedules
                 where requestedScheduleEntries.Period.CycleId == cycleId && periodId.Contains(requestedScheduleEntries
                                                                              .PeriodId)
                                                                          && requestedScheduleEntries.PeriodId !=
                                                                          assignedScheduleEntries.PeriodId
-                                                                         && requestedScheduleEntries.DayOfWeek !=
+                                                                         && requestedScheduleEntries.DayOfWeek ==
                                                                          assignedScheduleEntries.DayOfWeek
                                                                          && requestedScheduleEntries.StartTime <
                                                                          assignedScheduleEntries.EndTime

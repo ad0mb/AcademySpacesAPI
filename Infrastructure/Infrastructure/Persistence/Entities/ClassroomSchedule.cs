@@ -5,13 +5,15 @@ namespace Infrastructure.Infrastructure.Persistence.Entities;
 
 public partial class ClassroomSchedule
 {
-    public int ClassroomId { get; set; }
-
     public int PeriodId { get; set; }
+
+    public int ClassroomId { get; set; }
 
     public DateTime? DateCreated { get; set; }
 
     public DateTime? DateModified { get; set; }
+
+    public virtual ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
 
     public virtual Classroom Classroom { get; set; } = null!;
 

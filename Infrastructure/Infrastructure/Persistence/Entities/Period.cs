@@ -23,7 +23,7 @@ public partial class Period
 
     public virtual ICollection<ClassGradingPeriod> ClassGradingPeriods { get; set; } = new List<ClassGradingPeriod>();
 
-    public virtual ICollection<ClassroomSchedule> ClassroomSchedules { get; set; } = new List<ClassroomSchedule>();
+    public virtual ClassroomSchedule? ClassroomSchedule { get; set; }
 
     public virtual Course Course { get; set; } = null!;
 
