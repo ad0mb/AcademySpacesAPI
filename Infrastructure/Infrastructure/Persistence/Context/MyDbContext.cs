@@ -19,6 +19,8 @@ public partial class MyDbContext : DbContext
 
     public virtual DbSet<Announcment> Announcments { get; set; }
 
+    public virtual DbSet<Assignment> Assignments { get; set; }
+
     public virtual DbSet<ClassGradingPeriod> ClassGradingPeriods { get; set; }
 
     public virtual DbSet<Classroom> Classrooms { get; set; }
@@ -116,6 +118,34 @@ public partial class MyDbContext : DbContext
                 .HasConstraintName("Announcments_faculty_faculty_id_fk");
         });
 
+        modelBuilder.Entity<Assignment>(entity =>
+        {
+            entity.HasKey(e => e.AssignmentId).HasName("PRIMARY");
+
+            entity.ToTable("assignments");
+
+            entity.HasIndex(e => e.PeriodId, "assignments_classroom_schedules_period_id_fk");
+
+            entity.Property(e => e.AssignmentId).HasColumnName("assignment_id");
+            entity.Property(e => e.AssignmentName)
+                .HasMaxLength(50)
+                .HasColumnName("assignment_name");
+            entity.Property(e => e.AssignmentType)
+                .HasColumnType("enum('homework','quiz','exam','project','classwork','participation','essay','presentation','extra_credit')")
+                .HasColumnName("assignment_type");
+            entity.Property(e => e.Description)
+                .HasMaxLength(255)
+                .HasColumnName("description");
+            entity.Property(e => e.DueDate)
+                .HasColumnType("datetime")
+                .HasColumnName("due_date");
+            entity.Property(e => e.PeriodId).HasColumnName("period_id");
+
+            entity.HasOne(d => d.Period).WithMany(p => p.Assignments)
+                .HasForeignKey(d => d.PeriodId)
+                .HasConstraintName("assignments_classroom_schedules_period_id_fk");
+        });
+
         modelBuilder.Entity<ClassGradingPeriod>(entity =>
         {
             entity.HasKey(e => new { e.ClassId, e.GradingPeriodId })
@@ -185,16 +215,16 @@ public partial class MyDbContext : DbContext
 
         modelBuilder.Entity<ClassroomSchedule>(entity =>
         {
-            entity.HasKey(e => new { e.ClassroomId, e.PeriodId })
-                .HasName("PRIMARY")
-                .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
+            entity.HasKey(e => e.PeriodId).HasName("PRIMARY");
 
             entity.ToTable("classroom_schedules");
 
-            entity.HasIndex(e => e.PeriodId, "classroom_schedules_periods_period_id_fk");
+            entity.HasIndex(e => e.ClassroomId, "classroom_schedules_classrooms_classroom_id_fk");
 
+            entity.Property(e => e.PeriodId)
+                .ValueGeneratedNever()
+                .HasColumnName("period_id");
             entity.Property(e => e.ClassroomId).HasColumnName("classroom_id");
-            entity.Property(e => e.PeriodId).HasColumnName("period_id");
             entity.Property(e => e.DateCreated)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("datetime")
@@ -207,10 +237,11 @@ public partial class MyDbContext : DbContext
 
             entity.HasOne(d => d.Classroom).WithMany(p => p.ClassroomSchedules)
                 .HasForeignKey(d => d.ClassroomId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("classroom_schedules_classrooms_classroom_id_fk");
 
-            entity.HasOne(d => d.Period).WithMany(p => p.ClassroomSchedules)
-                .HasForeignKey(d => d.PeriodId)
+            entity.HasOne(d => d.Period).WithOne(p => p.ClassroomSchedule)
+                .HasForeignKey<ClassroomSchedule>(d => d.PeriodId)
                 .HasConstraintName("classroom_schedules_periods_period_id_fk");
         });
 
