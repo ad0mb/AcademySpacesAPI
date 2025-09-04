@@ -19,5 +19,11 @@ public partial class Assignment
 
     public DateTime? DueDate { get; set; }
 
+    public DateTime? DateCreated { get; set; }
+
+    public DateTime? DateModified { get; set; }
+
     public virtual ClassroomSchedule Period { get; set; } = null!;
+
+    public virtual ICollection<StudentGrade> StudentGrades { get; set; } = new List<StudentGrade>();
 }
