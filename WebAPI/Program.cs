@@ -96,6 +96,7 @@ builder.Services.AddScoped<IClassroomRepository, ClassroomRepository>();
 builder.Services.AddScoped<IYearLevelRepository, YearLevelRepository>();
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<IPeriodsRepository, PeriodsRepository>();
+builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
 
 builder.Services.AddScoped<IRegisterSchoolAndAdminUseCase, RegisterSchoolAndAdminUseCase>();
 builder.Services.AddScoped<ICreateParentUseCase, CreateParentUseCase>();
