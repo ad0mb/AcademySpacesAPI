@@ -57,6 +57,8 @@ public partial class MyDbContext : DbContext
 
     public virtual DbSet<Student> Students { get; set; }
 
+    public virtual DbSet<StudentGrade> StudentGrades { get; set; }
+
     public virtual DbSet<StudentParent> StudentParents { get; set; }
 
     public virtual DbSet<UserAppPeference> UserAppPeferences { get; set; }
@@ -133,6 +135,15 @@ public partial class MyDbContext : DbContext
             entity.Property(e => e.AssignmentType)
                 .HasColumnType("enum('homework','quiz','exam','project','classwork','participation','essay','presentation','extra_credit')")
                 .HasColumnName("assignment_type");
+            entity.Property(e => e.DateCreated)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("date_created");
+            entity.Property(e => e.DateModified)
+                .ValueGeneratedOnAddOrUpdate()
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("date_modified");
             entity.Property(e => e.Description)
                 .HasMaxLength(255)
                 .HasColumnName("description");
@@ -759,6 +770,39 @@ public partial class MyDbContext : DbContext
                 .HasForeignKey(d => d.YearLevel)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("students_year_levels_id_fk");
+        });
+
+        modelBuilder.Entity<StudentGrade>(entity =>
+        {
+            entity.HasKey(e => new { e.AssignmentId, e.StudentId })
+                .HasName("PRIMARY")
+                .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
+
+            entity.ToTable("student_grades");
+
+            entity.HasIndex(e => e.StudentId, "student_grades_students_student_id_fk");
+
+            entity.Property(e => e.AssignmentId).HasColumnName("assignment_id");
+            entity.Property(e => e.StudentId).HasColumnName("student_id");
+            entity.Property(e => e.DateCreated)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("date_created");
+            entity.Property(e => e.DateModified)
+                .ValueGeneratedOnAddOrUpdate()
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("date_modified");
+            entity.Property(e => e.Score).HasColumnName("score");
+
+            entity.HasOne(d => d.Assignment).WithMany(p => p.StudentGrades)
+                .HasForeignKey(d => d.AssignmentId)
+                .HasConstraintName("student_grades_assignments_assignment_id_fk");
+
+            entity.HasOne(d => d.Student).WithMany(p => p.StudentGrades)
+                .HasForeignKey(d => d.StudentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("student_grades_students_student_id_fk");
         });
 
         modelBuilder.Entity<StudentParent>(entity =>

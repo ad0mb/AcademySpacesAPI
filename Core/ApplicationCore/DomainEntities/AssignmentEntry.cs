@@ -11,4 +11,6 @@ public class AssignmentEntry
     public int MaxScore { get; set; }
     public string? Description { get; set; }
     public DateTime? DueDate { get; set; }
+    public DateTime? DateCreated { get; set; }
+    public DateTime? DateUpdated { get; set; }
 }
