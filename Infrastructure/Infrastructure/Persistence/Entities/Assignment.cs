@@ -13,6 +13,8 @@ public partial class Assignment
 
     public string AssignmentName { get; set; } = null!;
 
+    public int MaxScore { get; set; }
+
     public string? Description { get; set; }
 
     public DateTime? DueDate { get; set; }

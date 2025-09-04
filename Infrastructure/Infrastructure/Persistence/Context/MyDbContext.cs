@@ -139,6 +139,7 @@ public partial class MyDbContext : DbContext
             entity.Property(e => e.DueDate)
                 .HasColumnType("datetime")
                 .HasColumnName("due_date");
+            entity.Property(e => e.MaxScore).HasColumnName("max_score");
             entity.Property(e => e.PeriodId).HasColumnName("period_id");
 
             entity.HasOne(d => d.Period).WithMany(p => p.Assignments)
