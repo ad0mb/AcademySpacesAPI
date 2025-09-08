@@ -21,14 +21,16 @@ public class ClassroomController : ControllerBase
     private readonly IGetClassroomsUseCase _getClassroomsUseCase;
     private readonly IGetClassroomScheduleUseCase _getClassroomScheduleUseCase;
     private readonly IUpdateClassroomScheduleUseCase _updateClassroomScheduleUseCase;
+    private readonly IUpdateClassroomRosterUseCase _updateClassroomRosterUseCase;
     
-    public ClassroomController(ICreateClassroomUseCase createClassroomUseCase, IHttpContextAccessor httpContextAccessor, IGetClassroomsUseCase getClassroomsUseCase, IGetClassroomScheduleUseCase getClassroomScheduleUseCase, IUpdateClassroomScheduleUseCase updateClassroomScheduleUseCase)
+    public ClassroomController(ICreateClassroomUseCase createClassroomUseCase, IHttpContextAccessor httpContextAccessor, IGetClassroomsUseCase getClassroomsUseCase, IGetClassroomScheduleUseCase getClassroomScheduleUseCase, IUpdateClassroomScheduleUseCase updateClassroomScheduleUseCase, IUpdateClassroomRosterUseCase updateClassroomRosterUseCase)
     {
         _createClassroomUseCase = createClassroomUseCase;
         _httpContextAccessor = httpContextAccessor;
         _getClassroomsUseCase = getClassroomsUseCase;
         _getClassroomScheduleUseCase = getClassroomScheduleUseCase;
         _updateClassroomScheduleUseCase = updateClassroomScheduleUseCase;
+        _updateClassroomRosterUseCase = updateClassroomRosterUseCase;
     }
     
     //TODO: Has school wide setting enabled attribute to add
@@ -254,6 +256,47 @@ public class ClassroomController : ControllerBase
             });
         }
         catch (SchedulingConflictException ex)
+        {
+            return StatusCode(409, new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+
+    [HttpPatch("{classroomId}/update-classroom-roster")]
+    public async Task<IActionResult> UpdateClassroomRoster(UpdateClassroomRosterRequest request, int classroomId)
+    {
+        try
+        {
+            var schooldId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+            var cycleId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("cycle_id").Value);
+
+            await _updateClassroomRosterUseCase.UpdateClassroomRoster(schooldId, cycleId, classroomId,
+                request.StudentIds);
+
+            return Ok(new
+            {
+                Status = true,
+                Message = "Classroom roster updated successfully.",
+                Data = new { },
+                Errors = (string[])null
+            });
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (RosterConflictException ex)
         {
             return StatusCode(409, new
             {

@@ -176,4 +176,57 @@ public class ClassroomRepository : IClassroomRepository
             throw new DbException("Issue updating classroom schedule in the database", ex);
         }
     }
+
+    public async Task UpdateClassroomRosterAsync(int schoolId, int cycleId, int classroomId, List<int> studentIds)
+    {
+        try
+        {
+            var result = await (from cs in _context.ClassroomStudents
+                where
+                    cs.ClassroomId != classroomId &&
+                    cs.Classroom.CycleId == cycleId &&
+                    cs.Student.SchoolId == schoolId &&
+                    studentIds.Contains(cs.StudentId)
+                select cs).AnyAsync();
+
+            if (result)
+            {
+                throw new RosterConflictException(
+                    "One or more of the students to be removed from the classroom roster are not currently assigned to this classroom.");
+            }
+            
+            var dbDeleteEntries = new List<ClassroomStudent>();
+            var dbAddOrUpdateEntries = new List<ClassroomStudent>();
+
+            var entriesToDelete = await (from cs in _context.ClassroomStudents
+                where cs.ClassroomId == classroomId && !studentIds.Contains(cs.StudentId)
+                select cs.StudentId).ToListAsync();
+
+            foreach (var entry in entriesToDelete)
+            {
+                dbDeleteEntries.Add(new ClassroomStudent
+                {
+                    ClassroomId = classroomId,
+                    StudentId = entry
+                });
+            }
+            
+            await _context.BulkDeleteAsync(dbDeleteEntries);
+            
+            foreach (var id in studentIds)
+            {
+                dbAddOrUpdateEntries.Add(new ClassroomStudent
+                {
+                    ClassroomId = classroomId,
+                    StudentId = id
+                });
+            }
+            
+            await _context.BulkInsertOrUpdateAsync(dbAddOrUpdateEntries);
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue updating classroom roster in the database", ex);
+        }
+    }
 }
