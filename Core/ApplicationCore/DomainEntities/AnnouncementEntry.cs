@@ -6,7 +6,7 @@ public class AnnouncementEntry
     public string Title { get; set; } = default!;
     public string Message { get; set; } = default!;
     public DateTime Date { get; set; }
-    public string? Tags { get; set; } //TODO:this is suppose to be a List Dont forget to fix this 
+    public ICollection<TagEntry> Tags { get; set; } = new HashSet<TagEntry>();
     public int SenderId { get; set; } = default!;
     public int SchoolId { get; set; }
     public string? Priority { get; set; }

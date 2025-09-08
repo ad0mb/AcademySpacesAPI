@@ -9,7 +9,7 @@ public partial class Payment
 
     public int SchoolId { get; set; }
 
-    public int StudentId { get; set; }
+    public int? StudentId { get; set; }
 
     public string? Description { get; set; }
 
@@ -27,7 +27,11 @@ public partial class Payment
 
     public int ProssesedBy { get; set; }
 
+    public string StudentFirstName { get; set; } = null!;
+
+    public string StudentLastName { get; set; } = null!;
+
     public virtual School School { get; set; } = null!;
 
-    public virtual Student Student { get; set; } = null!;
+    public virtual Student? Student { get; set; }
 }

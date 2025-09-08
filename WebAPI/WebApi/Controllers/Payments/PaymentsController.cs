@@ -21,6 +21,8 @@ public class PaymentsController:ControllerBase
     public async Task<ActionResult> GetPayments()
     {
         var result =await _paymentRepoUsecase.GetAllpaymentsAsync();
+        //TODO:Pass into a Data Table to filter out unnesesary Data like IDs 
+        
         
         return Ok(result);
     }
@@ -29,11 +31,13 @@ public class PaymentsController:ControllerBase
     [HttpPost("add-payment")]
     public async Task<ActionResult> AddPayment(CreatePaymentDTO paymentdto)
     {
-
+        try
+        {
         var payment = new PaymentEntity
         {
             SchoolId = paymentdto.schoolId,
-            StudentId = paymentdto.StudentId,
+            StudentFirstName = paymentdto.StudentFirstName,
+            StudentLastName = paymentdto.StudentLastName,
             Amount = paymentdto.amount,
             Description = paymentdto.description,
             Date = paymentdto.date,
@@ -41,8 +45,7 @@ public class PaymentsController:ControllerBase
             recipt_number = paymentdto.recipt_number,
         };
 
-        try
-        {
+        
             await _paymentRepoUsecase.AddPaymentAsync(payment);
             return Ok(new
                 {
@@ -61,6 +64,13 @@ public class PaymentsController:ControllerBase
             });
         }
         
+    }
+
+    [HttpPost("try-payment")]
+    public void TryPayment(CreatePaymentDTO paymentdto)
+    {
+        Console.WriteLine("try-payment Was triggured");
+        Console.WriteLine(paymentdto.StudentFirstName + " \n" + paymentdto.StudentLastName + "\n " + paymentdto.ProssesedBy + "\n " + paymentdto.recipt_number + "\n " + paymentdto.amount + "\n " + paymentdto.date + "\n " + paymentdto.ProssesedBy + " \n" + paymentdto.recipt_number + " \n" + paymentdto.amount + "\n " + paymentdto.date);
     }
     
     

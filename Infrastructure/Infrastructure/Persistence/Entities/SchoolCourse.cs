@@ -15,5 +15,5 @@ public partial class SchoolCourse
 
     public DateTime? DateModified { get; set; }
 
-    public virtual School School { get; set; } = null!;
+   // public virtual School School { get; set; } = null!;
 }

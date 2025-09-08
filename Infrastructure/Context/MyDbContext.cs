@@ -17,7 +17,7 @@ public partial class MyDbContext : DbContext
     {
     }
 
-    public virtual DbSet<Announcment> Announcments { get; set; }
+    public virtual DbSet<Announcement> Announcements { get; set; }
 
     public virtual DbSet<Classroom> Classrooms { get; set; }
 
@@ -49,13 +49,15 @@ public partial class MyDbContext : DbContext
 
     public virtual DbSet<StudentParent> StudentParents { get; set; }
 
+    public virtual DbSet<Tag> Tags { get; set; }
+
     public virtual DbSet<UserAppPeference> UserAppPeferences { get; set; }
 
     public virtual DbSet<YearLevel> YearLevels { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=192.168.12.113;database=ABDI;uid=root;pwd=Abdirauuf2004!;allowloadlocalinfile=true", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.42-mysql"));
+        => optionsBuilder.UseMySql("server=192.168.12.113;database=ABDI;uid=root;pwd=Abdirauuf2004!;allowloadlocalinfile=true", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.43-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -63,11 +65,11 @@ public partial class MyDbContext : DbContext
             .UseCollation("utf8mb4_0900_ai_ci")
             .HasCharSet("utf8mb4");
 
-        modelBuilder.Entity<Announcment>(entity =>
+        modelBuilder.Entity<Announcement>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PRIMARY");
 
-            entity.ToTable("announcments");
+            entity.ToTable("announcements");
 
             entity.HasIndex(e => e.SenderId, "Announcments_faculty_faculty_id_fk");
 
@@ -77,10 +79,6 @@ public partial class MyDbContext : DbContext
             entity.Property(e => e.AnnouncmentId)
                 .HasColumnType("text")
                 .HasColumnName("announcment_ID");
-            entity.Property(e => e.AnnouncmentName)
-                .HasMaxLength(255)
-                .HasColumnName("announcment_Name");
-            entity.Property(e => e.Category).HasMaxLength(255);
             entity.Property(e => e.CreatedAt)
                 .HasColumnType("datetime")
                 .HasColumnName("Created_at");
@@ -99,20 +97,37 @@ public partial class MyDbContext : DbContext
                 .HasColumnName("priority");
             entity.Property(e => e.SchoolId).HasColumnName("School_ID");
             entity.Property(e => e.SenderId).HasColumnName("sender_ID");
-            entity.Property(e => e.Tags)
-                .HasColumnType("text")
-                .HasColumnName("tags");
             entity.Property(e => e.Title).HasColumnType("text");
 
-            entity.HasOne(d => d.School).WithMany(p => p.Announcments)
+            entity.HasOne(d => d.School).WithMany(p => p.Announcements)
                 .HasForeignKey(d => d.SchoolId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Announcments_schools_school_id_fk");
 
-            entity.HasOne(d => d.Sender).WithMany(p => p.Announcments)
+            entity.HasOne(d => d.Sender).WithMany(p => p.Announcements)
                 .HasForeignKey(d => d.SenderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Announcments_faculty_faculty_id_fk");
+
+            entity.HasMany(d => d.Tags).WithMany(p => p.Announcements)
+                .UsingEntity<Dictionary<string, object>>(
+                    "AnnouncementTag",
+                    r => r.HasOne<Tag>().WithMany()
+                        .HasForeignKey("TagId")
+                        .HasConstraintName("fk_at_tag"),
+                    l => l.HasOne<Announcement>().WithMany()
+                        .HasForeignKey("AnnouncementId")
+                        .HasConstraintName("fk_at_announcement"),
+                    j =>
+                    {
+                        j.HasKey("AnnouncementId", "TagId")
+                            .HasName("PRIMARY")
+                            .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
+                        j.ToTable("announcement_tags");
+                        j.HasIndex(new[] { "TagId", "AnnouncementId" }, "ix_at_tag_id_announcement_id");
+                        j.IndexerProperty<int>("AnnouncementId").HasColumnName("announcement_id");
+                        j.IndexerProperty<ulong>("TagId").HasColumnName("tag_id");
+                    });
         });
 
         modelBuilder.Entity<Classroom>(entity =>
@@ -378,6 +393,8 @@ public partial class MyDbContext : DbContext
             entity.Property(e => e.Paymentmethod).HasMaxLength(50);
             entity.Property(e => e.ReceiptNumber).HasMaxLength(50);
             entity.Property(e => e.Status).HasMaxLength(50);
+            entity.Property(e => e.StudentFirstName).HasMaxLength(50);
+            entity.Property(e => e.StudentLastName).HasMaxLength(50);
 
             entity.HasOne(d => d.School).WithMany(p => p.Payments)
                 .HasForeignKey(d => d.SchoolId)
@@ -386,7 +403,6 @@ public partial class MyDbContext : DbContext
 
             entity.HasOne(d => d.Student).WithMany(p => p.Payments)
                 .HasForeignKey(d => d.StudentId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Payments_students_student_id_fk");
         });
 
@@ -636,6 +652,24 @@ public partial class MyDbContext : DbContext
             entity.HasOne(d => d.Student).WithMany(p => p.StudentParents)
                 .HasForeignKey(d => d.StudentId)
                 .HasConstraintName("student_parents_students_student_id_fk");
+        });
+
+        modelBuilder.Entity<Tag>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PRIMARY");
+
+            entity.ToTable("tags");
+
+            entity.HasIndex(e => e.Name, "uq_tags_name").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp")
+                .HasColumnName("created_at");
+            entity.Property(e => e.Name)
+                .HasMaxLength(100)
+                .HasColumnName("name");
         });
 
         modelBuilder.Entity<UserAppPeference>(entity =>

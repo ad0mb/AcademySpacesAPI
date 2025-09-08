@@ -3,7 +3,10 @@
     public class CreatePaymentDTO
     {
         public int schoolId { get; set; }
-        public int StudentId { get; set; }
+        //public int StudentId { get; set; }
+        public string StudentFirstName { get; set; } = null!;
+
+        public string StudentLastName { get; set; } = null!;
         public decimal amount { get; set; }
         public string description { get; set; }
         public int ProssesedBy { get; set; }

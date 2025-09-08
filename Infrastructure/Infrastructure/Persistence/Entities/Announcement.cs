@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Infrastructure.Infrastructure.Persistence.Entities;
 
-public partial class Announcment
+public partial class Announcement
 {
     public int Id { get; set; }
 
@@ -17,15 +17,9 @@ public partial class Announcment
 
     public string? Priority { get; set; }
 
-    public string? Category { get; set; }
-
-    public string? AnnouncmentName { get; set; }
-
     public DateTime? DateCreated { get; set; }
 
     public DateTime? DateModified { get; set; }
-
-    public string? Tags { get; set; }
 
     public string? Title { get; set; }
 
@@ -34,4 +28,6 @@ public partial class Announcment
     public virtual School School { get; set; } = null!;
 
     public virtual Faculty Sender { get; set; } = null!;
+
+    public virtual ICollection<Tag> Tags { get; set; } = new List<Tag>();
 }

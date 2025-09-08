@@ -15,17 +15,13 @@ public class CreateAnnouncementUseCase: ICreateAnnouncementUseCase
 
     public async Task HandleAnnouncementAsync(AnnouncementEntry newannouncement)
     {
-        var announcement = new AnnouncementEntry
-        {
-            Title = newannouncement.Title,
-            Message = newannouncement.Message,
-            SenderId = newannouncement.SenderId,
-            Tags = newannouncement.Tags,
-            SchoolId = newannouncement.SchoolId,
-            Date = newannouncement.Date,
-            Priority = newannouncement.Priority
-        };
+        
 
-        await _service.creatandSaveAnnouncementAsync(announcement);
+        await _service.creatandSaveAnnouncementAsync(newannouncement);
     }
+
+ 
+    
+
+   
 }

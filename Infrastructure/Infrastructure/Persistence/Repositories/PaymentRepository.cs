@@ -3,16 +3,18 @@ using Core.ApplicationCore.Interfaces.Adapters;
 using Infrastructure.Infrastructure.Persistence.Context;
 using Infrastructure.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Infrastructure.Persistence.Repositories;
 
 public class PaymentRepository: IPaymentRepository
 {
     private readonly MyDbContext _context;
-
+    
     public PaymentRepository(MyDbContext context)
     {
         _context = context;
+        
     }
 
     public async Task<IEnumerable<PaymentEntity>> GetPaymentsAsync()
@@ -24,6 +26,8 @@ public class PaymentRepository: IPaymentRepository
             PaymentId= p.Id,
             SchoolId = p.SchoolId,
             StudentId = p.StudentId,
+            StudentFirstName = p.StudentFirstName,
+            StudentLastName = p.StudentLastName,
             Description = p.Description,
             Amount = p.Amount,
             Date = p.Date,
@@ -37,14 +41,15 @@ public class PaymentRepository: IPaymentRepository
     public async Task AddPaymentAsync(PaymentEntity payment)
     {
 
-        try
-        {
+        
 
             var newpayment = new Payment
             {
                 Id = payment.PaymentId,
                 SchoolId = payment.SchoolId,
                 StudentId = payment.StudentId,
+                StudentFirstName = payment.StudentFirstName,
+                StudentLastName = payment.StudentLastName,
                 Description = payment.Description,
                 Amount = payment.Amount,
                 Date = payment.Date,
@@ -57,12 +62,9 @@ public class PaymentRepository: IPaymentRepository
             await _context.SaveChangesAsync();
 
 
-        }
-        catch (DbUpdateException e)
-        {
-            Console.WriteLine("There was an Exception With the DB at PaymentRepository:" ,e);
-        }
-
+        
+      
+        
 
 
     }

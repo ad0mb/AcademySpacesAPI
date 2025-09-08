@@ -15,16 +15,18 @@ public class GetAnnouncementsService: IGetAnnouncementsUseCase
         _context = context;
     }
 
-    public async Task<PaginatedAnnouncementsDto> GetAnnouncementsAsync(int pageNumber, int pageSize)
+    public async Task<PaginatedAnnouncementsDto> GetAnnouncementsAsync(int pageNumber, int pageSize,int schoolID )
     {
         
        // Console.WriteLine("GetAnnouncementsAsync");
         var totalAnnouncements = await _context.Announcements.CountAsync();
         
         var infraAnnouncements = await _context.Announcements
+            .Where(a => a.SchoolId == schoolID)
             .OrderByDescending(a => a.CreatedAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
+            .Include(a =>a.Tags)
             .ToListAsync();
 
         var coreAnnouncements = infraAnnouncements.Select(a => new AnnouncementEntry
@@ -32,15 +34,19 @@ public class GetAnnouncementsService: IGetAnnouncementsUseCase
             Id = a.AnnouncmentId,
             Title = a.Title,
             Message = a.Message,
-            Tags = a.Tags,
             Date = a.CreatedAt,
             SenderId = a.SenderId,
             Priority = a.Priority,
             SchoolId = a.SchoolId,
-            IsUrgent = a.Priority == "urgent"
+            IsUrgent = a.Priority == "urgent",
+            Tags = a.Tags.Select(t => new TagEntry
+            {
+                Name = t.Name,
+            }).ToList()
 
         }).ToList();
         Console.WriteLine("GetAnnouncementsAsync");
+       
 
         return new PaginatedAnnouncementsDto
         {
