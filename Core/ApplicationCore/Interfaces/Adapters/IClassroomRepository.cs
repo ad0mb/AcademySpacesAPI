@@ -9,4 +9,5 @@ public interface IClassroomRepository
         int pageNumber, string? searchTerm);
 
     Task UpdateClassroomScheduleAsync(int cycleId, int classroomId, List<int> periodId);
+    Task UpdateClassroomRosterAsync(int schoolId, int cycleId, int classroomId, List<int> studentIds);
 }
