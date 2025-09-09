@@ -10,7 +10,7 @@ namespace AcademySpacesAPI.WebApi.Controllers;
 
 [ApiController]
 [Authorize(AuthenticationSchemes = "FirebaseAuthScheme")]
-[Route("api/school/periods/assignments")]
+[Route("api/school/periods/{periodId}/assignments")]
 public class AssignmentController : ControllerBase
 {
     
@@ -26,7 +26,7 @@ public class AssignmentController : ControllerBase
     }
 
     [HttpGet("get-assignments")]
-    public async Task<IActionResult> GetAssignments([FromQuery] int periodId)
+    public async Task<IActionResult> GetAssignments(int periodId)
     {
         try
         {
