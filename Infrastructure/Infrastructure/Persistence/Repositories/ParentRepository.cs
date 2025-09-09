@@ -200,11 +200,14 @@ public class ParentRepository : IParentRepository
         
                 foreach (var parentId in parentIds)
                 {
-                    entryList.Add(new StudentParent
+                    if (parentId > 0)
                     {
-                        ParentId = parentId,
-                        StudentId = studentId
-                    });
+                        entryList.Add(new StudentParent
+                        {
+                            ParentId = parentId,
+                            StudentId = studentId
+                        });
+                    }
                 }
 
                 await _context.BulkInsertOrUpdateAsync(entryList, new BulkConfig
