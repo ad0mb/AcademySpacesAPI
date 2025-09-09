@@ -19,11 +19,7 @@ public partial class Role
 
     public virtual ICollection<FacultyRole> FacultyRoles { get; set; } = new List<FacultyRole>();
 
-    public virtual ICollection<Parent> Parents { get; set; } = new List<Parent>();
-
     public virtual ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
 
     public virtual School School { get; set; } = null!;
-
-    public virtual ICollection<Student> Students { get; set; } = new List<Student>();
 }

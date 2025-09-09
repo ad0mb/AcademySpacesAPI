@@ -19,9 +19,9 @@ public partial class School
 
     public virtual ICollection<Announcement> Announcements { get; set; } = new List<Announcement>();
 
-    public virtual ICollection<Classroom> Classrooms { get; set; } = new List<Classroom>();
-
     public virtual ICollection<Course> Courses { get; set; } = new List<Course>();
+
+    public virtual ICollection<Cycle> Cycles { get; set; } = new List<Cycle>();
 
     public virtual ICollection<Faculty> Faculties { get; set; } = new List<Faculty>();
 

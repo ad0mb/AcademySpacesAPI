@@ -28,6 +28,7 @@ public class DefaultAuthenticationHandler : AuthenticationHandler<Authentication
         ClaimsPrincipal principal;
         
         var idToken = Context.Request.Cookies["access"];
+        var cycleIdOverride = Context.Request.Headers["X-Cycle-Override"].FirstOrDefault();
         
         if (idToken == null)
         {
@@ -41,7 +42,7 @@ public class DefaultAuthenticationHandler : AuthenticationHandler<Authentication
         //Fix issue where AuthenticateResult.Fail does not actually return error message
         try
         {
-            principal = await _authService.ProcessIdTokenAsync(idToken);
+            principal = await _authService.ProcessIdTokenAsync(idToken, cycleIdOverride);
         }
         catch (FirebaseAuthException ex)
         {

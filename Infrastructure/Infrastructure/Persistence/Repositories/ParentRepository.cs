@@ -1,6 +1,7 @@
 ﻿using Core.ApplicationCore.DomainEntities;
 using Core.ApplicationCore.Interfaces.Adapters;
 using Core.Exceptions;
+using EFCore.BulkExtensions;
 using Infrastructure.Infrastructure.Persistence.Context;
 using Infrastructure.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -36,7 +37,6 @@ public class ParentRepository : IParentRepository
             var newParent = new Parent
             {
                 SchoolId = parent.SchoolId,
-                RoleId = roleId,
                 FirstName = parent.FirstName,
                 MiddleName = parent.MiddleName,
                 LastName = parent.LastName,
@@ -61,6 +61,7 @@ public class ParentRepository : IParentRepository
     {
         try
         {
+            //TODO: Make it search by schoolId too
             var parent = await (from p in _context.Parents
                 where p.ParentId == parentId
                 select p).FirstOrDefaultAsync();
@@ -89,15 +90,38 @@ public class ParentRepository : IParentRepository
         }
     }
 
-    public async Task<List<ParentEntry>> GetParentsBySchoolIdAsync(int schoolId)
+    public async Task<(List<ParentEntry> parentList, int totalCount)> GetParentsBySchoolIdAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm)
     {
         try
         {
             List<ParentEntry> parents = new List<ParentEntry>();
 
-            var dbParents = await (from p in _context.Parents
+            IQueryable<Parent> query = from p in _context.Parents
                 where p.SchoolId == schoolId
-                select p).ToListAsync();
+                
+                && (
+                    string.IsNullOrEmpty(searchTerm) 
+                    || (
+                        p != null && 
+                        (
+                            (p.FirstName != null && p.FirstName.ToLower().Contains(searchTerm)) ||
+                            (p.MiddleName != null && p.MiddleName.ToLower().Contains(searchTerm)) || 
+                            (p.LastName != null && p.LastName.ToLower().Contains(searchTerm))
+                        )
+                    )
+                )
+                
+                orderby p.ParentId
+                select p;
+
+            var totalCount = await query.CountAsync();
+            
+            if (pageSize > 0 && pageNumber > 0)
+            {
+                query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            }
+
+            var dbParents = await query.ToListAsync();
 
             foreach (var parent in dbParents)
             {
@@ -112,7 +136,7 @@ public class ParentRepository : IParentRepository
                 });
             }
 
-            return parents;
+            return (parents, totalCount);
         }
         catch (DbUpdateException ex)
         {
@@ -120,6 +144,7 @@ public class ParentRepository : IParentRepository
         }
     }
 
+    //TODO: Add schoolId to existingParent query to ensure parent belongs to the school
     public async Task UpdateParentAsync(ParentEntry parent)
     {
         try
@@ -144,6 +169,54 @@ public class ParentRepository : IParentRepository
         catch (DbUpdateException ex)
         {
             throw new DbException("Isseue updating parent in the database", ex);
+        }
+    }
+
+    public async Task BulkLinkStudentToParentAsync(HashSet< int> parentIds, int studentId)
+    {
+        try
+        {
+            var entryToDeleteList = new List<StudentParent>();
+
+            var entriesToDelete = await (from sp in _context.StudentParents
+                where sp.StudentId == studentId && !parentIds.Contains(sp.ParentId)
+                select sp.ParentId).ToListAsync();
+
+            foreach (var parentId in entriesToDelete)
+            {
+                entryToDeleteList.Add(new StudentParent
+                {
+                    ParentId = parentId,
+                    StudentId = studentId
+                });
+            }
+
+            await _context.BulkDeleteAsync(entryToDeleteList);
+            
+            if (parentIds.Count > 0)
+            {
+                var entryList = new List<StudentParent>();
+        
+        
+                foreach (var parentId in parentIds)
+                {
+                    entryList.Add(new StudentParent
+                    {
+                        ParentId = parentId,
+                        StudentId = studentId
+                    });
+                }
+
+                await _context.BulkInsertOrUpdateAsync(entryList, new BulkConfig
+                {
+                    PreserveInsertOrder = false,
+                    SetOutputIdentity = true
+                });
+            }
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue linking student to parents in the database", ex);
         }
     }
 }
