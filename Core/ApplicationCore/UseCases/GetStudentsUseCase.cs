@@ -14,9 +14,9 @@ public class GetStudentsUseCase : IGetStudentsUseCase
         _studentRepository = studentRepository;
     }
     
-    public async Task<(List<StudentEntry> studentList, int totalCount)> GetStudentsAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm, int yearLevelId)
+    public async Task<(List<StudentEntry> studentList, int totalCount)> GetStudentsAsync(int schoolId, int cycleId, int pageSize, int pageNumber, string? searchTerm, int yearLevelId, bool noClassroom = false)
     {
-        var (students, totalCount) = await _studentRepository.GetStudentsAsync(schoolId, pageSize, pageNumber, searchTerm, yearLevelId);
+        var (students, totalCount) = await _studentRepository.GetStudentsAsync(schoolId, cycleId, pageSize, pageNumber, searchTerm, yearLevelId, 0, noClassroom);
 
         return (students, totalCount);
     }

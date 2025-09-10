@@ -18,19 +18,20 @@ public class StudentRepository : IStudentRepository
     }
 
     //TODO: Comeback and implement distinct or a better way to deal with duplicate entries due to parent Ids (inefficient looping perhaps)
-    public async Task<(List<StudentEntry> studentList, int totalCount )> GetStudentsAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm, int yearLevelId)
+    public async Task<(List<StudentEntry> studentList, int totalCount )> GetStudentsAsync(int schoolId, int cycleId, int pageSize, int pageNumber, string? searchTerm, int yearLevelId, bool noClassroom = false)
     {
         try
         {
             var students = new List<StudentEntry>();
 
             //TODO: Implement search filtering
+            //TODO: Check all conflict checkers and filters and make sure they are not filtering without considering duplicates related to cycleIds
             var query = from s in _context.Students
                 where s.SchoolId == schoolId
                 
                     && (yearLevelId <= 0 || s.YearLevel == yearLevelId)
-                
-                
+                    && (!noClassroom || !s.ClassroomStudents.Any(cs => cs.Classroom.CycleId == cycleId))
+                    
                 select new
                 {
                     Student = s,
@@ -74,7 +75,7 @@ public class StudentRepository : IStudentRepository
         }
     }
 
-    //TODO: Implement dupliate checking for email and phone
+    //TODO: Implement duplicate checking for email and phone
     public async Task<int> CreateStudentAsync(StudentEntry student)
     {
         try
