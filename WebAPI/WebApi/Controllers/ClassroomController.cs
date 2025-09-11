@@ -22,8 +22,9 @@ public class ClassroomController : ControllerBase
     private readonly IGetClassroomScheduleUseCase _getClassroomScheduleUseCase;
     private readonly IUpdateClassroomScheduleUseCase _updateClassroomScheduleUseCase;
     private readonly IUpdateClassroomRosterUseCase _updateClassroomRosterUseCase;
+    private readonly IGetClassroomRosterUseCase _getClassroomRosterUseCase;
     
-    public ClassroomController(ICreateClassroomUseCase createClassroomUseCase, IHttpContextAccessor httpContextAccessor, IGetClassroomsUseCase getClassroomsUseCase, IGetClassroomScheduleUseCase getClassroomScheduleUseCase, IUpdateClassroomScheduleUseCase updateClassroomScheduleUseCase, IUpdateClassroomRosterUseCase updateClassroomRosterUseCase)
+    public ClassroomController(ICreateClassroomUseCase createClassroomUseCase, IHttpContextAccessor httpContextAccessor, IGetClassroomsUseCase getClassroomsUseCase, IGetClassroomScheduleUseCase getClassroomScheduleUseCase, IUpdateClassroomScheduleUseCase updateClassroomScheduleUseCase, IUpdateClassroomRosterUseCase updateClassroomRosterUseCase, IGetClassroomRosterUseCase getClassroomRosterUseCase)
     {
         _createClassroomUseCase = createClassroomUseCase;
         _httpContextAccessor = httpContextAccessor;
@@ -31,6 +32,7 @@ public class ClassroomController : ControllerBase
         _getClassroomScheduleUseCase = getClassroomScheduleUseCase;
         _updateClassroomScheduleUseCase = updateClassroomScheduleUseCase;
         _updateClassroomRosterUseCase = updateClassroomRosterUseCase;
+        _getClassroomRosterUseCase = getClassroomRosterUseCase;
     }
     
     //TODO: Has school wide setting enabled attribute to add
@@ -267,15 +269,63 @@ public class ClassroomController : ControllerBase
         }
     }
 
+    [HttpGet("{classroomId}/get-classroom-roster")]
+    public async Task<IActionResult> GetClassroomRoster([FromRoute] int classroomId)
+    {
+        try
+        {
+            var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+
+            var cycleId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("cycle_id").Value);
+
+            var students = await _getClassroomRosterUseCase.GetClassroomRosterAsync(schoolId, cycleId, classroomId);
+            
+            var studentsList = new List<GetStudentsResponse>();
+
+            foreach (var student in students)
+            {
+                studentsList.Add(new GetStudentsResponse
+                {
+                    StudentId = student.StudentId,
+                    YearLevelId = student.YearLevelId,
+                    FirstName = student.FirstName,
+                    MiddleName = student.MiddleName,
+                    LastName = student.LastName,
+                    Phone = student.Phone,
+                    Email = student.Email,
+                    ParentIds = student.ParentIds
+                });
+            }
+            
+            return Ok(new
+            {
+                Status = true,
+                Message = "Retrieved classroom roster successfully.",
+                Data = studentsList,
+                Errors = (string[])null
+            });
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+    
     [HttpPatch("{classroomId}/update-classroom-roster")]
     public async Task<IActionResult> UpdateClassroomRoster(UpdateClassroomRosterRequest request, int classroomId)
     {
         try
         {
-            var schooldId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+            var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
             var cycleId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("cycle_id").Value);
 
-            await _updateClassroomRosterUseCase.UpdateClassroomRoster(schooldId, cycleId, classroomId,
+            await _updateClassroomRosterUseCase.UpdateClassroomRoster(schoolId, cycleId, classroomId,
                 request.StudentIds);
 
             return Ok(new
