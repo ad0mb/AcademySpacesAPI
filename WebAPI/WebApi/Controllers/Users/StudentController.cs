@@ -33,7 +33,7 @@ public class StudentController : ControllerBase
     
     [HasPermission("Student:view")]
     [HttpGet("get-students")]
-    public async Task<IActionResult> GetStudents([FromQuery] int pageSize, [FromQuery] int pageNumber, [FromQuery] string? searchTerm, [FromQuery] int yearLevelId, [FromQuery] bool noClassroom = false)
+    public async Task<IActionResult> GetStudents([FromQuery] int pageSize, [FromQuery] int pageNumber, [FromQuery] string? searchTerm, [FromQuery] int yearLevelId, [FromQuery] int classroomId, [FromQuery] int periodId, [FromQuery] bool noClassroom = false)
     {
 
         var returnList = new List<GetStudentsResponse>();
@@ -44,7 +44,7 @@ public class StudentController : ControllerBase
             
             var cycleId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("cycle_id").Value);
 
-            var (students, totalCount) = await _getStudentsUseCase.GetStudentsAsync(schoolId, cycleId, pageSize, pageNumber, searchTerm, yearLevelId, noClassroom);
+            var (students, totalCount) = await _getStudentsUseCase.GetStudentsAsync(schoolId, cycleId, pageSize, pageNumber, searchTerm, yearLevelId, classroomId, periodId, noClassroom);
 
             foreach (var student in students)
             {
