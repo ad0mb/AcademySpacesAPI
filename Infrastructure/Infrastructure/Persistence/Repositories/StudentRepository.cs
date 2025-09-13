@@ -18,7 +18,7 @@ public class StudentRepository : IStudentRepository
     }
 
     //TODO: Comeback and implement distinct or a better way to deal with duplicate entries due to parent Ids (inefficient looping perhaps)
-    public async Task<(List<StudentEntry> studentList, int totalCount )> GetStudentsAsync(int schoolId, int cycleId, int pageSize, int pageNumber, string? searchTerm, int yearLevelId, int classroomId, bool noClassroom = false)
+    public async Task<(List<StudentEntry> studentList, int totalCount )> GetStudentsAsync(int schoolId, int cycleId, int pageSize, int pageNumber, string? searchTerm, int yearLevelId, int classroomId, int periodId, bool noClassroom = false)
     {
         try
         {
@@ -32,6 +32,7 @@ public class StudentRepository : IStudentRepository
                     && (yearLevelId <= 0 || s.YearLevel == yearLevelId)
                     && (!noClassroom || !s.ClassroomStudents.Any(cs => cs.Classroom.CycleId == cycleId))
                     && (classroomId <= 0 || s.ClassroomStudents.Any(cs => cs.Classroom.ClassroomId == classroomId && cs.Classroom.CycleId == cycleId))
+                    && (periodId <= 0 || s.ClassroomStudents.Any(cs => cs.Classroom.ClassroomSchedules.Any(csc => csc.PeriodId == periodId && csc.Period.CycleId == cycleId)))
                     
                 select new
                 {
