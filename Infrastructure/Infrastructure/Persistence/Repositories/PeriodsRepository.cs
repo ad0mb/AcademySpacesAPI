@@ -66,6 +66,8 @@ public class PeriodsRepository : IPeriodsRepository
                 orderby p.PeriodId
                 select p;
 
+            query = query.Distinct();
+
             var totalCount = await query.CountAsync();
 
             if (pageSize > 0 && pageNumber > 0)
@@ -74,7 +76,6 @@ public class PeriodsRepository : IPeriodsRepository
             }
 
             var dbPeriods = await query
-                .Distinct()
                 .Include(p => p.Teacher)
                 .Include(p => p.Course)
                 .Include(p => p.PeriodSchedules)
