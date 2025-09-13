@@ -84,6 +84,7 @@ builder.Services.AddSingleton(provider =>
 
 //Scoped
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<PeriodAccessChecker>();
 builder.Services.AddScoped<IFacultyRepository, FacultyRepository>();
 builder.Services.AddScoped<IParentRepository, ParentRepository>();
 builder.Services.AddScoped<ISchoolRepository, SchoolRepository>();
@@ -94,6 +95,9 @@ builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IClassroomRepository, ClassroomRepository>();
 builder.Services.AddScoped<IYearLevelRepository, YearLevelRepository>();
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+builder.Services.AddScoped<IPeriodsRepository, PeriodsRepository>();
+builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
+builder.Services.AddScoped<IStudentGradeRepository, StudentGradeRepository>();
 
 builder.Services.AddScoped<IRegisterSchoolAndAdminUseCase, RegisterSchoolAndAdminUseCase>();
 builder.Services.AddScoped<ICreateParentUseCase, CreateParentUseCase>();
@@ -117,6 +121,18 @@ builder.Services.AddScoped<ISetYearLevelHierarchyUseCase, SetYearLevelHierarchyU
 builder.Services.AddScoped<IGetCoursesUseCase, GetCoursesUseCase>();
 builder.Services.AddScoped<ICreateCourseUseCase, CreateCourseUseCase>();
 builder.Services.AddScoped<IUpdateCourseUseCase, UpdateCourseUseCase>();
+builder.Services.AddScoped<IGetPeriodsUseCase, GetPeriodsUseCase>();
+builder.Services.AddScoped<IGetCyclesUseCase, GetCyclesUseCase>();
+builder.Services.AddScoped<ICreatePeriodUseCase, CreatePeriodUseCase>();
+builder.Services.AddScoped<IUpdatePeriodUseCase, UpdatePeriodUseCase>();
+builder.Services.AddScoped<IGetClassroomScheduleUseCase, GetClassroomScheduleUseCase>();
+builder.Services.AddScoped<IUpdateClassroomScheduleUseCase, UpdateClassroomScheduleUseCase>();
+builder.Services.AddScoped<ICreateStudentUseCase, CreateStudentUseCase>();
+builder.Services.AddScoped<IUpdateStudentUseCase, UpdateStudentUseCase>();
+builder.Services.AddScoped<IGetAssignmentsUseCase, GetAssignmentsUseCase>();
+builder.Services.AddScoped<IUpdateClassroomRosterUseCase, UpdateClassroomRosterUseCase>();
+builder.Services.AddScoped<IGetClassroomRosterUseCase, GetClassroomRosterUseCase>();
+builder.Services.AddScoped<IGetStudentGradesUseCase, GetStudentsGradesUseCase>();
 //Scoped
 
 //Transient
@@ -181,7 +197,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 
-// app.UseCors("AllowAllOrigins");
+app.UseCors("AllowAllOrigins");
 
 if (app.Environment.IsDevelopment())
 {

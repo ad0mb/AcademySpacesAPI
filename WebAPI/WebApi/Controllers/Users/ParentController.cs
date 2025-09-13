@@ -76,7 +76,7 @@ public class ParentController : ControllerBase
 
     [HasPermission("Parent:view")]
     [HttpGet("get-parents")]
-    public async Task<IActionResult> GetParents()
+    public async Task<IActionResult> GetParents([FromQuery] int pageSize, [FromQuery] int pageNumber, [FromQuery] string? searchTerm)
     {
         var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
 
@@ -84,7 +84,7 @@ public class ParentController : ControllerBase
 
         try
         {
-            var parents = await _getParentsUseCase.GetParentsAsync(schoolId);
+            var (parents, totalCount) = await _getParentsUseCase.GetParentsAsync(schoolId, pageSize, pageNumber, searchTerm);
 
             foreach (var parent in parents)
             {
@@ -103,7 +103,11 @@ public class ParentController : ControllerBase
                 {
                     Status = true,
                     Message = "Retrieved parents successfully.",
-                    Data = parentsList,
+                    Data = new
+                    {
+                        ParentsList = parentsList,
+                        TotalCount = totalCount
+                    },
                     Errors = (string[])null
                 }
             );

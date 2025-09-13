@@ -14,10 +14,10 @@ public class GetParentsUseCase : IGetParentsUseCase
         _parentRepository = parentRepository;
     }
 
-    public async Task<List<ParentEntry>> GetParentsAsync(int schoolId)
+    public async Task<(List<ParentEntry> parentList, int totalCount)> GetParentsAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm)
     {
-        var parent = await _parentRepository.GetParentsBySchoolIdAsync(schoolId);
+        var (parent, totalCount) = await _parentRepository.GetParentsBySchoolIdAsync(schoolId, pageSize, pageNumber, searchTerm);
 
-        return parent;
+        return (parent, totalCount);
     }
 }

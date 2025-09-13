@@ -1,4 +1,5 @@
-﻿using Core.ApplicationCore.DomainEntities;
+﻿using System.Runtime.InteropServices.JavaScript;
+using Core.ApplicationCore.DomainEntities;
 using Core.ApplicationCore.Interfaces.Adapters;
 using Core.Exceptions;
 using Infrastructure.Infrastructure.Persistence.Context;
@@ -56,6 +57,116 @@ public class SchoolRepository : ISchoolRepository
         catch (DbUpdateException ex)
         {
             throw new DbException("Issue adding school to the database", ex);
+        }
+    }
+
+    public async Task<SchoolConfigurationEntry> GetSchoolConfigurationAsync(int schoolId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<(List<CycleEntry> cyclesList, int totalCount)> GetCyclesAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm)
+    {
+        try
+        {
+            var cycles = new List<CycleEntry>();
+
+            IQueryable<Cycle> query = from c in _context.Cycles
+                where c.SchoolId == schoolId
+                orderby c.EndDate descending
+                select c;
+
+            var totalCount = await query.CountAsync();
+            
+            if (pageSize > 0 && pageNumber > 0)
+            {
+                query = query.Skip((pageNumber - 1) * pageSize).Take(pageSize);
+            }
+            
+            var dbCycles = await query
+                .Include(c => c.GradingPeriods)
+                .ToListAsync();
+
+            foreach (var course in dbCycles)
+            {
+                var gradingPeriods = new List<GradingPeriodEntry>();
+                foreach (var gradingPeriod in course.GradingPeriods.OrderBy(gp => gp.StartDate))
+                {
+                    gradingPeriods.Add(new GradingPeriodEntry
+                    {
+                        GradingPeriodId = gradingPeriod.GradingPeriodId,
+                        StartDate = gradingPeriod.StartDate,
+                        EndDate = gradingPeriod.EndDate,
+                        DateCreated = gradingPeriod.DateCreated,
+                        DateUpdated = gradingPeriod.DateModified
+                    });
+                }
+                cycles.Add(new CycleEntry
+                {
+                    CycleId = course.CycleId,
+                    SchoolId = course.SchoolId,
+                    IsActive = course.IsActive,
+                    isArchived = course.IsArchived,
+                    CycleName = course.Name,
+                    Code = course.Code,
+                    ScheduleType = course.ScheduleType,
+                    StartDate = course.StartDate,
+                    EndDate = course.EndDate,
+                    GradingPeriods = gradingPeriods,
+                    IsExpired = DateOnly.FromDateTime(DateTime.Now) > course.EndDate,
+                    DateCreated = course.DateCreated,
+                    DateUpdated = course.DateModified
+                });
+            }
+            
+            return (cycles, totalCount);
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue retrieving cycles from the database", ex);
+        }
+    }
+    
+    public async Task<int?> GetActiveCycleIdAsync(int schoolId)
+    {
+        try
+        {
+            var cycleId = await (from c in _context.Cycles
+                where c.SchoolId == schoolId && c.IsActive == true
+                select c).SingleOrDefaultAsync();
+
+            if (cycleId == null)
+            {
+                return null;
+            }
+            
+            return cycleId.CycleId;
+            
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue retrieving school configuration from the database", ex);
+        }
+    }
+
+    public async Task<bool> IsCycleValidAsync(int schoolId, int cycleId)
+    {
+        try
+        {
+            var verifiedId = await (from c in _context.Cycles
+                where c.SchoolId == schoolId && c.CycleId == cycleId
+                    select c).SingleOrDefaultAsync();
+
+            if (cycleId == null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue verifying cycle from the database", ex);
         }
     }
 }

@@ -14,9 +14,9 @@ public class GetClassroomsUseCase : IGetClassroomsUseCase
         _classroomRepository = classroomRepository;
     }
     
-    public async Task<(List<ClassroomEntry> classrooms, int totalCount)> GetClassroomsAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm)
+    public async Task<(List<ClassroomEntry> classrooms, int totalCount)> GetClassroomsAsync(int schoolId, int cycleId, int pageSize, int pageNumber, string? searchTerm)
     {
-        var (classrooms, totalCount) = await _classroomRepository.GetClassroomsAsync(schoolId, pageSize, pageNumber, searchTerm);
+        var (classrooms, totalCount) = await _classroomRepository.GetClassroomsAsync(schoolId, cycleId, pageSize, pageNumber, searchTerm);
         
         return (classrooms, totalCount);
     }
