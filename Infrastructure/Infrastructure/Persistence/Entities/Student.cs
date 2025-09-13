@@ -9,7 +9,7 @@ public partial class Student
 
     public int SchoolId { get; set; }
 
-    public int RoleId { get; set; }
+    public int YearLevel { get; set; }
 
     public string? IdentityId { get; set; }
 
@@ -29,9 +29,11 @@ public partial class Student
 
     public virtual ICollection<ClassroomStudent> ClassroomStudents { get; set; } = new List<ClassroomStudent>();
 
-    public virtual Role Role { get; set; } = null!;
-
     public virtual School School { get; set; } = null!;
 
+    public virtual ICollection<StudentGrade> StudentGrades { get; set; } = new List<StudentGrade>();
+
     public virtual ICollection<StudentParent> StudentParents { get; set; } = new List<StudentParent>();
+
+    public virtual YearLevel YearLevelNavigation { get; set; } = null!;
 }

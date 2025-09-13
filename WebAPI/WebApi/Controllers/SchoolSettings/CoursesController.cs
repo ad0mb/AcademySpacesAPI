@@ -30,7 +30,7 @@ public class CoursesController : ControllerBase
     
     [HasPermission("Courses:view")]
     [HttpGet("get-courses")]
-    public async Task<IActionResult> GetCourses()
+    public async Task<IActionResult> GetCourses([FromQuery] int pageSize, [FromQuery] int pageNumber, [FromQuery] string? searchTerm)
     {
         try
         {
@@ -38,7 +38,7 @@ public class CoursesController : ControllerBase
 
             var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
 
-            var courseEntries = await _getCoursesUseCase.GetCoursesAsync(schoolId);
+            var (courseEntries, totalCount) = await _getCoursesUseCase.GetCoursesAsync(schoolId, pageSize, pageNumber, searchTerm);
 
             foreach (var course in courseEntries)
             {
@@ -55,7 +55,11 @@ public class CoursesController : ControllerBase
             {
                 Status = true,
                 Message = "Retrieved courses successfully.",
-                Data = courses,
+                Data = new
+                {
+                    CoursesList = courses,
+                    TotalCount = totalCount
+                },
                 Errors = (string[])null
             });
         }

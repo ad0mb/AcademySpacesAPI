@@ -14,11 +14,11 @@ public class GetCoursesUseCase : IGetCoursesUseCase
         _courseRepository = courseRepository;
     }
 
-    public async Task<List<CourseEntry>> GetCoursesAsync(int schoolId)
+    public async Task<(List<CourseEntry> courseList, int totalCount)> GetCoursesAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm)
     {
 
-        var courses = await _courseRepository.GetCoursesBySchoolIdAsync(schoolId);
+        var (courseList, totalCount) = await _courseRepository.GetCoursesBySchoolIdAsync(schoolId, pageSize, pageNumber, searchTerm);
 
-        return courses;
+        return (courseList, totalCount);
     }
 }

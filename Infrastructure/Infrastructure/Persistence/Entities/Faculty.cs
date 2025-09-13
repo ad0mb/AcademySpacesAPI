@@ -31,5 +31,7 @@ public partial class Faculty
 
     public virtual ICollection<FacultyRole> FacultyRoles { get; set; } = new List<FacultyRole>();
 
+    public virtual ICollection<Period> Periods { get; set; } = new List<Period>();
+
     public virtual School School { get; set; } = null!;
 }
