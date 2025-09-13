@@ -113,6 +113,8 @@ public class ClassroomRepository : IClassroomRepository
     {
         try
         {
+            //TODO: Make task to reverify bulk updating logic for: schedules, rosters and related joint table data to make sure no one can override with their own classroomId inputs
+            //TODO: Optimize query, perhaps adding cycleId is useles and it would be cleaner and safer for conflict checking to check against all and not limit by school since periodIds are restricted upon creation anyways
             var result = await (from assignedScheduleEntries in _context.PeriodSchedules //conflict checker
                 where assignedScheduleEntries.Period.CycleId == cycleId
                       && assignedScheduleEntries.Period.ClassroomSchedule != null
@@ -198,6 +200,7 @@ public class ClassroomRepository : IClassroomRepository
             var dbDeleteEntries = new List<ClassroomStudent>();
             var dbAddOrUpdateEntries = new List<ClassroomStudent>();
 
+            //TODO: Maybe add cycleId to prevent conflicts (also go and comment specific parameters in queries to highlight their purpose in preventing conflicts or unauthorized access)
             var entriesToDelete = await (from cs in _context.ClassroomStudents
                 where cs.ClassroomId == classroomId && !studentIds.Contains(cs.StudentId)
                 select cs.StudentId).ToListAsync();
