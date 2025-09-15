@@ -113,6 +113,8 @@ public class ClassroomRepository : IClassroomRepository
     {
         try
         {
+            //TODO: Make task to reverify bulk updating logic for: schedules, rosters and related joint table data to make sure no one can override with their own classroomId inputs
+            //TODO: Optimize query, perhaps adding cycleId is useles and it would be cleaner and safer for conflict checking to check against all and not limit by school since periodIds are restricted upon creation anyways
             var result = await (from assignedScheduleEntries in _context.PeriodSchedules //conflict checker
                 where assignedScheduleEntries.Period.CycleId == cycleId
                       && assignedScheduleEntries.Period.ClassroomSchedule != null
@@ -174,6 +176,60 @@ public class ClassroomRepository : IClassroomRepository
         catch (DbUpdateException ex)
         {
             throw new DbException("Issue updating classroom schedule in the database", ex);
+        }
+    }
+
+    public async Task UpdateClassroomRosterAsync(int schoolId, int cycleId, int classroomId, List<int> studentIds)
+    {
+        try
+        {
+            var result = await (from cs in _context.ClassroomStudents
+                where
+                    cs.ClassroomId != classroomId &&
+                    cs.Classroom.CycleId == cycleId &&
+                    cs.Student.SchoolId == schoolId &&
+                    studentIds.Contains(cs.StudentId)
+                select cs).AnyAsync();
+
+            if (result)
+            {
+                throw new RosterConflictException(
+                    "One or more of the students to be removed from the classroom roster are not currently assigned to this classroom.");
+            }
+            
+            var dbDeleteEntries = new List<ClassroomStudent>();
+            var dbAddOrUpdateEntries = new List<ClassroomStudent>();
+
+            //TODO: Maybe add cycleId to prevent conflicts (also go and comment specific parameters in queries to highlight their purpose in preventing conflicts or unauthorized access)
+            var entriesToDelete = await (from cs in _context.ClassroomStudents
+                where cs.ClassroomId == classroomId && !studentIds.Contains(cs.StudentId)
+                select cs.StudentId).ToListAsync();
+
+            foreach (var entry in entriesToDelete)
+            {
+                dbDeleteEntries.Add(new ClassroomStudent
+                {
+                    ClassroomId = classroomId,
+                    StudentId = entry
+                });
+            }
+            
+            await _context.BulkDeleteAsync(dbDeleteEntries);
+            
+            foreach (var id in studentIds)
+            {
+                dbAddOrUpdateEntries.Add(new ClassroomStudent
+                {
+                    ClassroomId = classroomId,
+                    StudentId = id
+                });
+            }
+            
+            await _context.BulkInsertOrUpdateAsync(dbAddOrUpdateEntries);
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue updating classroom roster in the database", ex);
         }
     }
 }

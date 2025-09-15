@@ -35,5 +35,7 @@ public partial class Student
 
     public virtual School School { get; set; } = null!;
 
+    public virtual ICollection<StudentGrade> StudentGrades { get; set; } = new List<StudentGrade>();
+
     public virtual ICollection<StudentParent> StudentParents { get; set; } = new List<StudentParent>();
 }
