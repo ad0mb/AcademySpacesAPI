@@ -7,6 +7,7 @@ using Core.ApplicationCore.DomainEntities;
 using Core.ApplicationCore.Interfaces.UseCases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Newtonsoft.Json;
 using DbException = Core.Exceptions.DbException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -29,7 +30,7 @@ public class PermissionsController : ControllerBase
         _createPermissionsJwtUseCase = createPermissionsJwtUseCase;
         _configuration = configuration;
     }
-    
+    [EnableRateLimiting("fixed")] 
     [HttpGet("permissions")]
     public async Task<IActionResult> GetUserPermissions()
     {

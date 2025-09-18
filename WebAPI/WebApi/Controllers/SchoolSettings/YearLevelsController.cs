@@ -6,6 +6,7 @@ using Core.ApplicationCore.Interfaces.UseCases;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AcademySpacesAPI.WebApi.Controllers.SchoolSettings;
 
@@ -25,7 +26,7 @@ public class YearLevelsController : ControllerBase
         _getYearLevelHierarchyUseCase = getYearLevelHierarchyUseCase;
         _setYearLevelHierarchyUseCase = setYearLevelHierarchyUseCase;
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("YearLevels:view")]
     [HttpGet("get-year-levels")]
     public async Task<IActionResult> GetYearLevels()
@@ -68,7 +69,7 @@ public class YearLevelsController : ControllerBase
             });
         }
     }
-    
+    [EnableRateLimiting("fixed")] 
     [HasPermission("YearLevels:create")]
     [HasPermission("YearLevels:update")]
     [HttpPost("set-year-levels")]

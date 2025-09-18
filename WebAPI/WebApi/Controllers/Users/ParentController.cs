@@ -6,6 +6,7 @@ using Core.ApplicationCore.Interfaces.UseCases;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AcademySpacesAPI.WebApi.Controllers.Users;
 
@@ -26,7 +27,7 @@ public class ParentController : ControllerBase
         _getParentsUseCase = getParentsUseCase;
         _updateParentUseCase = updateParentUseCase;
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Parent:create")]
     [HttpPost("create-parent")]
     public async Task<IActionResult> CreateParent(CreateParentRequest request)
@@ -73,7 +74,7 @@ public class ParentController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Parent:view")]
     [HttpGet("get-parents")]
     public async Task<IActionResult> GetParents([FromQuery] int pageSize, [FromQuery] int pageNumber, [FromQuery] string? searchTerm)
@@ -123,7 +124,7 @@ public class ParentController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Parent:update")]
     [HttpPatch("update-parent")]
     public async Task<IActionResult> UpdateParent(UpdateParentRequest request)

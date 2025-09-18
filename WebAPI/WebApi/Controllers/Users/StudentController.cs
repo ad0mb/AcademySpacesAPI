@@ -7,6 +7,7 @@ using Core.ApplicationCore.Interfaces.UseCases;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AcademySpacesAPI.WebApi.Controllers.Users;
 
@@ -30,7 +31,7 @@ public class StudentController : ControllerBase
     }
 
     //TODO: CHECK STUDENT YEAR LEVELS FOREIGN KEY ON DELETE ANED ON UPDATE CASCADE OPTIONS
-    
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Student:view")]
     [HttpGet("get-students")]
     public async Task<IActionResult> GetStudents([FromQuery] int pageSize, [FromQuery] int pageNumber, [FromQuery] string? searchTerm, [FromQuery] int yearLevelId, [FromQuery] int classroomId, [FromQuery] int periodId, [FromQuery] bool noClassroom = false)
@@ -85,7 +86,7 @@ public class StudentController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Student:create")]
     [HttpPost("create-student")]
     public async Task<IActionResult> CreateStudent(CreateStudentRequest request)
@@ -127,7 +128,7 @@ public class StudentController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Student:update")]
     [HttpPatch("update-student")]
     public async Task<IActionResult> UpdateStudent(UpdateStudentRequest request)

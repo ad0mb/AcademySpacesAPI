@@ -3,6 +3,7 @@ using Core.ApplicationCore.Interfaces.Adapters;
 using Infrastructure.Infrastructure.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AcademySpacesAPI.WebApi.Controllers
 {
@@ -19,7 +20,7 @@ namespace AcademySpacesAPI.WebApi.Controllers
             _authService = authService;
             _facultyRepository = facultyRepository;
         }
-
+        [EnableRateLimiting("fixed")] 
         [HasPermission("User:read")]
         [HttpGet("test")]
         public IActionResult Test()

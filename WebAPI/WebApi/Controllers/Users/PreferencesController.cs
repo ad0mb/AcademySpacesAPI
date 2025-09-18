@@ -6,6 +6,7 @@ using Core.ApplicationCore.Interfaces.UseCases;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AcademySpacesAPI.WebApi.Controllers.Users;
 
@@ -25,7 +26,7 @@ public class PreferencesController : ControllerBase
         _postUserPreferencesUseCase = postUserPreferencesUseCase;
         _httpContextAccessor = httpContextAccessor;
     }
-
+    [EnableRateLimiting("fixed")] 
     [HttpGet("preferences")]
     public async Task<IActionResult> GetUserPreferences()
     {
@@ -60,7 +61,7 @@ public class PreferencesController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HttpPost("preferences")]
     public async Task<IActionResult> PostUserPreferences(PostUserPreferencesRequest request)
     {

@@ -7,6 +7,7 @@ using Core.ApplicationCore.Interfaces.UseCases;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AcademySpacesAPI.WebApi.Controllers;
 
@@ -36,6 +37,7 @@ public class ClassroomController : ControllerBase
     }
     
     //TODO: Has school wide setting enabled attribute to add
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Classroom:create")]
     [HttpPost("create-classroom")]
     public async Task<IActionResult> CreateClassroom(CreateClassroomRequest request)
@@ -82,7 +84,7 @@ public class ClassroomController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Classroom:view")]
     [HttpGet("get-classrooms")]
     public async Task<IActionResult> GetClassrooms([FromQuery] int pageSize, [FromQuery] int pageNumber, [FromQuery] string? searchTerm)
@@ -139,6 +141,7 @@ public class ClassroomController : ControllerBase
     }
     
     // TODO: Decide on a permission or way to gatekeep retrieving classrooms
+    [EnableRateLimiting("fixed")] 
     [HttpGet("get-classroom")]
     public async Task<IActionResult> GetClassroom([FromQuery] int classroomId)
     {
@@ -159,7 +162,7 @@ public class ClassroomController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HttpGet("get-classroom-schedule")]
     public async Task<IActionResult> GetClassroomSchedule([FromQuery] int classroomId)
     {
@@ -228,7 +231,7 @@ public class ClassroomController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HttpPatch("update-classroom-schedule")]
     public async Task<IActionResult> UpdateClassroomSchedule(UpdateClassroomScheduleRequest request)
     {
@@ -268,7 +271,7 @@ public class ClassroomController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HttpGet("{classroomId}/get-classroom-roster")]
     public async Task<IActionResult> GetClassroomRoster([FromRoute] int classroomId)
     {
@@ -316,7 +319,7 @@ public class ClassroomController : ControllerBase
             });
         }
     }
-    
+    [EnableRateLimiting("fixed")] 
     [HttpPatch("{classroomId}/update-classroom-roster")]
     public async Task<IActionResult> UpdateClassroomRoster(UpdateClassroomRosterRequest request, int classroomId)
     {

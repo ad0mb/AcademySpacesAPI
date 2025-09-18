@@ -10,11 +10,12 @@ using Infrastructure.Infrastructure.Persistence.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using YourNamespace.DTOs;
 
 namespace AcademySpacesAPI.WebApi.Controllers.Announcement;
 [ApiController]
-//[Authorize(AuthenticationSchemes = "FirebaseAuthScheme")]
+[Authorize(AuthenticationSchemes = "FirebaseAuthScheme")]
 [Route("api/Announcements")]
 public class AnnouncementController:ControllerBase
 {
@@ -40,8 +41,7 @@ public class AnnouncementController:ControllerBase
     }
 
     
- 
-   
+  
     [HttpPost("CreateAnnouncement")]
     public async Task<IActionResult> CreateAnnouncement([FromBody] CreateAnnouncementDto<string> announcementDto)
     {
@@ -105,7 +105,8 @@ public class AnnouncementController:ControllerBase
             Console.WriteLine("Announcement created successfully.");
             return Ok();
     }
-    
+
+
     [HttpGet("GetAnnouncements")]
     public async Task<IActionResult> GetAnnouncements([FromQuery]  int page = 1, [FromQuery] int pageSize = 50)
     {

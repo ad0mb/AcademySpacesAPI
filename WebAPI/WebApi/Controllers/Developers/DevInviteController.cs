@@ -4,6 +4,7 @@ using System.Text;
 using Core.ApplicationCore.Interfaces.Adapters;
 using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 
 namespace AcademySpacesAPI.WebApi.Controllers.Developers;
@@ -25,6 +26,7 @@ public class DevInviteController : ControllerBase
         _authService = firebaseAuth;
     }
     
+    [EnableRateLimiting("fixed")] 
     [HttpPost("invite-admin/{email}")]
     public IActionResult InviteAdmin(string email)
     {
@@ -53,7 +55,9 @@ public class DevInviteController : ControllerBase
             Errors = (string[])null
         });
     }
-
+    
+    
+    [EnableRateLimiting("fixed")] 
     [HttpPost("add-claim")]
     public async Task<IActionResult> AddClaim(string identityId, string claimType, string claimValue)
     {

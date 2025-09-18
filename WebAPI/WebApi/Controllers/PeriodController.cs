@@ -7,6 +7,7 @@ using Core.ApplicationCore.Interfaces.UseCases;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace AcademySpacesAPI.WebApi.Controllers;
@@ -30,7 +31,7 @@ public class PeriodController : ControllerBase
         _createPeriodUseCase = createPeriodUseCase;
         _updatePeriodUseCase = updatePeriodUseCase;
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Periods:view")]
     [HttpGet("get-periods")]
     public async Task<IActionResult> GetPeriods([FromQuery] int pageSize, [FromQuery] int pageNumber,
@@ -108,7 +109,7 @@ public class PeriodController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Periods:create")]
     [HttpPost("create-period")]
     public async Task<IActionResult> CreatePeriod(CreatePeriodRequest request)
@@ -174,7 +175,7 @@ public class PeriodController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Periods:update")]
     [HttpPatch("update-period")]
     public async Task<IActionResult> UpdatePeriod(UpdatePeriodRequest request)

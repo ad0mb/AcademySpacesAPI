@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using Infrastructure.Infrastructure.Persistence.Context;
+using Microsoft.AspNetCore.RateLimiting;
 
 
 namespace AcademySpacesAPI.WebApi.Controllers
@@ -16,7 +17,7 @@ namespace AcademySpacesAPI.WebApi.Controllers
         {
             _context = context;
         }
-
+        [EnableRateLimiting("fixed")] 
         [HttpGet("ping")]
         public async Task<IActionResult> PingDatabase()
         {

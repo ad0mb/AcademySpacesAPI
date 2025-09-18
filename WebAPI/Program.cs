@@ -1,6 +1,8 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using AcademySpacesAPI;
 using AcademySpacesAPI.WebApi.Authentication;
+using Azure.Identity;
 using Core.ApplicationCore.Interfaces.Adapters;
 using Core.ApplicationCore.Interfaces.UseCases;
 using Core.ApplicationCore.UseCases;
@@ -15,6 +17,7 @@ using Infrastructure.Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -30,6 +33,49 @@ builder.Services.AddCors(options =>
             .AllowCredentials();
     });
 });
+
+//This is for rate limiting
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("fixed", opt =>
+    {
+        opt.PermitLimit = 1000;            // max requests
+        opt.Window = TimeSpan.FromMinutes(1); // per time window
+        opt.QueueLimit = 0;                // no queuing
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    });
+});
+
+builder.Configuration.Sources.Clear();
+
+
+
+
+
+
+
+// 🔑 Add Key Vault here before you read any config
+builder.Configuration
+    .AddAzureKeyVault(
+        new Uri("https://appsettingsjson.vault.azure.net/"),
+        new DefaultAzureCredential())
+        .AddEnvironmentVariables();
+// Optional: Load the entire JSON blob from secret "app-settings"
+var prodJson = builder.Configuration["app-settings"];
+if (!string.IsNullOrEmpty(prodJson))
+{
+    var jsonConfig = new ConfigurationBuilder()
+        .AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(prodJson)))
+        .Build();
+
+    builder.Configuration.AddConfiguration(jsonConfig);
+}
+
+var AzureconnectionString = builder.Configuration.GetConnectionString("MyDBConnectionstring");
+builder.Services.AddDbContext<MyDbContext>(options =>
+    options.UseMySql(AzureconnectionString, ServerVersion.AutoDetect(AzureconnectionString))
+);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -199,12 +245,12 @@ var app = builder.Build();
 
 app.UseCors("AllowAllOrigins");
 
-if (app.Environment.IsDevelopment())
-{
+
     app.UseSwagger();
     app.UseSwaggerUI();
-}
 
+
+app.UseRateLimiter();
 //ORDER FOR THE FOLLOWING THINGS MATTERS (PUT THEM IN ORDER YOU WANT THEM TO OCCUR)
 app.UseHttpsRedirection();
 

@@ -5,6 +5,7 @@ using Core.ApplicationCore.Interfaces.UseCases;
 using Infrastructure.Infrastructure.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AcademySpacesAPI.WebApi.Controllers;
 
@@ -26,7 +27,7 @@ public class AssignmentController : ControllerBase
         _getAssignmentsUseCase = getAssignmentsUseCase;
         _getStudentGradesUseCase = getStudentGradesUseCase;
     }
-
+    [EnableRateLimiting("fixed")] 
     [HttpGet("get-assignments")]
     public async Task<IActionResult> GetAssignments(int periodId)
     {
@@ -84,7 +85,7 @@ public class AssignmentController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HttpGet("get-grades")]
     public async Task<IActionResult> GetGrades(int periodId, [FromQuery] int assignmentId)
     {

@@ -8,6 +8,7 @@ using Core.Exceptions;
 using Infrastructure.Infrastructure.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AcademySpacesAPI.WebApi.Controllers.Users;
 
@@ -31,6 +32,7 @@ public class FacultyController : ControllerBase
     }
 
     //TODO: Add no rows affected exception
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Faculty:create")]
     [HttpPost("invite-faculty")]
     public async Task<IActionResult> InviteFaculty(InviteFacultyRequest request)
@@ -79,7 +81,7 @@ public class FacultyController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Faculty:view")]
     [HttpGet("get-faculty")]
     public async Task<IActionResult> GetFaculty([FromQuery] int pageSize, [FromQuery] int pageNumber, [FromQuery] string? searchTerm)
@@ -137,7 +139,7 @@ public class FacultyController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Faculty:update")]
     [HttpPatch("update-faculty")]
     public async Task<IActionResult> UpdateFaculty(UpdateFacultyRequest request)

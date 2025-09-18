@@ -70,8 +70,13 @@ public partial class MyDbContext : DbContext
     public virtual DbSet<YearLevel> YearLevels { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=192.168.12.113;database=ABDI;uid=root;pwd=Abdirauuf2004!;allowloadlocalinfile=true", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.43-mysql"));
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+        }
+    }
+// #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+//         => optionsBuilder.UseMySql("server=192.168.12.113;database=temp_import;uid=root;pwd=Abdirauuf2004!;allowloadlocalinfile=true", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.43-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -855,7 +860,6 @@ public partial class MyDbContext : DbContext
 
             entity.HasOne(d => d.Student).WithMany(p => p.StudentGrades)
                 .HasForeignKey(d => d.StudentId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("student_grades_students_student_id_fk");
         });
 

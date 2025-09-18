@@ -6,6 +6,7 @@ using Core.ApplicationCore.Interfaces.UseCases;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AcademySpacesAPI.WebApi.Controllers.SchoolSettings;
 
@@ -27,7 +28,7 @@ public class CoursesController : ControllerBase
         _createCourseUseCase = createCourseUseCase;
         _updateCourseUseCase = updateCourseUseCase;
     }
-    
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Courses:view")]
     [HttpGet("get-courses")]
     public async Task<IActionResult> GetCourses([FromQuery] int pageSize, [FromQuery] int pageNumber, [FromQuery] string? searchTerm)
@@ -74,7 +75,7 @@ public class CoursesController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Courses:create")]
     [HttpPost("create-course")]
     public async Task<IActionResult> CreateCourse(CreateCourseRequest createCourseRequest)
@@ -122,7 +123,7 @@ public class CoursesController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Courses:update")]
     [HttpPatch("update-course")]
     public async Task<IActionResult> UpdateCourse(UpdateCourseRequest updateCourseRequest)

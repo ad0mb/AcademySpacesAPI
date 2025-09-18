@@ -3,6 +3,7 @@ using Core.ApplicationCore.Interfaces.UseCases;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using MySqlConnector;
 
 namespace AcademySpacesAPI.WebApi.Controllers;
@@ -22,6 +23,7 @@ public class ExternalInviteController : ControllerBase
     //TODO: Implement email 6 digit code verification feature (after endpoint request is sent or before)
     //TODO: Try catch, test how exceptions are handled, test overal function and all subsidaries
     //TODO: Add exception to a future logger to prevent leaking internal information about api or db
+    [EnableRateLimiting("fixed")] 
     [Authorize(AuthenticationSchemes =
         "SchoolRegistrationBearer")] //checks bearer assigned from school registration link
     [HttpPost("register-school")]

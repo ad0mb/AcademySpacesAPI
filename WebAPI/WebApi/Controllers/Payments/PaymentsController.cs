@@ -2,10 +2,14 @@
 using Core.ApplicationCore.DomainEntities;
 using Core.ApplicationCore.UseCases;
 using FirebaseAdmin.Messaging;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AcademySpacesAPI.WebApi.Controllers.Payments;
+[Authorize(AuthenticationSchemes = "FirebaseAuthScheme")]
 [ApiController]
+[EnableRateLimiting("fixed")] 
 [Route("api/[controller]")]
 public class PaymentsController:ControllerBase
 {
@@ -16,7 +20,10 @@ public class PaymentsController:ControllerBase
     {
         _paymentRepoUsecase = paymentRepo;
     }
-
+    
+    
+    
+    
     [HttpGet("get-payments")]
     public async Task<ActionResult> GetPayments()
     {
@@ -26,8 +33,8 @@ public class PaymentsController:ControllerBase
         
         return Ok(result);
     }
-
-
+    
+    
     [HttpPost("add-payment")]
     public async Task<ActionResult> AddPayment(CreatePaymentDTO paymentdto)
     {
@@ -65,7 +72,8 @@ public class PaymentsController:ControllerBase
         }
         
     }
-
+    
+ 
     [HttpPost("try-payment")]
     public void TryPayment(CreatePaymentDTO paymentdto)
     {

@@ -9,6 +9,7 @@ using Core.Exceptions;
 using Infrastructure.Infrastructure.Persistence.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AcademySpacesAPI.WebApi.Controllers;
 
@@ -32,7 +33,7 @@ public class RolesController : ControllerBase
         _getUserRolesPermissionsUseCase = getUserRolesPermissionsUseCase;
         _updateRoleUseCase = updateRoleUseCase;
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Roles:view")]
     [HttpGet("get-roles")]
     public async Task<IActionResult> GetRoles()
@@ -102,7 +103,7 @@ public class RolesController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Roles:create")]
     [HttpPost("create-role")]
     public async Task<IActionResult> CreateRole(CreateRoleRequest request)
@@ -162,7 +163,7 @@ public class RolesController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Roles:update")]
     [HttpPatch("update-role")]
     public async Task<IActionResult> UpdateRole(CreateRoleRequest request)

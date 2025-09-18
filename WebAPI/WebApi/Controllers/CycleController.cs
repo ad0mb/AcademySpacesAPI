@@ -4,6 +4,7 @@ using Core.ApplicationCore.Interfaces.UseCases;
 using Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace AcademySpacesAPI.WebApi.Controllers;
 
@@ -21,7 +22,7 @@ public class CycleController : ControllerBase
         _getCyclesUseCase = getCyclesUseCase;
         _httpContextAccessor = httpContextAccessor;
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Cycle:view")]
     [HttpGet("get-cycles")]
     public async Task<IActionResult> GetCyclesAsync([FromQuery] int pageSize, [FromQuery] int pageNumber, [FromQuery] string? searchTerm)
@@ -82,7 +83,7 @@ public class CycleController : ControllerBase
             });
         }
     }
-
+    [EnableRateLimiting("fixed")] 
     [HasPermission("Cycle:create")]
     [HttpPost("create-cycle")]
     public async Task<IActionResult> CreateCyclesAsync()
