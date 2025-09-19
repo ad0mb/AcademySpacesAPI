@@ -134,6 +134,12 @@ builder.Services.AddScoped<IUpdateClassroomRosterUseCase, UpdateClassroomRosterU
 builder.Services.AddScoped<IGetClassroomRosterUseCase, GetClassroomRosterUseCase>();
 builder.Services.AddScoped<IGetStudentGradesUseCase, GetStudentsGradesUseCase>();
 builder.Services.AddScoped<ISetStudentsGradesUseCase, SetStudentsGradesUseCase>();
+builder.Services.AddScoped<IDeleteClassroomUseCase, DeleteClassroomUseCase>();
+builder.Services.AddScoped<IDeleteStudentUseCase, DeleteStudentUseCase>();
+builder.Services.AddScoped<IDeleteFacultyUseCase, DeleteFacultyUseCase>();
+builder.Services.AddScoped<IDeleteParentUseCase, DeleteParentUseCase>();
+builder.Services.AddScoped<IDeleteCourseUseCase, DeleteCourseUseCase>();
+builder.Services.AddScoped<IDeletePeriodUseCase, DeletePeriodUseCase>();
 //Scoped
 
 //Transient
