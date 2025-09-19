@@ -21,14 +21,16 @@ public class PeriodController : ControllerBase
     private readonly IGetPeriodsUseCase _getPeriodsUseCase;
     private readonly ICreatePeriodUseCase _createPeriodUseCase;
     private readonly IUpdatePeriodUseCase _updatePeriodUseCase;
+    private readonly IDeletePeriodUseCase _deletePeriodUseCase;
 
     public PeriodController(IHttpContextAccessor httpContextAccessor, IGetPeriodsUseCase getPeriodsUseCase,
-        ICreatePeriodUseCase createPeriodUseCase, IUpdatePeriodUseCase updatePeriodUseCase)
+        ICreatePeriodUseCase createPeriodUseCase, IUpdatePeriodUseCase updatePeriodUseCase, IDeletePeriodUseCase deletePeriodUseCase)
     {
         _httpContextAccessor = httpContextAccessor;
         _getPeriodsUseCase = getPeriodsUseCase;
         _createPeriodUseCase = createPeriodUseCase;
         _updatePeriodUseCase = updatePeriodUseCase;
+        _deletePeriodUseCase = deletePeriodUseCase;
     }
 
     [HasPermission("Periods:view")]
@@ -245,6 +247,46 @@ public class PeriodController : ControllerBase
                 Status = false,
                 Message = ex.Message,
                 Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+
+    [HasPermission("Periods:delete")]
+    [HttpDelete("delete-period/{periodId}")]
+    public async Task<IActionResult> DeletePeriod(int periodId)
+    {
+        try
+        {
+            var cycleId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("cycle_id").Value);
+
+            await _deletePeriodUseCase.DeletePeriodAsync(cycleId, periodId);
+
+            return Ok(new
+            {
+                Status = true,
+                Message = "Period deleted successfully.",
+                Data = new { },
+                Errors = (string[])null
+            });
+        }
+        catch (DbUpdateException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object[])null,
                 Errors = new[] { ex.Message }
             });
         }

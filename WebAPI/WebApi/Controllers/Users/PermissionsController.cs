@@ -39,13 +39,16 @@ public class PermissionsController : ControllerBase
         {
             var token = await _createPermissionsJwtUseCase.CreatePermissionsJwtTokenAsync(claims);
             
-            _httpContextAccessor.HttpContext.Response.Cookies.Append("perms", token, new CookieOptions
-            {
-                HttpOnly = _configuration["Environment"] == "Production",
-                Secure = _configuration["Environment"] == "Production",
-                SameSite = SameSiteMode.Strict,
-                Path = "/"
-            });
+            // _httpContextAccessor.HttpContext.Response.Cookies.Append("perms", token, new CookieOptions
+            // {
+            //     HttpOnly = _configuration["Environment"] == "Production",
+            //     Secure = _configuration["Environment"] == "Production",
+            //     SameSite = SameSiteMode.Strict,
+            //     Path = "/"
+            // });
+            
+            _httpContextAccessor.HttpContext.Response.Headers.Add("Access-Control-Expose-Headers", "perms-token");
+            _httpContextAccessor.HttpContext.Response.Headers.Add("perms-token", token);
         }
         catch (DbException ex)
         {

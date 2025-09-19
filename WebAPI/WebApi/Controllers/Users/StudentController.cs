@@ -20,13 +20,15 @@ public class StudentController : ControllerBase
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ICreateStudentUseCase _createStudentUseCase;
     private readonly IUpdateStudentUseCase _updateStudentUseCase;
+    private readonly IDeleteStudentUseCase _deleteStudentUseCase;
     
-    public StudentController(IGetStudentsUseCase getStudentsUseCase, IHttpContextAccessor httpContextAccessor, ICreateStudentUseCase createStudentUseCase, IUpdateStudentUseCase updateStudentUseCase)
+    public StudentController(IGetStudentsUseCase getStudentsUseCase, IHttpContextAccessor httpContextAccessor, ICreateStudentUseCase createStudentUseCase, IUpdateStudentUseCase updateStudentUseCase, IDeleteStudentUseCase deleteStudentUseCase)
     {
         _getStudentsUseCase = getStudentsUseCase;
         _httpContextAccessor = httpContextAccessor;
         _createStudentUseCase = createStudentUseCase;
         _updateStudentUseCase = updateStudentUseCase;
+        _deleteStudentUseCase = deleteStudentUseCase;
     }
 
     //TODO: CHECK STUDENT YEAR LEVELS FOREIGN KEY ON DELETE ANED ON UPDATE CASCADE OPTIONS
@@ -175,6 +177,46 @@ public class StudentController : ControllerBase
             {
                 Status = false,
                 Message = "Student to update was not found.",
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+    
+    [HasPermission("Student:delete")]
+    [HttpDelete("delete-student/{studentId}")]
+    public async Task<IActionResult> DeleteStudent(int studentId)
+    {
+        try
+        {
+            var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+
+            await _deleteStudentUseCase.DeleteStudentAsync(schoolId, studentId);
+            
+            return Ok(new
+            {
+                Status = true,
+                Message = "Student deleted successfully.",
+                Data = (object)null,
+                Errors = (string[])null
+            });
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new
+            {
+                Status = false,
+                Message = "Student to delete was not found.",
                 Data = (object)null,
                 Errors = new[] { ex.Message }
             });

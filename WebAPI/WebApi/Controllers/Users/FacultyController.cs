@@ -21,13 +21,15 @@ public class FacultyController : ControllerBase
     private readonly IGetFacultyUseCase _getFacultyUseCase;
     private readonly IInviteFacultyUseCase _inviteFacultyUseCase;
     private readonly IUpdateFacultyUseCase _updateFacultyUseCase;
+    private readonly IDeleteFacultyUseCase _deleteFacultyUseCase;
     
-    public FacultyController(IHttpContextAccessor httpContextAccessor, IGetFacultyUseCase getFacultyUseCase, IInviteFacultyUseCase inviteFacultyUseCase, IUpdateFacultyUseCase updateFacultyUseCase)
+    public FacultyController(IHttpContextAccessor httpContextAccessor, IGetFacultyUseCase getFacultyUseCase, IInviteFacultyUseCase inviteFacultyUseCase, IUpdateFacultyUseCase updateFacultyUseCase, IDeleteFacultyUseCase deleteFacultyUseCase)
     {
         _httpContextAccessor = httpContextAccessor;
         _getFacultyUseCase = getFacultyUseCase;
         _inviteFacultyUseCase = inviteFacultyUseCase;
         _updateFacultyUseCase = updateFacultyUseCase;
+        _deleteFacultyUseCase = deleteFacultyUseCase;
     }
 
     //TODO: Add no rows affected exception
@@ -181,6 +183,46 @@ public class FacultyController : ControllerBase
             {
                 Status = false,
                 Message = "Internal server error.",
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+
+    [HasPermission("Faculty:delete")]
+    [HttpDelete("delete-faculty/{facultyId:int}")]
+    public async Task<IActionResult> DeleteFaculty(int facultyId)
+    {
+        try
+        {
+            var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+
+            await _deleteFacultyUseCase.DeleteFacultyAsync(schoolId, facultyId);
+            
+            return Ok(new
+            {
+                Status = true,
+                Message = "Faculty deleted successfully.",
+                Data = (object)null,
+                Errors = (string[])null
+            });
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new
+            {
+                Status = false,
+                Message = ex.Message,
                 Data = (object[])null,
                 Errors = new[] { ex.Message }
             });
