@@ -10,4 +10,5 @@ public interface IFacultyRepository
     Task<FacultyEntry?> GetFacultyByIdentityIdAsync(string identityId);
     Task<(List<FacultyEntry> facultyList, int totalCount)> GetFacultyBySchoolIdAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm);
     Task UpdateFacultyAsync(FacultyEntry request);
+    Task DeleteFacultyAsync(int schoolId, int facultyId);
 }

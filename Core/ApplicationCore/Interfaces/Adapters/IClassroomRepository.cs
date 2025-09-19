@@ -10,4 +10,5 @@ public interface IClassroomRepository
 
     Task UpdateClassroomScheduleAsync(int cycleId, int classroomId, List<int> periodId);
     Task UpdateClassroomRosterAsync(int schoolId, int cycleId, int classroomId, List<int> studentIds);
+    Task DeleteClassroomAsync(int cycleId, int classroomId);
 }

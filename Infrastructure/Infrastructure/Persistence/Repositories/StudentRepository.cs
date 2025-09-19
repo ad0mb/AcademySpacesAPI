@@ -135,4 +135,30 @@ public class StudentRepository : IStudentRepository
             throw new DbException("Issue updating student in the database", ex);
         }
     }
+    
+    public async Task DeleteStudentAsync(int schoolId, int studentId)
+    {
+        try
+        {
+            var existingStudent = await (from s in _context.Students
+                where s.StudentId == studentId && s.SchoolId == schoolId
+                select s).FirstOrDefaultAsync();
+
+            if (existingStudent == null)
+            {
+                throw new NotFoundException("Student not found");
+            }
+
+            _context.Students.Remove(existingStudent);
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                throw new NoRowsAffectedException("Student not deleted");
+            }
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue deleting student in the database", ex);
+        }
+    }
 }

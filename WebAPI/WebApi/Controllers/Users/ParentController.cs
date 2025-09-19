@@ -130,9 +130,12 @@ public class ParentController : ControllerBase
     { 
         try
         {
+            var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+            
             await _updateParentUseCase.UpdateParentAsync(new ParentEntry
             {
                 ParentId = request.ParentId,
+                SchoolId = schoolId,
                 FirstName = request.FirstName,
                 MiddleName = request.MiddleName,
                 LastName = request.LastName,

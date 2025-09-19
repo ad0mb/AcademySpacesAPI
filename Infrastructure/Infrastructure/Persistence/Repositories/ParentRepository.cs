@@ -150,7 +150,7 @@ public class ParentRepository : IParentRepository
         try
         {
             var existingParent = await (from p in _context.Parents
-                where p.ParentId == parent.ParentId
+                where p.ParentId == parent.ParentId && p.SchoolId == parent.SchoolId
                 select p).FirstOrDefaultAsync();
 
             if (existingParent == null)
@@ -169,6 +169,33 @@ public class ParentRepository : IParentRepository
         catch (DbUpdateException ex)
         {
             throw new DbException("Isseue updating parent in the database", ex);
+        }
+    }
+
+    //TODO: Redo/verify all exceptions in all repos
+    public async Task DeleteParentAsync(int schoolId, int parentId)
+    {
+        try
+        {
+            var parent = await (from p in _context.Parents
+                where p.ParentId == parentId && p.SchoolId == schoolId
+                select p).FirstOrDefaultAsync();
+
+            if (parent == null)
+            {
+                throw new NotFoundException("Parent not found");
+            }
+            
+            _context.Parents.Remove(parent);
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                throw new NoRowsAffectedException("Parent not deleted");
+            }
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue deleting parent from the database", ex);
         }
     }
 
