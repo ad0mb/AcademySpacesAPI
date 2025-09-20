@@ -7,8 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace AcademySpacesAPI.WebApi.Controllers.Payments;
-[Authorize(AuthenticationSchemes = "FirebaseAuthScheme")]
+
 [ApiController]
+[Authorize (AuthenticationSchemes = "FirebaseAuthScheme")]
 [EnableRateLimiting("fixed")] 
 [Route("api/[controller]")]
 public class PaymentsController:ControllerBase

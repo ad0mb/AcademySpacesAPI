@@ -4,6 +4,7 @@ using AcademySpacesAPI;
 using AcademySpacesAPI.WebApi.Authentication;
 using Azure.Identity;
 using Core.ApplicationCore.Interfaces.Adapters;
+using Core.ApplicationCore.Interfaces.HelperFiles;
 using Core.ApplicationCore.Interfaces.UseCases;
 using Core.ApplicationCore.UseCases;
 using EntityFramework.Exceptions.MySQL.Pomelo;
@@ -27,7 +28,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins", policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins("http://localhost:3000","https://localhost:3000")
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();
@@ -47,7 +48,7 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
-builder.Configuration.Sources.Clear();
+ builder.Configuration.Sources.Clear();
 
 
 
@@ -56,26 +57,32 @@ builder.Configuration.Sources.Clear();
 
 
 // 🔑 Add Key Vault here before you read any config
-builder.Configuration
-    .AddAzureKeyVault(
-        new Uri("https://appsettingsjson.vault.azure.net/"),
-        new DefaultAzureCredential())
-        .AddEnvironmentVariables();
-// Optional: Load the entire JSON blob from secret "app-settings"
-var prodJson = builder.Configuration["app-settings"];
-if (!string.IsNullOrEmpty(prodJson))
-{
-    var jsonConfig = new ConfigurationBuilder()
-        .AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(prodJson)))
-        .Build();
+ builder.Configuration
+     .AddAzureKeyVault(
+         new Uri("https://appsettingsjson.vault.azure.net/"),
+         new DefaultAzureCredential())
+         .AddEnvironmentVariables();
+ // Optional: Load the entire JSON blob from secret "app-settings"
+ var prodJson = builder.Configuration["app-settings"];
+ if (!string.IsNullOrEmpty(prodJson))
+ {
+     var jsonConfig = new ConfigurationBuilder()
+         .AddJsonStream(new MemoryStream(Encoding.UTF8.GetBytes(prodJson)))
+         .Build();
+ 
+     builder.Configuration.AddConfiguration(jsonConfig);
+ }
 
-    builder.Configuration.AddConfiguration(jsonConfig);
-}
 
-var AzureconnectionString = builder.Configuration.GetConnectionString("MyDBConnectionstring");
-builder.Services.AddDbContext<MyDbContext>(options =>
-    options.UseMySql(AzureconnectionString, ServerVersion.AutoDetect(AzureconnectionString))
-);
+
+Console.WriteLine("[DEBUG] Please Tell me why you mot working ");
+ var AzureconnectionString = builder.Configuration.GetConnectionString("staggingconnectionstring");
+
+ Console.WriteLine($"[DEBUG] Loaded ConnectionString: {AzureconnectionString}");
+
+ builder.Services.AddDbContext<MyDbContext>(options =>
+     options.UseMySql(AzureconnectionString, ServerVersion.AutoDetect(AzureconnectionString))
+ );
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -179,17 +186,33 @@ builder.Services.AddScoped<IGetAssignmentsUseCase, GetAssignmentsUseCase>();
 builder.Services.AddScoped<IUpdateClassroomRosterUseCase, UpdateClassroomRosterUseCase>();
 builder.Services.AddScoped<IGetClassroomRosterUseCase, GetClassroomRosterUseCase>();
 builder.Services.AddScoped<IGetStudentGradesUseCase, GetStudentsGradesUseCase>();
+builder.Services.AddScoped<ICreateAnnouncementUseCase, CreateAnnouncementUseCase>();
+builder.Services.AddScoped<ICreateAnnouncementService, AnnouncementRepository>();
+builder.Services.AddScoped<IAblyService, AblyPublisher>();
+builder.Services.AddScoped<ICreateAnnouncementUseCase, CreateAnnouncementUseCase>();
+builder.Services.AddScoped<IGetAnnouncementsUseCase, GetAnnouncementsService>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<PaymentRepoUsecase>();
+
+
+
+
+
 //Scoped
 
 //Transient
 builder.Services.AddTransient<IEmailService, EmailService>();
 //Transient
 
-//Add DbContext
-var connectonString = builder.Configuration.GetConnectionString("LocalConnection");
-builder.Services.AddDbContext<MyDbContext>(options =>
-    options.UseMySql(ServerVersion.AutoDetect(connectonString)).UseExceptionProcessor()
-);
+// //Add DbContext For Development 
+// var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Console.WriteLine("Loaded connection string: " + connectionString);
+//
+// builder.Services.AddDbContext<MyDbContext>(options =>
+//     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
+//         .UseExceptionProcessor()
+// );
+//
 
 //TODO: Check bearers and create separate registration key for each one
 builder.Services.AddAuthentication(options =>

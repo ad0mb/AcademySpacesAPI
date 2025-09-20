@@ -76,7 +76,7 @@ public partial class MyDbContext : DbContext
         }
     }
 // #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//         => optionsBuilder.UseMySql("server=192.168.12.113;database=temp_import;uid=root;pwd=Abdirauuf2004!;allowloadlocalinfile=true", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.43-mysql"));
+//         => optionsBuilder.UseMySql("Server=academyspaces-mysql.mysql.database.azure.com;Port=3306;Database=academyspaces;Uid=AcademySpacesDb;Pwd=Academy_spaces2025;SslMode=Required;\n", Microsoft.EntityFrameworkCore.ServerVersion.Parse("8.0.43-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

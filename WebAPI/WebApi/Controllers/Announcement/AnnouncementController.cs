@@ -15,7 +15,7 @@ using YourNamespace.DTOs;
 
 namespace AcademySpacesAPI.WebApi.Controllers.Announcement;
 [ApiController]
-[Authorize(AuthenticationSchemes = "FirebaseAuthScheme")]
+
 [Route("api/Announcements")]
 public class AnnouncementController:ControllerBase
 {
@@ -41,22 +41,34 @@ public class AnnouncementController:ControllerBase
     }
 
     
-  
+  //This should be done in auth 
     [HttpPost("CreateAnnouncement")]
     public async Task<IActionResult> CreateAnnouncement([FromBody] CreateAnnouncementDto<string> announcementDto)
     {
   
-        var idToken = Request.Cookies["access"];
+        var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+        string idToken = null;
+
+        if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+        {
+            idToken = authHeader.Substring("Bearer ".Length).Trim();
+        }
+        else
+        {
+            idToken = Request.Cookies["access"];
+        }
+
         if (string.IsNullOrEmpty(idToken))
             return Unauthorized("Missing token");
 
         var principal = await _authService.ProcessIdTokenAsync(idToken);
 
+
         var identityId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var schoolId = principal.FindFirst("school_id")?.Value;
+        var Id = principal.FindFirst("school_id")?.Value;
 
 
-       
+        int schoolId = int.Parse(Id);
             
             
             // Assuming this method retrieves the faculty member based on the current user's identity ID
@@ -65,7 +77,7 @@ public class AnnouncementController:ControllerBase
                 Title = announcementDto.Title,
                 Message = announcementDto.Message,
                 Date = DateTime.Now,
-                SchoolId =50, // Assuming a static school ID for demonstration
+                SchoolId =schoolId, // Assuming a static school ID for demonstration
                // Sender = "Me for now", // Assuming a static sender for demonstration
                 Priority = announcementDto.IsUrgent ? "urgent" : null
                 
@@ -105,21 +117,34 @@ public class AnnouncementController:ControllerBase
             Console.WriteLine("Announcement created successfully.");
             return Ok();
     }
-
+   
 
     [HttpGet("GetAnnouncements")]
     public async Task<IActionResult> GetAnnouncements([FromQuery]  int page = 1, [FromQuery] int pageSize = 50)
     {
-        var idToken = Request.Cookies["access"];
+        var authHeader = Request.Headers["Authorization"].FirstOrDefault();
+        string idToken = null;
+
+        if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+        {
+            idToken = authHeader.Substring("Bearer ".Length).Trim();
+        }
+        else
+        {
+            idToken = Request.Cookies["access"];
+        }
+
         if (string.IsNullOrEmpty(idToken))
             return Unauthorized("Missing token");
 
         var principal = await _authService.ProcessIdTokenAsync(idToken);
 
-        var identityId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        var schoolId = int.Parse(principal.FindFirst("school_id")?.Value);
 
-        Console.WriteLine("here");
+        var identityId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var Id = principal.FindFirst("school_id")?.Value;
+
+        Console.WriteLine(Id);
+        int schoolId = int.Parse(Id);
         var result = await _getAnnouncementsUseCase.GetAnnouncementsAsync(page, pageSize,schoolId);
         
         return Ok(result);
