@@ -56,14 +56,14 @@ builder.Services.AddRateLimiter(options =>
 
 
 
-// 🔑 Add Key Vault here before you read any config
+
  builder.Configuration
      .AddAzureKeyVault(
-         new Uri("https://appsettingsjson.vault.azure.net/"),
+         new Uri("https://production-app-settings.vault.azure.net/"),
          new DefaultAzureCredential())
          .AddEnvironmentVariables();
  // Optional: Load the entire JSON blob from secret "app-settings"
- var prodJson = builder.Configuration["app-settings"];
+ var prodJson = builder.Configuration["Appsettings"];
  if (!string.IsNullOrEmpty(prodJson))
  {
      var jsonConfig = new ConfigurationBuilder()
@@ -76,7 +76,7 @@ builder.Services.AddRateLimiter(options =>
 
 
 Console.WriteLine("[DEBUG] Please Tell me why you mot working ");
- var AzureconnectionString = builder.Configuration.GetConnectionString("staggingconnectionstring");
+ var AzureconnectionString = builder.Configuration.GetConnectionString("productionconnectionstring");
 
  Console.WriteLine($"[DEBUG] Loaded ConnectionString: {AzureconnectionString}");
 
@@ -198,13 +198,15 @@ builder.Services.AddScoped<PaymentRepoUsecase>();
 
 
 
+
+
 //Scoped
 
 //Transient
 builder.Services.AddTransient<IEmailService, EmailService>();
 //Transient
 
-// //Add DbContext For Development 
+//Add DbContext For Development 
 // var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 // Console.WriteLine("Loaded connection string: " + connectionString);
 //
@@ -212,7 +214,7 @@ builder.Services.AddTransient<IEmailService, EmailService>();
 //     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
 //         .UseExceptionProcessor()
 // );
-//
+
 
 //TODO: Check bearers and create separate registration key for each one
 builder.Services.AddAuthentication(options =>
