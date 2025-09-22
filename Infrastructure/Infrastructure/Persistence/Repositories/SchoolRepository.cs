@@ -45,12 +45,6 @@ public class SchoolRepository : ISchoolRepository
                 ["chiefadministrator:000"]);
             await _roleRepository.CreateRoleAsync(
                 new RoleEntry { SchoolId = school.SchoolId, RoleName = "Administrator" }, ["administrator:000"]);
-            await _roleRepository.CreateRoleAsync(
-                new RoleEntry { SchoolId = school.SchoolId, RoleName = "Teacher" }, []);
-            await _roleRepository.CreateRoleAsync(
-                new RoleEntry { SchoolId = school.SchoolId, RoleName = "Parent" }, []);
-            await _roleRepository.CreateRoleAsync(
-                new RoleEntry { SchoolId = school.SchoolId, RoleName = "Student" }, []);
 
             return [school.SchoolId, chiefAdminRoleId];
         }
@@ -167,6 +161,35 @@ public class SchoolRepository : ISchoolRepository
         catch (DbUpdateException ex)
         {
             throw new DbException("Issue verifying cycle from the database", ex);
+        }
+    }
+
+    public async Task CreateCycleAsync(CycleEntry cycle)
+    {
+        try
+        {
+            var newCycle = new Cycle
+            {
+                SchoolId = cycle.SchoolId,
+                Name = cycle.CycleName,
+                Code = cycle.Code,
+                ScheduleType = cycle.ScheduleType,
+                StartDate = cycle.StartDate,
+                EndDate = cycle.EndDate,
+                IsActive = cycle.IsActive,
+            };
+            
+            await _context.Cycles.AddAsync(newCycle);
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                throw new NoRowsAffectedException("No rows were affected when creating the cycle.");
+            }
+            
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue adding cycle to the database", ex);
         }
     }
 }
