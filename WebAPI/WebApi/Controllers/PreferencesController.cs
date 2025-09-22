@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
-namespace AcademySpacesAPI.WebApi.Controllers.Users;
+namespace AcademySpacesAPI.WebApi.Controllers;
 
 [ApiController]
 [Authorize(AuthenticationSchemes = "FirebaseAuthScheme")]

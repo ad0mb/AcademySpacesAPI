@@ -251,4 +251,30 @@ public class FacultyRepository : IFacultyRepository
             throw new DbException("Issue updating faculty in the database", ex);
         }
     }
+
+    public async Task DeleteFacultyAsync(int schoolId, int facultyId)
+    {
+        try
+        {
+            var faculty = await (from f in _context.Faculties
+                where f.FacultyId == facultyId && f.SchoolId == schoolId
+                select f).FirstOrDefaultAsync();
+
+            if (faculty == null)
+            {
+                throw new NotFoundException("Faculty to delete not found.");
+            }
+            
+            _context.Faculties.Remove(faculty);
+            var result = await _context.SaveChangesAsync();
+            if (result == 0) 
+            {
+                throw new NoRowsAffectedException("Faculty not deleted");
+            }
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue deleting faculty from the database", ex);
+        }
+    }
 }

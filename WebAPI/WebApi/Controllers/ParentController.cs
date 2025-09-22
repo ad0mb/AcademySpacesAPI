@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
-namespace AcademySpacesAPI.WebApi.Controllers.Users;
+namespace AcademySpacesAPI.WebApi.Controllers;
 
 [ApiController]
 [Authorize(AuthenticationSchemes = "FirebaseAuthScheme")]
@@ -19,13 +19,15 @@ public class ParentController : ControllerBase
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IGetParentsUseCase _getParentsUseCase;
     private readonly IUpdateParentUseCase _updateParentUseCase;
+    private readonly IDeleteParentUseCase _deleteParentUseCase;
     
-    public ParentController(ICreateParentUseCase createParentUseCase, IHttpContextAccessor httpContextAccessor, IGetParentsUseCase getParentsUseCase, IUpdateParentUseCase updateParentUseCase)
+    public ParentController(ICreateParentUseCase createParentUseCase, IHttpContextAccessor httpContextAccessor, IGetParentsUseCase getParentsUseCase, IUpdateParentUseCase updateParentUseCase, IDeleteParentUseCase deleteParentUseCase)
     {
         _createParentUseCase = createParentUseCase;
         _httpContextAccessor = httpContextAccessor;
         _getParentsUseCase = getParentsUseCase;
         _updateParentUseCase = updateParentUseCase;
+        _deleteParentUseCase = deleteParentUseCase;
     }
     [EnableRateLimiting("fixed")] 
     [HasPermission("Parent:create")]
@@ -131,9 +133,12 @@ public class ParentController : ControllerBase
     { 
         try
         {
+            var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+            
             await _updateParentUseCase.UpdateParentAsync(new ParentEntry
             {
                 ParentId = request.ParentId,
+                SchoolId = schoolId,
                 FirstName = request.FirstName,
                 MiddleName = request.MiddleName,
                 LastName = request.LastName,
@@ -145,6 +150,46 @@ public class ParentController : ControllerBase
             {
                 Status = true,
                 Message = "Parent updated successfully.",
+                Data = (object)null,
+                Errors = (string[])null
+            });
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+
+    [HasPermission("Parent:delete")]
+    [HttpDelete("delete-parent/{parentId}")]
+    public async Task<IActionResult> DeleteParent(int parentId)
+    {
+        try
+        {
+            var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+
+            await _deleteParentUseCase.DeleteParentAsync(schoolId, parentId);
+
+            return Ok(new
+            {
+                Status = true,
+                Message = "Parent deleted successfully.",
                 Data = (object)null,
                 Errors = (string[])null
             });

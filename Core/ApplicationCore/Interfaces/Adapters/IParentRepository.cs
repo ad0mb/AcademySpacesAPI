@@ -10,4 +10,5 @@ public interface IParentRepository
     Task<(List<ParentEntry> parentList, int totalCount)> GetParentsBySchoolIdAsync(int schoolId, int pageSize, int pageNumber, string? searchTerm);
     Task UpdateParentAsync(ParentEntry parent);
     Task BulkLinkStudentToParentAsync(HashSet<int> parentIds, int studentId);
+    Task DeleteParentAsync(int schoolId, int parentId);
 }

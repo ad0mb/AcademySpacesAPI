@@ -1,10 +1,4 @@
-﻿using System.Data.Common;
-using System.Security.Claims;
-using System.Text.Json;
-using AcademySpacesAPI.WebApi.DTOs.Responses;
-using Core;
-using Core.ApplicationCore.DomainEntities;
-using Core.ApplicationCore.Interfaces.UseCases;
+﻿using Core.ApplicationCore.Interfaces.UseCases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -12,7 +6,7 @@ using Newtonsoft.Json;
 using DbException = Core.Exceptions.DbException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
-namespace AcademySpacesAPI.WebApi.Controllers.Users;
+namespace AcademySpacesAPI.WebApi.Controllers;
 
 [ApiController]
 [Authorize(AuthenticationSchemes = "FirebaseAuthScheme")]
@@ -40,13 +34,16 @@ public class PermissionsController : ControllerBase
         {
             var token = await _createPermissionsJwtUseCase.CreatePermissionsJwtTokenAsync(claims);
             
-            _httpContextAccessor.HttpContext.Response.Cookies.Append("perms", token, new CookieOptions
-            {
-                HttpOnly = _configuration["Environment"] == "Production",
-                Secure = _configuration["Environment"] == "Production",
-                SameSite = SameSiteMode.Strict,
-                Path = "/"
-            });
+            // _httpContextAccessor.HttpContext.Response.Cookies.Append("perms", token, new CookieOptions
+            // {
+            //     HttpOnly = _configuration["Environment"] == "Production",
+            //     Secure = _configuration["Environment"] == "Production",
+            //     SameSite = SameSiteMode.Strict,
+            //     Path = "/"
+            // });
+            
+            _httpContextAccessor.HttpContext.Response.Headers.Add("Access-Control-Expose-Headers", "perms-token");
+            _httpContextAccessor.HttpContext.Response.Headers.Add("perms-token", token);
         }
         catch (DbException ex)
         {

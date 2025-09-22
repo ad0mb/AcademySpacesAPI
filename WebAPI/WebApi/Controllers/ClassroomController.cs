@@ -24,8 +24,9 @@ public class ClassroomController : ControllerBase
     private readonly IUpdateClassroomScheduleUseCase _updateClassroomScheduleUseCase;
     private readonly IUpdateClassroomRosterUseCase _updateClassroomRosterUseCase;
     private readonly IGetClassroomRosterUseCase _getClassroomRosterUseCase;
+    private readonly IDeleteClassroomUseCase _deleteClassroomUseCase;
     
-    public ClassroomController(ICreateClassroomUseCase createClassroomUseCase, IHttpContextAccessor httpContextAccessor, IGetClassroomsUseCase getClassroomsUseCase, IGetClassroomScheduleUseCase getClassroomScheduleUseCase, IUpdateClassroomScheduleUseCase updateClassroomScheduleUseCase, IUpdateClassroomRosterUseCase updateClassroomRosterUseCase, IGetClassroomRosterUseCase getClassroomRosterUseCase)
+    public ClassroomController(ICreateClassroomUseCase createClassroomUseCase, IHttpContextAccessor httpContextAccessor, IGetClassroomsUseCase getClassroomsUseCase, IGetClassroomScheduleUseCase getClassroomScheduleUseCase, IUpdateClassroomScheduleUseCase updateClassroomScheduleUseCase, IUpdateClassroomRosterUseCase updateClassroomRosterUseCase, IGetClassroomRosterUseCase getClassroomRosterUseCase, IDeleteClassroomUseCase deleteClassroomUseCase)
     {
         _createClassroomUseCase = createClassroomUseCase;
         _httpContextAccessor = httpContextAccessor;
@@ -34,6 +35,7 @@ public class ClassroomController : ControllerBase
         _updateClassroomScheduleUseCase = updateClassroomScheduleUseCase;
         _updateClassroomRosterUseCase = updateClassroomRosterUseCase;
         _getClassroomRosterUseCase = getClassroomRosterUseCase;
+        _deleteClassroomUseCase = deleteClassroomUseCase;
     }
     
     //TODO: Has school wide setting enabled attribute to add
@@ -356,6 +358,45 @@ public class ClassroomController : ControllerBase
                 Status = false,
                 Message = ex.Message,
                 Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+
+    [HttpDelete("delete-classroom/{classroomId}")]
+    public async Task<IActionResult> DeleteClassroom(int classroomId)
+    {
+        try
+        {
+            var cycleId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("cycle_id").Value);
+
+            await _deleteClassroomUseCase.DeleteClassroomAsync(cycleId, classroomId);
+            
+            return Ok(new
+            {
+                Status = true,
+                Message = "Classroom deleted successfully.",
+                Data = new { },
+                Errors = (string[])null
+            });
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object[])null,
                 Errors = new[] { ex.Message }
             });
         }

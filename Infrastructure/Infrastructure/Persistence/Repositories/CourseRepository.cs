@@ -112,7 +112,8 @@ public class CourseRepository : ICourseRepository
         try
         {
             var course = await (from c in _context.Courses
-                where c.CourseId == courseEntry.CourseId
+                where c.CourseId == courseEntry.CourseId 
+                      && c.SchoolId == courseEntry.SchoolId
                 select c).FirstOrDefaultAsync();
 
             if (course == null)
@@ -141,6 +142,32 @@ public class CourseRepository : ICourseRepository
         catch (DbUpdateException ex) 
         {
             throw new DbException("Issue updating course in the database", ex);
+        }
+    }
+
+    public async Task DeleteCourseAsync(int schoolId, int courseId)
+    {
+        try
+        {
+            var course = await (from c in _context.Courses
+                where c.CourseId == courseId && c.SchoolId == schoolId
+                select c).FirstOrDefaultAsync();
+
+            if (course == null)
+            {
+                throw new NotFoundException("Course not found");
+            }
+            
+            _context.Courses.Remove(course);
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                throw new NoRowsAffectedException("Course not deleted");
+            }
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue deleting course from the database", ex);
         }
     }
 }

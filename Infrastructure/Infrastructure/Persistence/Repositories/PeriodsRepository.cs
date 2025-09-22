@@ -128,6 +128,7 @@ public class PeriodsRepository : IPeriodsRepository
     }
 
     //TODO: Just come back and check this logic again especially conflict checking
+    //TODO: CHECK AND MAYBE FIX TEACHER OVERLAP LOGC ON SCHEDULING
     public async Task CreatePeriodAsync(PeriodEntry request)
     {
         try
@@ -298,6 +299,32 @@ public class PeriodsRepository : IPeriodsRepository
         catch (DbUpdateException ex)
         {
             throw new DbException("Issue updating period in the database", ex);
+        }
+    }
+
+    public async Task DeletePeriodAsync(int cycleId, int periodId)
+    {
+        try
+        {
+            var period = await (from p in _context.Periods
+                where p.PeriodId == periodId && p.CycleId == cycleId
+                select p).FirstOrDefaultAsync();
+
+            if (period == null)
+            {
+                throw new DbException("Period not found");
+            }
+            
+            _context.Periods.Remove(period);
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                throw new NoRowsAffectedException("Period not deleted");
+            }
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue deleting period from the database", ex);
         }
     }
 

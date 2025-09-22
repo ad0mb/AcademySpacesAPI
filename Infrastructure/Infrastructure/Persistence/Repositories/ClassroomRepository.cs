@@ -232,4 +232,30 @@ public class ClassroomRepository : IClassroomRepository
             throw new DbException("Issue updating classroom roster in the database", ex);
         }
     }
+
+    public async Task DeleteClassroomAsync(int cycleId, int classroomId)
+    {
+        try
+        {
+            var classroom = await (from c in _context.Classrooms
+                where c.CycleId == cycleId && c.ClassroomId == classroomId
+                select c).FirstOrDefaultAsync();
+
+            if (classroom == null)
+            {
+                throw new NotFoundException("Classroom not found");
+            }
+            
+            _context.Classrooms.Remove(classroom);
+            var result = await _context.SaveChangesAsync();
+            if (result == 0)
+            {
+                throw new NoRowsAffectedException("Classroom not deleted");
+            }
+        }
+        catch (DbUpdateException ex)
+        {
+            throw new DbException("Issue deleting classroom from the database", ex);
+        }
+    }
 }

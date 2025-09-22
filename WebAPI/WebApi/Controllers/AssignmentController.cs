@@ -1,6 +1,8 @@
 ﻿using System.Data.Common;
 using System.Globalization;
+using AcademySpacesAPI.WebApi.DTOs.Requests;
 using AcademySpacesAPI.WebApi.DTOs.Responses;
+using Core.ApplicationCore.DomainEntities;
 using Core.ApplicationCore.Interfaces.UseCases;
 using Infrastructure.Infrastructure.Auth;
 using Microsoft.AspNetCore.Authorization;
@@ -19,13 +21,15 @@ public class AssignmentController : ControllerBase
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IGetAssignmentsUseCase _getAssignmentsUseCase;
     private readonly IGetStudentGradesUseCase _getStudentGradesUseCase;
+    private readonly ISetStudentsGradesUseCase _setStudentsGradesUseCase;
     
-    public AssignmentController(PeriodAccessChecker periodAccessChecker, IHttpContextAccessor httpContextAccessor, IGetAssignmentsUseCase getAssignmentsUseCase, IGetStudentGradesUseCase getStudentGradesUseCase)
+    public AssignmentController(PeriodAccessChecker periodAccessChecker, IHttpContextAccessor httpContextAccessor, IGetAssignmentsUseCase getAssignmentsUseCase, IGetStudentGradesUseCase getStudentGradesUseCase, ISetStudentsGradesUseCase setStudentsGradesUseCase)
     {
         _periodAccessChecker = periodAccessChecker;
         _httpContextAccessor = httpContextAccessor;
         _getAssignmentsUseCase = getAssignmentsUseCase;
         _getStudentGradesUseCase = getStudentGradesUseCase;
+        _setStudentsGradesUseCase = setStudentsGradesUseCase;
     }
     [EnableRateLimiting("fixed")] 
     [HttpGet("get-assignments")]
@@ -129,6 +133,63 @@ public class AssignmentController : ControllerBase
                 Errors = (string[])null
             });
 
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+    
+    [HttpPost("set-grades")]
+    public async Task<IActionResult> SetGrades(int periodId, List<SetStudentsGradesRequest> request)
+    {
+        try
+        {
+            var result =
+                await _periodAccessChecker.CheckAccess(_httpContextAccessor.HttpContext.User, periodId, "edit");
+            
+            if (!result)
+            {
+                return StatusCode(403, new
+                {
+                    Status = false,
+                    Message = "You are not allowed to access this resource.",
+                    Data = (object)null,
+                    Errors = (string[])null
+                });
+            }
+            
+            var cycleId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("cycle_id").Value);
+
+            var schoolId = int.Parse(_httpContextAccessor.HttpContext.User.FindFirst("school_id").Value);
+
+            var grades = new List<StudentGradeEntry>();
+            
+            foreach (var grade in request)
+            {
+                grades.Add(new StudentGradeEntry
+                {
+                    AssignmentId = grade.AssignmentId,
+                    StudentId = grade.StudentId,
+                    Score = grade.Score
+                });
+            }
+
+            await _setStudentsGradesUseCase.SetStudentsGradesAsync(schoolId, cycleId, periodId, grades);
+            
+            return Ok(new
+            {
+                Status = true,
+                Message = "Student grades set successfully.",
+                Data = (object)null,
+                Errors = (string[])null
+            });
         }
         catch (DbException ex)
         {

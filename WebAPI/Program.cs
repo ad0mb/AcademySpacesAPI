@@ -2,6 +2,7 @@ using System.Text;
 using System.Threading.RateLimiting;
 using AcademySpacesAPI;
 using AcademySpacesAPI.WebApi.Authentication;
+using Azure.Communication.Email;
 using Azure.Identity;
 using Core.ApplicationCore.Interfaces.Adapters;
 using Core.ApplicationCore.Interfaces.HelperFiles;
@@ -28,7 +29,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins", policy =>
     {
-        policy.WithOrigins("http://localhost:3000","https://localhost:3000")
+        policy.WithOrigins("https://app.academyspaces.com")
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();
@@ -135,6 +136,15 @@ builder.Services.AddSingleton(provider =>
 });
 //Singletons for Firebase Admin SDK
 
+//Singleton for Azure Email Service
+builder.Services.AddSingleton(sp =>
+{
+    string connectionString = builder.Configuration.GetConnectionString("AzureEmailService");
+    return new EmailClient(connectionString);
+});
+builder.Services.AddSingleton<IEmailService, EmailService>();
+//Singleton for Azure Email Service
+
 //Scoped
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<PeriodAccessChecker>();
@@ -186,6 +196,13 @@ builder.Services.AddScoped<IGetAssignmentsUseCase, GetAssignmentsUseCase>();
 builder.Services.AddScoped<IUpdateClassroomRosterUseCase, UpdateClassroomRosterUseCase>();
 builder.Services.AddScoped<IGetClassroomRosterUseCase, GetClassroomRosterUseCase>();
 builder.Services.AddScoped<IGetStudentGradesUseCase, GetStudentsGradesUseCase>();
+builder.Services.AddScoped<ISetStudentsGradesUseCase, SetStudentsGradesUseCase>();
+builder.Services.AddScoped<IDeleteClassroomUseCase, DeleteClassroomUseCase>();
+builder.Services.AddScoped<IDeleteStudentUseCase, DeleteStudentUseCase>();
+builder.Services.AddScoped<IDeleteFacultyUseCase, DeleteFacultyUseCase>();
+builder.Services.AddScoped<IDeleteParentUseCase, DeleteParentUseCase>();
+builder.Services.AddScoped<IDeleteCourseUseCase, DeleteCourseUseCase>();
+builder.Services.AddScoped<IDeletePeriodUseCase, DeletePeriodUseCase>();
 builder.Services.AddScoped<ICreateAnnouncementUseCase, CreateAnnouncementUseCase>();
 builder.Services.AddScoped<ICreateAnnouncementService, AnnouncementRepository>();
 builder.Services.AddScoped<IAblyService, AblyPublisher>();
@@ -203,18 +220,13 @@ builder.Services.AddScoped<PaymentRepoUsecase>();
 //Scoped
 
 //Transient
-builder.Services.AddTransient<IEmailService, EmailService>();
 //Transient
 
 //Add DbContext For Development 
 // var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-// Console.WriteLine("Loaded connection string: " + connectionString);
-//
 // builder.Services.AddDbContext<MyDbContext>(options =>
-//     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
-//         .UseExceptionProcessor()
+//     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)).UseExceptionProcessor()
 // );
-
 
 //TODO: Check bearers and create separate registration key for each one
 builder.Services.AddAuthentication(options =>
@@ -270,9 +282,11 @@ var app = builder.Build();
 
 app.UseCors("AllowAllOrigins");
 
-
+if (app.Environment.IsDevelopment())
+{
     app.UseSwagger();
     app.UseSwaggerUI();
+}
 
 
 app.UseRateLimiter();

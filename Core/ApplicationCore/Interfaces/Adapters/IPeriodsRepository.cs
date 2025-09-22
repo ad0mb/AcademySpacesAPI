@@ -9,4 +9,5 @@ public interface IPeriodsRepository
     Task UpdatePeriodAsync(PeriodEntry request);
     Task BulkDeletePeriodScheduleEntriesAsync(List<int> periodScheduleEntriesToDelete);
     Task<List<PeriodEntry>> GetPeriodsByClassroomIdAsync(int classroomId, int cycleId);
+    Task DeletePeriodAsync(int cycleId, int periodId);
 }
