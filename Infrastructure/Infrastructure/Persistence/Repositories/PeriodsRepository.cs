@@ -128,6 +128,7 @@ public class PeriodsRepository : IPeriodsRepository
     }
 
     //TODO: Just come back and check this logic again especially conflict checking
+    //TODO: CHECK AND MAYBE FIX TEACHER OVERLAP LOGC ON SCHEDULING
     public async Task CreatePeriodAsync(PeriodEntry request)
     {
         try
