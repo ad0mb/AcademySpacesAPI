@@ -7,7 +7,7 @@ using Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AcademySpacesAPI.WebApi.Controllers.Users;
+namespace AcademySpacesAPI.WebApi.Controllers;
 
 [ApiController]
 [Authorize(AuthenticationSchemes = "FirebaseAuthScheme")]

@@ -1,17 +1,10 @@
-﻿using System.Data.Common;
-using System.Security.Claims;
-using System.Text.Json;
-using AcademySpacesAPI.WebApi.DTOs.Responses;
-using Core;
-using Core.ApplicationCore.DomainEntities;
-using Core.ApplicationCore.Interfaces.UseCases;
+﻿using Core.ApplicationCore.Interfaces.UseCases;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using DbException = Core.Exceptions.DbException;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
-namespace AcademySpacesAPI.WebApi.Controllers.Users;
+namespace AcademySpacesAPI.WebApi.Controllers;
 
 [ApiController]
 [Authorize(AuthenticationSchemes = "FirebaseAuthScheme")]

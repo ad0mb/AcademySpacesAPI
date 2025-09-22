@@ -1,15 +1,13 @@
-﻿using System.Security.Claims;
-using AcademySpacesAPI.WebApi.Attributes;
+﻿using AcademySpacesAPI.WebApi.Attributes;
 using AcademySpacesAPI.WebApi.DTOs.GeneralObjects;
 using AcademySpacesAPI.WebApi.DTOs.Requests;
 using Core.ApplicationCore.DomainEntities;
 using Core.ApplicationCore.Interfaces.UseCases;
 using Core.Exceptions;
-using Infrastructure.Infrastructure.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AcademySpacesAPI.WebApi.Controllers.Users;
+namespace AcademySpacesAPI.WebApi.Controllers;
 
 [ApiController]
 [Authorize(AuthenticationSchemes = "FirebaseAuthScheme")]

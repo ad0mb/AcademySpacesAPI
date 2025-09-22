@@ -6,7 +6,6 @@ using Core.ApplicationCore.DomainEntities;
 using Core.ApplicationCore.Interfaces.UseCases;
 using Core.ApplicationCore.UseCases;
 using Core.Exceptions;
-using Infrastructure.Infrastructure.Persistence.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

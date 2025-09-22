@@ -7,7 +7,7 @@ using Core.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace AcademySpacesAPI.WebApi.Controllers.SchoolSettings;
+namespace AcademySpacesAPI.WebApi.Controllers;
 
 [ApiController]
 [Route("api/school/settings/courses")]
