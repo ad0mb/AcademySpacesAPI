@@ -1,6 +1,7 @@
 using System.Text;
 using AcademySpacesAPI;
 using AcademySpacesAPI.WebApi.Authentication;
+using Azure.Communication.Email;
 using Core.ApplicationCore.Interfaces.Adapters;
 using Core.ApplicationCore.Interfaces.UseCases;
 using Core.ApplicationCore.UseCases;
@@ -82,6 +83,15 @@ builder.Services.AddSingleton(provider =>
 });
 //Singletons for Firebase Admin SDK
 
+//Singleton for Azure Email Service
+builder.Services.AddSingleton(sp =>
+{
+    string connectionString = builder.Configuration.GetConnectionString("AzureEmailService");
+    return new EmailClient(connectionString);
+});
+builder.Services.AddSingleton<IEmailService, EmailService>();
+//Singleton for Azure Email Service
+
 //Scoped
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<PeriodAccessChecker>();
@@ -143,7 +153,6 @@ builder.Services.AddScoped<IDeletePeriodUseCase, DeletePeriodUseCase>();
 //Scoped
 
 //Transient
-builder.Services.AddTransient<IEmailService, EmailService>();
 //Transient
 
 //Add DbContext
