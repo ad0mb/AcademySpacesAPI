@@ -130,6 +130,9 @@ builder.Services.AddScoped<IUpdateClassroomScheduleUseCase, UpdateClassroomSched
 builder.Services.AddScoped<ICreateStudentUseCase, CreateStudentUseCase>();
 builder.Services.AddScoped<IUpdateStudentUseCase, UpdateStudentUseCase>();
 builder.Services.AddScoped<IGetAssignmentsUseCase, GetAssignmentsUseCase>();
+builder.Services.AddScoped<ICreateAssignmentUseCase, CreateAssignmentUseCase>();
+builder.Services.AddScoped<IUpdateAssignmentUseCase, UpdateAssignmentUseCase>();
+builder.Services.AddScoped<IDeleteAssignmentUseCase, DeleteAssignmentUseCase>();
 builder.Services.AddScoped<IUpdateClassroomRosterUseCase, UpdateClassroomRosterUseCase>();
 builder.Services.AddScoped<IGetClassroomRosterUseCase, GetClassroomRosterUseCase>();
 builder.Services.AddScoped<IGetStudentGradesUseCase, GetStudentsGradesUseCase>();

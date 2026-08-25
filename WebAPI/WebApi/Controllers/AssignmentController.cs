@@ -1,6 +1,9 @@
 ﻿using System.Data.Common;
 using System.Globalization;
+using AcademySpacesAPI.WebApi.DTOs.Requests;
 using AcademySpacesAPI.WebApi.DTOs.Responses;
+using Core.ApplicationCore.DomainEntities;
+using Core.ApplicationCore.Enums;
 using Core.ApplicationCore.Interfaces.UseCases;
 using Infrastructure.Infrastructure.Auth;
 using Microsoft.AspNetCore.Authorization;
@@ -18,13 +21,19 @@ public class AssignmentController : ControllerBase
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IGetAssignmentsUseCase _getAssignmentsUseCase;
     private readonly IGetStudentGradesUseCase _getStudentGradesUseCase;
+    private readonly ICreateAssignmentUseCase _createAssignmentUseCase;
+    private readonly IUpdateAssignmentUseCase _updateAssignmentUseCase;
+    private readonly IDeleteAssignmentUseCase _deleteAssignmentUseCase;
     
-    public AssignmentController(PeriodAccessChecker periodAccessChecker, IHttpContextAccessor httpContextAccessor, IGetAssignmentsUseCase getAssignmentsUseCase, IGetStudentGradesUseCase getStudentGradesUseCase)
+    public AssignmentController(PeriodAccessChecker periodAccessChecker, IHttpContextAccessor httpContextAccessor, IGetAssignmentsUseCase getAssignmentsUseCase, IGetStudentGradesUseCase getStudentGradesUseCase, ICreateAssignmentUseCase createAssignmentUseCase, IUpdateAssignmentUseCase updateAssignmentUseCase, IDeleteAssignmentUseCase deleteAssignmentUseCase)
     {
         _periodAccessChecker = periodAccessChecker;
         _httpContextAccessor = httpContextAccessor;
         _getAssignmentsUseCase = getAssignmentsUseCase;
         _getStudentGradesUseCase = getStudentGradesUseCase;
+        _createAssignmentUseCase = createAssignmentUseCase;
+        _updateAssignmentUseCase = updateAssignmentUseCase;
+        _deleteAssignmentUseCase = deleteAssignmentUseCase;
     }
 
     [HttpGet("get-assignments")]
@@ -135,6 +144,202 @@ public class AssignmentController : ControllerBase
             {
                 Status = false,
                 Message = "Internal server error.",
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+
+    [HttpPost("create-assignment")]
+    public async Task<IActionResult> CreateAssignment(int periodId, CreateAssignmentRequest request)
+    {
+        try
+        {
+            var result =
+                await _periodAccessChecker.CheckAccess(_httpContextAccessor.HttpContext.User, periodId, "create");
+
+            if (!result)
+            {
+                return StatusCode(403, new
+                {
+                    Status = false,
+                    Message = "You are not allowed to access this resource.",
+                    Data = (object)null,
+                    Errors = (string[])null
+                });
+            }
+
+            if (!Enum.TryParse<AssignmentType>(request.AssignmentType, true, out var assignmentType))
+            {
+                return BadRequest(new
+                {
+                    Status = false,
+                    Message = "Invalid assignment type.",
+                    Data = (object)null,
+                    Errors = (string[])null
+                });
+            }
+
+            var assignmentEntry = new AssignmentEntry
+            {
+                PeriodId = periodId,
+                AssignmentType = assignmentType,
+                AssignmentName = request.AssignmentName,
+                MaxScore = request.MaxScore,
+                Description = request.Description,
+                DueDate = request.DueDate
+            };
+
+            await _createAssignmentUseCase.CreateAssignmentAsync(assignmentEntry);
+
+            return Ok(new
+            {
+                Status = true,
+                Message = "Assignment created successfully.",
+                Data = new { },
+                Errors = (string[])null
+            });
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (Core.Exceptions.NoRowsAffectedException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Assignment not created.",
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+
+    [HttpPatch("update-assignment")]
+    public async Task<IActionResult> UpdateAssignment(int periodId, UpdateAssignmentRequest request)
+    {
+        try
+        {
+            var result =
+                await _periodAccessChecker.CheckAccess(_httpContextAccessor.HttpContext.User, periodId, "update");
+
+            if (!result)
+            {
+                return StatusCode(403, new
+                {
+                    Status = false,
+                    Message = "You are not allowed to access this resource.",
+                    Data = (object)null,
+                    Errors = (string[])null
+                });
+            }
+
+            if (!Enum.TryParse<AssignmentType>(request.AssignmentType, true, out var assignmentType))
+            {
+                return BadRequest(new
+                {
+                    Status = false,
+                    Message = "Invalid assignment type.",
+                    Data = (object)null,
+                    Errors = (string[])null
+                });
+            }
+
+            var assignmentEntry = new AssignmentEntry
+            {
+                AssignmentId = request.AssignmentId,
+                PeriodId = periodId,
+                AssignmentType = assignmentType,
+                AssignmentName = request.AssignmentName,
+                MaxScore = request.MaxScore,
+                Description = request.Description,
+                DueDate = request.DueDate
+            };
+
+            await _updateAssignmentUseCase.UpdateAssignmentAsync(assignmentEntry);
+
+            return Ok(new
+            {
+                Status = true,
+                Message = "Assignment updated successfully.",
+                Data = new { },
+                Errors = (string[])null
+            });
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (Core.Exceptions.NotFoundException ex)
+        {
+            return NotFound(new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+
+    [HttpDelete("delete-assignment")]
+    public async Task<IActionResult> DeleteAssignment(int periodId, [FromQuery] int assignmentId)
+    {
+        try
+        {
+            var result =
+                await _periodAccessChecker.CheckAccess(_httpContextAccessor.HttpContext.User, periodId, "delete");
+
+            if (!result)
+            {
+                return StatusCode(403, new
+                {
+                    Status = false,
+                    Message = "You are not allowed to access this resource.",
+                    Data = (object)null,
+                    Errors = (string[])null
+                });
+            }
+
+            await _deleteAssignmentUseCase.DeleteAssignmentAsync(assignmentId, periodId);
+
+            return Ok(new
+            {
+                Status = true,
+                Message = "Assignment deleted successfully.",
+                Data = new { },
+                Errors = (string[])null
+            });
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (Core.Exceptions.NotFoundException ex)
+        {
+            return NotFound(new
+            {
+                Status = false,
+                Message = ex.Message,
                 Data = (object[])null,
                 Errors = new[] { ex.Message }
             });
