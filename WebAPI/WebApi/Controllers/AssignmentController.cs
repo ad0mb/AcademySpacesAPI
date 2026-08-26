@@ -3,7 +3,6 @@ using System.Globalization;
 using AcademySpacesAPI.WebApi.DTOs.Requests;
 using AcademySpacesAPI.WebApi.DTOs.Responses;
 using Core.ApplicationCore.DomainEntities;
-using Core.ApplicationCore.Enums;
 using Core.ApplicationCore.Interfaces.UseCases;
 using Infrastructure.Infrastructure.Auth;
 using Microsoft.AspNetCore.Authorization;
@@ -169,21 +168,10 @@ public class AssignmentController : ControllerBase
                 });
             }
 
-            if (!Enum.TryParse<AssignmentType>(request.AssignmentType, true, out var assignmentType))
-            {
-                return BadRequest(new
-                {
-                    Status = false,
-                    Message = "Invalid assignment type.",
-                    Data = (object)null,
-                    Errors = (string[])null
-                });
-            }
-
             var assignmentEntry = new AssignmentEntry
             {
                 PeriodId = periodId,
-                AssignmentType = assignmentType,
+                AssignmentType = request.AssignmentType,
                 AssignmentName = request.AssignmentName,
                 MaxScore = request.MaxScore,
                 Description = request.Description,
@@ -241,22 +229,11 @@ public class AssignmentController : ControllerBase
                 });
             }
 
-            if (!Enum.TryParse<AssignmentType>(request.AssignmentType, true, out var assignmentType))
-            {
-                return BadRequest(new
-                {
-                    Status = false,
-                    Message = "Invalid assignment type.",
-                    Data = (object)null,
-                    Errors = (string[])null
-                });
-            }
-
             var assignmentEntry = new AssignmentEntry
             {
                 AssignmentId = request.AssignmentId,
                 PeriodId = periodId,
-                AssignmentType = assignmentType,
+                AssignmentType = request.AssignmentType,
                 AssignmentName = request.AssignmentName,
                 MaxScore = request.MaxScore,
                 Description = request.Description,
