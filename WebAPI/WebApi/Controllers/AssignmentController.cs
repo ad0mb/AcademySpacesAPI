@@ -23,8 +23,11 @@ public class AssignmentController : ControllerBase
     private readonly ICreateAssignmentUseCase _createAssignmentUseCase;
     private readonly IUpdateAssignmentUseCase _updateAssignmentUseCase;
     private readonly IDeleteAssignmentUseCase _deleteAssignmentUseCase;
+    private readonly ICreateStudentGradesUseCase _createStudentGradesUseCase;
+    private readonly IUpdateStudentGradesUseCase _updateStudentGradesUseCase;
+    private readonly IDeleteStudentGradesUseCase _deleteStudentGradesUseCase;
     
-    public AssignmentController(PeriodAccessChecker periodAccessChecker, IHttpContextAccessor httpContextAccessor, IGetAssignmentsUseCase getAssignmentsUseCase, IGetStudentGradesUseCase getStudentGradesUseCase, ICreateAssignmentUseCase createAssignmentUseCase, IUpdateAssignmentUseCase updateAssignmentUseCase, IDeleteAssignmentUseCase deleteAssignmentUseCase)
+    public AssignmentController(PeriodAccessChecker periodAccessChecker, IHttpContextAccessor httpContextAccessor, IGetAssignmentsUseCase getAssignmentsUseCase, IGetStudentGradesUseCase getStudentGradesUseCase, ICreateAssignmentUseCase createAssignmentUseCase, IUpdateAssignmentUseCase updateAssignmentUseCase, IDeleteAssignmentUseCase deleteAssignmentUseCase, ICreateStudentGradesUseCase createStudentGradesUseCase, IUpdateStudentGradesUseCase updateStudentGradesUseCase, IDeleteStudentGradesUseCase deleteStudentGradesUseCase)
     {
         _periodAccessChecker = periodAccessChecker;
         _httpContextAccessor = httpContextAccessor;
@@ -33,6 +36,9 @@ public class AssignmentController : ControllerBase
         _createAssignmentUseCase = createAssignmentUseCase;
         _updateAssignmentUseCase = updateAssignmentUseCase;
         _deleteAssignmentUseCase = deleteAssignmentUseCase;
+        _createStudentGradesUseCase = createStudentGradesUseCase;
+        _updateStudentGradesUseCase = updateStudentGradesUseCase;
+        _deleteStudentGradesUseCase = deleteStudentGradesUseCase;
     }
 
     [HttpGet("get-assignments")]
@@ -297,6 +303,213 @@ public class AssignmentController : ControllerBase
             {
                 Status = true,
                 Message = "Assignment deleted successfully.",
+                Data = new { },
+                Errors = (string[])null
+            });
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (Core.Exceptions.NotFoundException ex)
+        {
+            return NotFound(new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+
+    [HttpPost("create-grades")]
+    public async Task<IActionResult> CreateGrades(int periodId, CreateStudentGradesRequest request)
+    {
+        try
+        {
+            var result =
+                await _periodAccessChecker.CheckAccess(_httpContextAccessor.HttpContext.User, periodId, "create");
+
+            if (!result)
+            {
+                return StatusCode(403, new
+                {
+                    Status = false,
+                    Message = "You are not allowed to access this resource.",
+                    Data = (object)null,
+                    Errors = (string[])null
+                });
+            }
+
+            var gradeEntries = new List<StudentGradeEntry>();
+
+            foreach (var grade in request.Grades)
+            {
+                gradeEntries.Add(new StudentGradeEntry
+                {
+                    AssignmentId = request.AssignmentId,
+                    StudentId = grade.StudentId,
+                    Score = grade.Score
+                });
+            }
+
+            await _createStudentGradesUseCase.CreateStudentGradesAsync(request.AssignmentId, periodId, gradeEntries);
+
+            return Ok(new
+            {
+                Status = true,
+                Message = "Student grades created successfully.",
+                Data = new { },
+                Errors = (string[])null
+            });
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (Core.Exceptions.NoRowsAffectedException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Grades not created.",
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (Core.Exceptions.NotFoundException ex)
+        {
+            return NotFound(new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (Core.Exceptions.InvalidScoreException ex)
+        {
+            return BadRequest(new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+
+    [HttpPatch("update-grades")]
+    public async Task<IActionResult> UpdateGrades(int periodId, UpdateStudentGradesRequest request)
+    {
+        try
+        {
+            var result =
+                await _periodAccessChecker.CheckAccess(_httpContextAccessor.HttpContext.User, periodId, "update");
+
+            if (!result)
+            {
+                return StatusCode(403, new
+                {
+                    Status = false,
+                    Message = "You are not allowed to access this resource.",
+                    Data = (object)null,
+                    Errors = (string[])null
+                });
+            }
+
+            var gradeEntries = new List<StudentGradeEntry>();
+
+            foreach (var grade in request.Grades)
+            {
+                gradeEntries.Add(new StudentGradeEntry
+                {
+                    AssignmentId = request.AssignmentId,
+                    StudentId = grade.StudentId,
+                    Score = grade.Score
+                });
+            }
+
+            await _updateStudentGradesUseCase.UpdateStudentGradesAsync(request.AssignmentId, periodId, gradeEntries);
+
+            return Ok(new
+            {
+                Status = true,
+                Message = "Student grades updated successfully.",
+                Data = new { },
+                Errors = (string[])null
+            });
+        }
+        catch (DbException ex)
+        {
+            return StatusCode(500, new
+            {
+                Status = false,
+                Message = "Internal server error.",
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (Core.Exceptions.NotFoundException ex)
+        {
+            return NotFound(new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (Core.Exceptions.InvalidScoreException ex)
+        {
+            return BadRequest(new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
+    }
+
+    [HttpDelete("delete-grades")]
+    public async Task<IActionResult> DeleteGrades(int periodId, DeleteStudentGradesRequest request)
+    {
+        try
+        {
+            var result =
+                await _periodAccessChecker.CheckAccess(_httpContextAccessor.HttpContext.User, periodId, "delete");
+
+            if (!result)
+            {
+                return StatusCode(403, new
+                {
+                    Status = false,
+                    Message = "You are not allowed to access this resource.",
+                    Data = (object)null,
+                    Errors = (string[])null
+                });
+            }
+
+            await _deleteStudentGradesUseCase.DeleteStudentGradesAsync(request.AssignmentId, periodId, request.StudentIds);
+
+            return Ok(new
+            {
+                Status = true,
+                Message = "Student grades deleted successfully.",
                 Data = new { },
                 Errors = (string[])null
             });
