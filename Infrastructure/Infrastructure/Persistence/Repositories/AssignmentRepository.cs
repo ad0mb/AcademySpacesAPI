@@ -26,7 +26,7 @@ public class AssignmentRepository : IAssignmentRepository
             var assignments = new List<AssignmentEntry>();
             
             var dbAssignments = await (from a in _context.Assignments
-                where a.PeriodId == periodId && a.Period.Period.CycleId == cycleId
+                where a.PeriodId == periodId && a.Period.CycleId == cycleId
                 select a).ToListAsync();
 
             foreach (var assignment in dbAssignments)

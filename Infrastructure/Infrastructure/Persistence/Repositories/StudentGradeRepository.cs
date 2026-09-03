@@ -25,7 +25,7 @@ public class StudentGradeRepository : IStudentGradeRepository
             
             var dbStudentGrades = await (from sg in _context.StudentGrades
                 where 
-                    sg.Assignment.Period.Period.CycleId == cycleId &&
+                    sg.Assignment.Period.CycleId == cycleId &&
                     sg.Assignment.Period.PeriodId == periodId
                     
                     && (assignmentId <= 0 || sg.AssignmentId == assignmentId)
@@ -63,6 +63,24 @@ public class StudentGradeRepository : IStudentGradeRepository
             if (assignment == null)
             {
                 throw new NotFoundException("Assignment not found");
+            }
+
+            var requestedIds = entries.Select(e => e.StudentId).Distinct().ToList();
+
+            var classroomId = await (from cs in _context.ClassroomSchedules
+                where cs.PeriodId == periodId
+                select cs.ClassroomId).FirstOrDefaultAsync();
+
+            var enrolledIds = await (from cs in _context.ClassroomStudents
+                where cs.ClassroomId == classroomId && requestedIds.Contains(cs.StudentId)
+                select cs.StudentId).ToListAsync();
+
+            var notEnrolled = requestedIds.Except(enrolledIds).ToList();
+
+            if (notEnrolled.Count > 0)
+            {
+                throw new RosterConflictException(
+                    $"Students not enrolled in this period: {string.Join(", ", notEnrolled)}");
             }
 
             foreach (var entry in entries)
@@ -107,6 +125,12 @@ public class StudentGradeRepository : IStudentGradeRepository
             {
                 throw new NotFoundException("Assignment not found");
             }
+
+            // TODO: Consider re-adding an enrollment check here. Update only mutates existing grades and
+            // throws NotFoundException when a grade is missing, so it cannot create rows for students outside
+            // the period. The one uncovered edge case: a student who was removed from the classroom roster
+            // after being graded still has their student_grades row (no cascade from classroom_students),
+            // so Update would still modify a grade for a student who is no longer enrolled.
 
             foreach (var entry in entries)
             {

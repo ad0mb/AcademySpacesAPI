@@ -410,6 +410,16 @@ public class AssignmentController : ControllerBase
                 Errors = new[] { ex.Message }
             });
         }
+        catch (Core.Exceptions.RosterConflictException ex)
+        {
+            return StatusCode(409, new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
     }
 
     [HttpPatch("update-grades")]
@@ -483,6 +493,16 @@ public class AssignmentController : ControllerBase
                 Errors = new[] { ex.Message }
             });
         }
+        catch (Core.Exceptions.RosterConflictException ex)
+        {
+            return StatusCode(409, new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object)null,
+                Errors = new[] { ex.Message }
+            });
+        }
     }
 
     [HttpDelete("delete-grades")]
@@ -531,6 +551,16 @@ public class AssignmentController : ControllerBase
                 Status = false,
                 Message = ex.Message,
                 Data = (object[])null,
+                Errors = new[] { ex.Message }
+            });
+        }
+        catch (Core.Exceptions.RosterConflictException ex)
+        {
+            return StatusCode(409, new
+            {
+                Status = false,
+                Message = ex.Message,
+                Data = (object)null,
                 Errors = new[] { ex.Message }
             });
         }
