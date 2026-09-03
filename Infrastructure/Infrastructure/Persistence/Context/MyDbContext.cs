@@ -17,8 +17,6 @@ public partial class MyDbContext : DbContext
     {
     }
 
-    public virtual DbSet<Announcment> Announcments { get; set; }
-
     public virtual DbSet<Assignment> Assignments { get; set; }
 
     public virtual DbSet<ClassGradingPeriod> ClassGradingPeriods { get; set; }
@@ -75,58 +73,13 @@ public partial class MyDbContext : DbContext
             .UseCollation("utf8mb4_0900_ai_ci")
             .HasCharSet("utf8mb4");
 
-        modelBuilder.Entity<Announcment>(entity =>
-        {
-            entity.HasKey(e => e.AnnouncmentId).HasName("PRIMARY");
-
-            entity.ToTable("announcments");
-
-            entity.HasIndex(e => e.SenderId, "Announcments_faculty_faculty_id_fk");
-
-            entity.HasIndex(e => e.SchoolId, "Announcments_schools_school_id_fk");
-
-            entity.Property(e => e.AnnouncmentId).HasColumnName("announcment_ID");
-            entity.Property(e => e.AnnouncmentName)
-                .HasMaxLength(255)
-                .HasColumnName("announcment_Name");
-            entity.Property(e => e.Category).HasMaxLength(255);
-            entity.Property(e => e.CreatedAt)
-                .HasColumnType("datetime")
-                .HasColumnName("Created_at");
-            entity.Property(e => e.DateCreated)
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("datetime")
-                .HasColumnName("date_created");
-            entity.Property(e => e.DateModified)
-                .ValueGeneratedOnAddOrUpdate()
-                .HasDefaultValueSql("CURRENT_TIMESTAMP")
-                .HasColumnType("datetime")
-                .HasColumnName("date_modified");
-            entity.Property(e => e.Message).HasColumnType("text");
-            entity.Property(e => e.Priority)
-                .HasMaxLength(255)
-                .HasColumnName("priority");
-            entity.Property(e => e.SchoolId).HasColumnName("School_ID");
-            entity.Property(e => e.SenderId).HasColumnName("sender_ID");
-
-            entity.HasOne(d => d.School).WithMany(p => p.Announcments)
-                .HasForeignKey(d => d.SchoolId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("Announcments_schools_school_id_fk");
-
-            entity.HasOne(d => d.Sender).WithMany(p => p.Announcments)
-                .HasForeignKey(d => d.SenderId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("Announcments_faculty_faculty_id_fk");
-        });
-
         modelBuilder.Entity<Assignment>(entity =>
         {
             entity.HasKey(e => e.AssignmentId).HasName("PRIMARY");
 
             entity.ToTable("assignments");
 
-            entity.HasIndex(e => e.PeriodId, "assignments_classroom_schedules_period_id_fk");
+            entity.HasIndex(e => e.PeriodId, "assignments_periods_period_id_fk");
 
             entity.Property(e => e.AssignmentId).HasColumnName("assignment_id");
             entity.Property(e => e.AssignmentName)
@@ -155,7 +108,7 @@ public partial class MyDbContext : DbContext
 
             entity.HasOne(d => d.Period).WithMany(p => p.Assignments)
                 .HasForeignKey(d => d.PeriodId)
-                .HasConstraintName("assignments_classroom_schedules_period_id_fk");
+                .HasConstraintName("assignments_periods_period_id_fk");
         });
 
         modelBuilder.Entity<ClassGradingPeriod>(entity =>

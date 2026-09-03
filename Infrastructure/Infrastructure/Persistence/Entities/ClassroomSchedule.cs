@@ -13,8 +13,6 @@ public partial class ClassroomSchedule
 
     public DateTime? DateModified { get; set; }
 
-    public virtual ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
-
     public virtual Classroom Classroom { get; set; } = null!;
 
     public virtual Period Period { get; set; } = null!;
